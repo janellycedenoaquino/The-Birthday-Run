@@ -4,7 +4,7 @@ import { expect, test, type Page } from "@playwright/test";
 // app against local Supabase, emails read from Mailpit. Turnstile runs with Cloudflare's
 // always-pass test site key from the local env (D4). #22 adds CI and the full FR-39 journey.
 
-const MAILPIT = process.env.MAILPIT_URL ?? "http://127.0.0.1:54324";
+const MAILPIT = process.env.MAILPIT_URL ?? "http://127.0.0.1:54424";
 const PASSWORD = "a-long-e2e-password-1";
 const uniqueEmail = (label: string) =>
   `e2e-${label}-${Date.now()}-${Math.random().toString(36).slice(2, 7)}@example.test`;

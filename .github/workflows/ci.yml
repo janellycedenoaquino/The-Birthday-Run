@@ -22,10 +22,10 @@ permissions:
 # always passes and rejects real tokens. They live here and in the README, not in .env.example.
 env:
   NEXT_PUBLIC_SITE_URL: http://localhost:3000
-  NEXT_PUBLIC_SUPABASE_URL: http://127.0.0.1:54321
+  NEXT_PUBLIC_SUPABASE_URL: http://127.0.0.1:54421
   NEXT_PUBLIC_TURNSTILE_SITE_KEY: 1x00000000000000000000AA
   EMAIL_TRANSPORT: mailpit
-  MAILPIT_URL: http://127.0.0.1:54324
+  MAILPIT_URL: http://127.0.0.1:54424
   EMAIL_FROM: CI <ci@example.com>
 
 jobs:

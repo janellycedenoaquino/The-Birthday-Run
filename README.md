@@ -132,7 +132,7 @@ Names and rules: BUILD §0.6 and F-2. Real values go only in `.env.local` (and i
 | Variable | Kind | What it's for | Where to get it |
 | --- | --- | --- | --- |
 | `NEXT_PUBLIC_SITE_URL` | public | Canonical site URL, no trailing slash; required in production | Your domain; locally `http://localhost:3000` |
-| `NEXT_PUBLIC_SUPABASE_URL` | public | Supabase API URL | Supabase dashboard → Project Settings → API; locally `http://127.0.0.1:54321` |
+| `NEXT_PUBLIC_SUPABASE_URL` | public | Supabase API URL | Supabase dashboard → Project Settings → API; locally `http://127.0.0.1:54421` |
 | `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` | public | Supabase publishable key (`sb_publishable_…`) | Supabase → Project Settings → API Keys; locally printed by `npm run db:start` |
 | `SUPABASE_SECRET_KEY` | **secret** | Supabase secret key (`sb_secret_…`); bypasses RLS, server only | Same places as the publishable key |
 | `RATE_LIMIT_HMAC_SECRET` | **secret** | Hashes rate-limit keys and signs password-reset markers; 32+ characters. Rotating it resets all counters and voids reset links opened in the last 15 minutes | `openssl rand -hex 32` |
@@ -141,7 +141,7 @@ Names and rules: BUILD §0.6 and F-2. Real values go only in `.env.local` (and i
 | `EMAIL_TRANSPORT` | server | `resend`, or `mailpit` locally (refused in production) | Your choice |
 | `RESEND_API_KEY` | **secret** | Welcome email; also Supabase's SMTP password. Required with `resend` | Resend → API Keys |
 | `EMAIL_FROM` | server | Sender: `address` or `Name <address>` | An address on your verified Resend domain |
-| `MAILPIT_URL` | server | Local test inbox; required with `mailpit` | Locally `http://127.0.0.1:54324` |
+| `MAILPIT_URL` | server | Local test inbox; required with `mailpit` | Locally `http://127.0.0.1:54424` |
 | `NEXT_PUBLIC_SENTRY_DSN` | public | Sentry; empty turns it off; required in production | Sentry → Project Settings → Client Keys |
 | `SENTRY_AUTH_TOKEN` | **secret** | Source-map upload (Vercel builds only; optional) | Sentry → Settings → Auth Tokens |
 | `SENTRY_ORG`, `SENTRY_PROJECT` | server | Org and project slugs (optional) | Sentry URLs |
