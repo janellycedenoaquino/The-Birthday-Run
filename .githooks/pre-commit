@@ -1,0 +1,65 @@
+#!/usr/bin/env bash
+# Runs before every commit (by you or by Claude).
+# 1. Fast automatic checks on what's staged: env files, .env.example placeholders,
+#    key/certificate files, big files, merge conflict markers, secrets (if gitleaks is installed).
+# 2. Blocks the commit unless exactly this staged snapshot passed the /pre-commit-review
+#    skill in Claude Code, which records it in .git/pre-commit-reviewed.
+# Enable once per clone:  git config core.hooksPath .githooks
+# Emergency bypass (skips all checks, use rarely):  git commit --no-verify
+set -euo pipefail
+
+root="$(git rev-parse --show-toplevel)"
+reviewed="$(git rev-parse --git-dir)/pre-commit-reviewed"
+fail=0
+block() { echo "pre-commit: $1"; fail=1; }
+
+staged=$(git diff --cached --name-only --diff-filter=ACMR)
+[[ -z "$staged" ]] && exit 0
+
+# Real env files
+env_files=$(echo "$staged" | grep -E '(^|/)\.env($|\.)' | grep -vE '(^|/)\.env\.example$' || true)
+[[ -n "$env_files" ]] && block "env files with real values are staged: $(echo $env_files). Unstage: git restore --staged <file>"
+
+# .env.example placeholders only
+if [[ -x "$root/scripts/check-env-example.sh" ]]; then
+  "$root/scripts/check-env-example.sh" || fail=1
+fi
+
+# Private keys and certificates
+keys=$(echo "$staged" | grep -E '\.(pem|key|p12|pfx|jks)$|(^|/)id_(rsa|ed25519|ecdsa)' || true)
+[[ -n "$keys" ]] && block "key or certificate files are staged: $(echo $keys)"
+
+# Big files (over 5 MB)
+while IFS= read -r f; do
+  size=$(git cat-file -s ":$f" 2>/dev/null || echo 0)
+  (( size > 5242880 )) && block "$f is $((size / 1048576)) MB. Large files don't belong in git."
+done <<< "$staged"
+
+# Merge conflict markers in staged content
+conflicts=$(git diff --cached -U0 | grep -nE '^\+(<<<<<<< |>>>>>>> )' || true)
+[[ -n "$conflicts" ]] && block "merge conflict markers in staged changes."
+
+# Secrets (if gitleaks is installed)
+if command -v gitleaks >/dev/null 2>&1; then
+  if ! gitleaks git --pre-commit --staged --no-banner "$root" 2>/dev/null \
+     && ! gitleaks protect --staged --no-banner -s "$root" 2>/dev/null; then
+    block "gitleaks found possible secrets in staged changes."
+  fi
+fi
+
+if [[ $fail -ne 0 ]]; then
+  echo "pre-commit: commit blocked. Fix the above, then commit again."
+  exit 1
+fi
+
+# Has exactly this staged snapshot been reviewed?
+tree=$(git write-tree)
+if ! grep -qx "$tree" "$reviewed" 2>/dev/null; then
+  echo "pre-commit: these staged changes haven't had a security review yet."
+  echo "In Claude Code, run:  /pre-commit-review"
+  echo "Then commit again. (Changing what's staged after the review means reviewing again.)"
+  echo "(Emergency only: git commit --no-verify)"
+  exit 1
+fi
+
+echo "pre-commit: quick checks passed and staged changes were reviewed."

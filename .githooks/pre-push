@@ -1,0 +1,54 @@
+#!/usr/bin/env bash
+# Runs before every push (by you or by Claude).
+# 1. Fast automatic checks (env placeholders, secrets if gitleaks is installed).
+# 2. Blocks the push unless every commit being pushed passed the /pre-push-review
+#    skill in Claude Code, which records reviewed commits in .git/pre-push-reviewed.
+# Enable once per clone:  git config core.hooksPath .githooks
+# Emergency bypass (skips all checks, use rarely):  git push --no-verify
+set -euo pipefail
+
+root="$(git rev-parse --show-toplevel)"
+reviewed="$(git rev-parse --git-dir)/pre-push-reviewed"
+zero="0000000000000000000000000000000000000000"
+
+if [[ -x "$root/scripts/check-env-example.sh" ]]; then
+  "$root/scripts/check-env-example.sh"
+fi
+
+missing=()
+while read -r local_ref local_sha remote_ref remote_sha; do
+  [[ "$local_sha" == "$zero" ]] && continue          # deleting a remote branch
+  if [[ "$remote_sha" == "$zero" ]]; then
+    range="$local_sha --not --remotes"               # new branch: commits no remote has
+  else
+    range="$remote_sha..$local_sha"
+  fi
+  # shellcheck disable=SC2086
+  commits=$(git rev-list $range)
+  [[ -z "$commits" ]] && continue
+
+  if command -v gitleaks >/dev/null 2>&1; then
+    first=$(echo "$commits" | tail -n1)
+    if git rev-parse -q --verify "$first^" >/dev/null; then opts="$first^..$local_sha"; else opts="$local_sha"; fi
+    if ! gitleaks git --no-banner --log-opts="$opts" "$root" 2>/dev/null \
+       && ! gitleaks detect --no-banner --log-opts="$opts" -s "$root" 2>/dev/null; then
+      echo "pre-push: gitleaks found possible secrets. Push blocked."
+      exit 1
+    fi
+  fi
+
+  for c in $commits; do
+    grep -qx "$c" "$reviewed" 2>/dev/null || missing+=("$c")
+  done
+done
+
+if [[ ${#missing[@]} -gt 0 ]]; then
+  echo "pre-push: ${#missing[@]} commit(s) haven't had a security review:"
+  for c in "${missing[@]}"; do echo "  $(git log -1 --format='%h %s' "$c")"; done
+  echo
+  echo "In Claude Code, run:  /pre-push-review"
+  echo "Then push again. (Emergency only: git push --no-verify)"
+  exit 1
+fi
+
+echo "pre-push: all commits reviewed. OK to push."

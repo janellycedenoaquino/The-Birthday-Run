@@ -1,0 +1,40 @@
+name: Backup
+
+# Daily encrypted database backup (BUILD F-12, FR-33, FR-34, D14). Manual-only in the Template
+# (it has no hosted database); each app turns on the schedule below once SUPABASE_DB_URL (secret,
+# session pooler) and BACKUP_AGE_RECIPIENT (variable, the age public key) are set.
+on:
+  workflow_dispatch:
+  # schedule:
+  #   - cron: "17 3 * * *"
+
+permissions:
+  contents: read
+
+jobs:
+  backup:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+      # Only the Supabase CLI is needed; no install scripts run.
+      - run: npm ci --ignore-scripts
+      - run: sudo apt-get update && sudo apt-get install -y age
+      - name: Dump and encrypt
+        env:
+          SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL }}
+          BACKUP_AGE_RECIPIENT: ${{ vars.BACKUP_AGE_RECIPIENT }}
+          OUT_DIR: ${{ runner.temp }}
+        run: scripts/backup.sh
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: backup
+          path: ${{ runner.temp }}/backup-*.tar.gz.age
+          retention-days: 30
+          if-no-files-found: error

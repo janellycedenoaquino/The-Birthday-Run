@@ -1,0 +1,12 @@
+# Supabase
+.branches
+.temp
+
+# dotenvx
+.env.keys
+.env.local
+.env.*.local
+
+# Studio saves SQL snippets here; the folder must exist for Podman (decision 0005)
+snippets/*
+!snippets/.gitkeep

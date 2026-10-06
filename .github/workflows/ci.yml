@@ -1,0 +1,130 @@
+# CI (BUILD "CI, deployment and migrations", D18, FR-40). Any failing step fails the run.
+# Every action is pinned by commit SHA; Dependabot keeps the pins current. The secret scan is
+# in secrets.yml, which also runs on docs-only changes (decision 0009).
+name: CI
+
+# Every push runs once (FR-40). No pull_request trigger: a PR shows its branch's push runs, and
+# a second trigger would run each commit twice (decision 0009).
+on:
+  push:
+    paths-ignore: ["docs/**", "**/*.md"]
+
+# On a branch, a newer push cancels the older run. On main every push gets its own group, so no
+# run is cancelled or dropped from the queue (GitHub keeps one pending run per group).
+concurrency:
+  group: ci-${{ github.ref == 'refs/heads/main' && github.sha || github.ref }}
+  cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
+
+permissions:
+  contents: read
+
+# Non-secret values only. The Turnstile keys are Cloudflare's public test keys (D4): the secret
+# always passes and rejects real tokens. They live here and in the README, not in .env.example.
+env:
+  NEXT_PUBLIC_SITE_URL: http://localhost:3000
+  NEXT_PUBLIC_SUPABASE_URL: http://127.0.0.1:54321
+  NEXT_PUBLIC_TURNSTILE_SITE_KEY: 1x00000000000000000000AA
+  EMAIL_TRANSPORT: mailpit
+  MAILPIT_URL: http://127.0.0.1:54324
+  EMAIL_FROM: CI <ci@example.com>
+
+jobs:
+  checks:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      # `next typegen` loads next.config.ts, which validates the env. No Supabase runs in this
+      # job, so the keys are format-valid placeholders.
+      NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: sb_publishable_ci-typegen-only
+      SUPABASE_SECRET_KEY: sb_secret_ci-typegen-only
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+      - name: Generate the rate-limit HMAC secret
+        run: |
+          secret=$(openssl rand -hex 32)
+          echo "::add-mask::$secret"
+          echo "RATE_LIMIT_HMAC_SECRET=$secret" >> "$GITHUB_ENV"
+      - run: npm ci
+      - run: npm run check:env
+      - run: npm run lint
+      - run: npm run format:check
+      - run: npm run typecheck
+      - run: npm test
+      - run: npm audit --audit-level=high
+      # Email templates in sync with src/emails and the config (BUILD F-5, FR-29): rebuild, then
+      # fail on any change or any generated file nobody committed.
+      - name: Email templates in sync
+        run: |
+          npm run email:build
+          git diff --exit-code supabase/templates
+          test -z "$(git status --porcelain supabase/templates)"
+
+  integration:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    env:
+      # Read by config.toml env() (decision 0007): unset values would reach Auth as literal text.
+      # Non-secret dummies; the Turnstile one is Cloudflare's always-pass test secret.
+      TURNSTILE_SECRET_KEY: 1x0000000000000000000000000000000AA
+      GOOGLE_CLIENT_ID: ci-dummy-google-client-id
+      GOOGLE_CLIENT_SECRET: ci-dummy-google-client-secret
+      RESEND_API_KEY: ci-dummy-resend-api-key
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+      - name: Generate the rate-limit HMAC secret
+        run: |
+          secret=$(openssl rand -hex 32)
+          echo "::add-mask::$secret"
+          echo "RATE_LIMIT_HMAC_SECRET=$secret" >> "$GITHUB_ENV"
+      # The Supabase CLI is the npm devDependency, so its version comes from package-lock.json.
+      - run: npm ci
+      - run: npm run check:supabase-env
+      - name: Start local Supabase
+        run: npx supabase start -x studio,imgproxy,realtime,storage-api,edge-runtime,logflare,vector,supavisor,postgres-meta
+      # Masked in case an app configures its own local keys (the CLI defaults are public anyway).
+      # The run stops here if the status command fails or a CLI update renames the keys.
+      - name: Export the local keys
+        run: |
+          status=$(npx supabase status -o env)
+          set -a
+          source <(printf '%s\n' "$status")
+          set +a
+          : "${PUBLISHABLE_KEY:?not in supabase status output}" "${SECRET_KEY:?not in supabase status output}"
+          echo "::add-mask::$PUBLISHABLE_KEY"
+          echo "::add-mask::$SECRET_KEY"
+          echo "NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=$PUBLISHABLE_KEY" >> "$GITHUB_ENV"
+          echo "SUPABASE_SECRET_KEY=$SECRET_KEY" >> "$GITHUB_ENV"
+      - run: npx supabase db reset
+      - name: Generated types match the migrations
+        run: |
+          npm run db:types
+          git diff --exit-code src/lib/types/database.types.ts
+      - run: npm run test:rls
+      - run: npm run build
+      - run: npm run check:bundle
+      # E2E (D18, FR-39): Playwright starts `next start` itself (webServer) against this build
+      # and the local stack; Chromium only. The report is kept only when something failed.
+      - name: Install Playwright's Chromium
+        run: npx playwright install --with-deps chromium
+      - run: npm run test:e2e
+      - name: Upload the Playwright report
+        if: failure()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: playwright-report
+          path: |
+            playwright-report/
+            test-results/
+          retention-days: 7

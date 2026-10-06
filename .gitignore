@@ -1,0 +1,34 @@
+# Env files with real values never go in git (only .env.example, placeholders only)
+.env
+.env.*
+!.env.example
+
+# dependencies
+/node_modules
+
+# next.js
+/.next/
+/out/
+/build
+next-env.d.ts
+*.tsbuildinfo
+
+# testing
+/coverage
+/test-results/
+/playwright-report/
+
+# local Supabase (supabase start)
+/supabase/.temp/
+/supabase/.branches/
+
+# misc
+.DS_Store
+*.pem
+npm-debug.log*
+.vercel
+
+# react-email export scratch (npm run email:build)
+/.email-out/
+# Deployed e2e run: links pasted by hand (BUILD CI "Mailbox adapter")
+/playwright/.manual-link
