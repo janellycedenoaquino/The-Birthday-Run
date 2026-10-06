@@ -9,7 +9,7 @@ Built from the Template: for anything touching auth, security or operations foun
 ## 1. What it is
 A web app that lists the free birthday rewards from the loyalty programs you belong to, counts down how long each lasts, and plans the run to pick them up (SPEC §1). v1 is for everyone; v2 premium (granted by the owner or paid through Stripe, which stays off) adds the map, Smart Grouping, more plan room and reminders.
 - **Done when:** metrics 1–5 (SPEC §2.1).
-- **Time:** about 6 hrs/day, no deadline; v1 around Oct 18, v2 around Oct 28 (ROADMAP).
+- **Time:** about 6 hrs/day once WishJar is finished; no deadline; v1 ≈ day 12, v2 ≈ day 22 (ROADMAP).
 
 ## 2. Scope
 In:
