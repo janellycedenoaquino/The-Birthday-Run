@@ -1,152 +1,98 @@
-# Template: Roadmap
+# The Birthday Run: Roadmap
 
-Last updated: 2026-09-28 (re-estimated from Phase 1's actual times) · Capacity: ~20 hrs/week from Mon 2026-09-28 · Deadline: none fixed. Target: **Fri 2026-10-09** (was Mon 2026-11-23). The gift registry starts after v1 sign-off (SPEC §1, decisions/0003).
+Last updated: 2026-10-06 · Capacity: about 6 hrs/day, every day, from Wed 2026-10-07 (SPEC §1 Time) · Deadline: none. **Flag point:** a phase more than 3 days past its "finish by", or over its upper hours.
 
 ## Summary
-Six phases, each ending with something that runs and is tested: foundations → security core and shell → accounts → settings and MFA → e2e, backups and docs → throwaway-app sign-off. The original part-by-part estimate was **103–168 hours**; parts #1–#5 took about 6% of theirs, so the remaining work is re-estimated at **~12–20 hours** (see "Re-estimate" below).
+Eight phases. v1 (everyone's features, premium by grant) goes live on thebirthdayrun.com after phase 4, around **Oct 18**. The full v2 premium build (map, Smart Grouping, reminders, reports, Stripe in test mode) is done after phase 7, around **Oct 28**. The redesign (phase 8) waits for the owner's visuals. Estimates are ranges of real working hours (Claude building, the owner reviewing, merging and doing dashboard steps); dates use the upper end plus 15% buffer at 6 hrs/day. The catalogue check (F-14) runs alongside phases 1–4 as overnight batches.
 
-| Case | Hours left (from Sep 28) | Finish (at 20 hrs/week) |
-| --- | --- | --- |
-| Optimistic, no buffer | ~12 | about Oct 3 |
-| Likely (midpoint + 15% buffer) | ~18 | **about Oct 6** |
-| Worst (upper + 15% buffer) | ~23 | **about Oct 9** (the target, with 2–3 days' slack for usage limits) |
-
-Nothing is cut in advance. The weekly check below says when the plan is late, and then **you choose** between the cut list and moving the date.
-
-**How to read a phase:** start every session with `docs/template/OVERVIEW.md`, then load only the phase's "Read" list below. Section names: SPEC/DESIGN/BUILD are in `docs/template/`.
-
-| Phase | Features | FRs / NFRs | Hours (re-estimate; was) | Finish by (upper + 15%; was) | Read | Issues |
+| Phase | Features | FRs | Hours | Finish by | Read | Issues |
 | --- | --- | --- | --- | --- | --- | --- |
-| 1. Foundations | F-1, F-2 (env part), CI | FR-11, 37, 40–43, 52, 53 · NFR-1, 2, 4, 5, 20, 25 | ~1 left (#6, #7) (was 22–37) | Tue Sep 29 (was Tue Oct 13) | BUILD §0.1, §0.6, §0.8, F-1, F-2 (env and bundle scan), CI · DESIGN D1, D6, D12, D18, D20, D23, §3 | #1–#7 |
-| 2. Security core + shell | F-2, F-3, F-4 | FR-17, 20–27, 31, 32 · NFR-6–11, 13, 17, 23, 24 | ~4 (was 23–38) | Thu Oct 1 (was Wed Oct 28) | BUILD §0, F-2, F-3, F-4 · DESIGN D2–D5, D15, D16, D21, §4.1 · SPEC §3.1, §3.2, S-1–S-3, S-12, S-19, S-20, §3.4, §3.6, §3.7 | #8–#12 |
-| 3. Accounts | F-5, F-6, F-7, F-8, F-9 | FR-1–10, 18, 28–30, 56 · NFR-3, 12, 14, 26 | ~5 (was 22–35) | Sat Oct 3 (was Wed Nov 11) | BUILD §0.2–§0.5, §0.7, F-5–F-9 · DESIGN D7, D9–D11, D22, D24 · SPEC S-4–S-11, §3.4 (M-, API-, E- messages) | #13–#17 |
-| 4. Settings + MFA | F-10, F-11 | FR-12, 14–16, 19, 57–59 · NFR-16 | ~2.5 (was 15–25) | Sun Oct 4 (was Sat Nov 21) | BUILD §0.2, §0.4, §0.5, F-10, F-11 · DESIGN D8, D12, D13, §3 · SPEC S-10, S-13–S-18, §3.4 | #18–#21 |
-| 5. E2E, backups, docs | F-12, CI | FR-33–35, 38, 39, 44–51, 55 · NFR-15, 18, 19, 22 | ~5 (was 16–25) | Wed Oct 7 (was Tue Dec 1) | BUILD F-12, CI · DESIGN D14, D18, §5 · LAUNCH-CHECKLIST | #22–#24 |
-| 6. Sign-off | CI (deploy) | FR-36, 54 · metrics 1–4 · NFR-21 | ~3.5 (was 5–8) | Fri Oct 9 (was Fri Dec 4) | LAUNCH-CHECKLIST · BUILD CI · DESIGN D19 · SPEC §2.1 | #25 |
-
-FR-13 (change email, F-13, #26) is **later**, if time allows after v1.
-
-**Progress board:** [Template v1](https://github.com/users/janellycedenoaquino/projects/9) (one issue per part below; milestones = phases, due on the "finish by" dates). Log actual hours on each card.
+| 0. Set up | Template setup, CI section | – | 3–5 | Wed Oct 7 | BUILD "CI, deployment and migrations" · DESIGN §5.1, §5.4 · README | |
+| 1. Catalogue + timing | F-1, F-2 | FR-1, FR-6–FR-11, FR-44 | 9–14 | Sat Oct 10 | BUILD §0, notes, F-1, F-2 · DESIGN D2–D4, §3 (profiles, retailers) · SPEC §2.2 (Retailers, Profile, Window), S-101, S-108, §3.4 | |
+| 2. Core journey | F-3, F-4, F-5 | FR-2–FR-5, FR-8, FR-12–FR-21, FR-45 | 12–18 | Wed Oct 14 | BUILD §0.2–§0.5, F-3, F-4, F-5 · DESIGN D3, D4, D7, §3 (enrollments, pickups) · SPEC S-102–S-105, S-107, C-102, C-103, C-108, C-109, §3.4 | |
+| 3. Plan | F-6 | FR-22–FR-28, FR-40 | 6–10 | Thu Oct 15 | BUILD §0.2, §0.4, F-6 · DESIGN D6, D13, §3 (groups, items) · SPEC S-106, C-108, §3.4, §3.7 | |
+| 4. Premium + v1 launch | F-7, F-14 done, launch | FR-35, FR-36, FR-39, FR-40, FR-46 | 7–11 | Sun Oct 18 | BUILD F-7, F-14 · DESIGN D5, §4.3, §4.4 · SPEC S-110, C-104 · LAUNCH-CHECKLIST (v1) | |
+| 5. Map | F-9, F-10, F-11 | FR-29–FR-34, FR-43 | 17–27 | Fri Oct 23 | BUILD §0.6, §0.7, F-9, F-10, F-11 · DESIGN D9–D12, §3 (stores, ZIPs), §5.1 · SPEC C-105, C-106, S-105, S-106 · RESEARCH | |
+| 6. Reminders, reports, payments | F-12, F-13, F-8 | FR-37, FR-38, FR-41, FR-42, FR-47, FR-48 | 14–20 | Tue Oct 27 | BUILD §0.2, §0.6, F-8, F-12, F-13 · DESIGN D8, D14–D16, §4.2, §5.2, §5.3, §5.6 · SPEC S-109–S-112, C-107, E-101, E-102 | |
+| 7. v2 sign-off | metrics, launch checklist (v2) | all | 3–5 | Wed Oct 28 | SPEC §2.1 · DESIGN §5.7 · LAUNCH-CHECKLIST | |
+| 8. Redesign | page by page with the owner | – | set later | after the owner's visuals | SPEC §3.6 | |
 
 ## Phases
-Part hours in brackets are the **original** estimates; the current ones are in "Re-estimate" below.
+### Phase 0: Set up
+- **Parts:** run the Template's new-app setup on this repo (env wizard, local Supabase, Sentry, Resend sending domain for this app, Turnstile) (2–3); wipe and link the `thebirthdayrun` Supabase project, reconnect the Vercel project and thebirthdayrun.com to this repo (1–2).
+- **Read:** as in the table.
+- **Done when:** the Template's own checks and e2e pass locally and in CI, and a preview deploy from this repo loads.
+- **Most likely to run over:** the Vercel reconnect (account steps only the owner can do).
 
-### Phase 1: Foundations (22–37 hrs)
-- **Parts:**
-  - Machine setup from DESIGN D1 and D23: Node LTS, Podman socket, gitleaks, age; Supabase CLI via npm (2–4) #1
-  - Next.js scaffold with strict TS, ESLint rules (BUILD §0.1), Prettier, shadcn, the folder structure in BUILD §0.1 (3–5) #2
-  - Env schema and parser, `.env.example` (placeholders only), bundle secret scan (BUILD F-2) (3–5) #3
-  - `supabase/config.toml`, the migrations and type generation (BUILD F-1) (5–8) #4
-  - RLS test harness, catalog tests, the user-data registry and its coverage test (BUILD F-1) (5–8) #5
-  - CI jobs, Dependabot, confirm the hooks still block (BUILD CI) (4–7) #6
-- **Week-1 checks (#7):** the ones due in phase 1 (list: BUILD CI, "Week-1 checks"). Record results in `docs/template/decisions/`.
-- **Done when:** lint, typecheck, unit and RLS suites pass locally and in CI on a push; an RLS test proves user B and a signed-out visitor can't read user A's `profiles` row; a deliberate client import of the server env module fails the build.
-- **Most likely to run over:** Podman + Supabase CLI (SPEC §1 risk), then the CI integration job (the first run of local Supabase on GitHub runners).
+### Phase 1: Catalogue + timing
+- **Parts:** F-1 retailer migration, CSV, import, legacy conversion of the 190 rows, logos (4–6); F-2 profile columns, timing module with its tests, onboarding gate, settings (5–8).
+- **Done when:** a fresh local DB imports all retailers; signed-out Discover data shows popular retailers only (RLS test); every FR-10/FR-11 unit test passes.
+- **Most likely to run over:** the timing module (three timing types × window edges × time zones).
+- **Alongside:** F-14 batches start (overnight, about 20 retailers per PR; the owner spot-checks each PR).
 
-### Phase 2: Security core + shell (23–38 hrs)
-- **Parts:**
-  - Proxy, CSP builder (split style rule + fallback switch), static headers, header tests (BUILD F-2) (5–9) #8
-  - Config file, brand CSS variables, layout, header/footer, dark mode, contrast test (BUILD F-3) (4–6) #9
-  - Landing, privacy/terms placeholders, 404/error pages, metadata, sitemap, robots, OG image, manifest and icons (BUILD F-3) (5–8) #10
-  - Rate limiter, Turnstile widget and Supabase CAPTCHA config (BUILD F-2) (4–7) #11
-  - Safe redirects, error module, Sentry with scrubber tests, Vercel Web Analytics (BUILD F-2, F-4) (5–8) #12
-- **Done when:** every route returns the CSP and security headers in tests; the browser console shows no CSP violations on the shell pages; a thrown test error reaches Sentry with no email, cookie or token in it; axe reports 0 serious issues on the shell pages.
-- **Most likely to run over:** the nonce CSP with Turnstile, Sentry, the theme script and toasts (SPEC §1 risk). If the split style rule breaks a library, apply the fallback in DESIGN D5 and log it; don't spend days on it.
+### Phase 2: Core journey
+- **Parts:** F-3 Discover and enrollment (4–6); F-4 My Rewards and dashboard (4–6); F-5 pickups and history (4–6).
+- **Done when:** the e2e journey onboarding → enroll → My Rewards → pickup → History passes.
+- **Most likely to run over:** F-5's `create_pickup` (definer function, lock, MFA check, cycle rule).
 
-### Phase 3: Accounts (22–35 hrs)
-- **Parts:**
-  - Email-first sign-up → confirm → set password (BUILD F-6) (5–8) #13
-  - Password sign-in, magic link, Google and sign-out, with identical responses (BUILD F-7) (5–8) #14
-  - Password reset and recovery-session detection (BUILD F-8) (3–5) #15
-  - Guard options, recent-sign-in check, re-authentication page, signed-out refusal test (BUILD F-2, F-9) (3–5) #16
-  - Email templates, the build step into Supabase templates, welcome email claim/release (BUILD F-5) (6–9) #17
-- **Done when:** locally, with Mailpit: sign up → verify → set password → welcome email → sign out → sign in with password and with a magic link → reset works; enumeration tests show identical responses; every action refuses a signed-out call; cookies have the BUILD §0.7 flags and nothing is in browser storage.
-- **Most likely to run over:** the email pipeline (export into Supabase templates, `config push`) and the Google OAuth round-trip, which can only be tested by hand.
+### Phase 3: Plan
+- **Parts:** F-6 groups, items, limit triggers, keyboard drag-and-drop, duplicate (6–10).
+- **Done when:** F-6's tests pass, including the limit races and keyboard reorder.
+- **Most likely to run over:** this whole phase (dnd-kit + triggers + several groups per reward).
 
-### Phase 4: Settings + MFA (15–25 hrs)
-- **Parts:**
-  - Settings page: display name, change password (and sign out other sessions), read-only email (BUILD F-11) (3–5) #18
-  - MFA enrollment, sign-in code step, turning it off, restrictive RLS tests with the TOTP helper (BUILD F-10) (7–11) #19
-  - Data export and its coverage test (BUILD F-11) (3–5) #20
-  - Delete account and its test (BUILD F-11) (2–4) #21
-- **Done when:** an aal1 session of an MFA user can't read their own `profiles` row (RLS test); the export contains every registry table and nothing of user B; after deletion the user can't sign in and their rows are gone.
-- **Most likely to run over:** MFA enforcement across guards, RLS and the reset flow.
+### Phase 4: Premium + v1 launch
+- **Parts:** F-7 entitlement, grant script, upgrade prompt, over-limit rules (4–6); finish F-14 (owner's last spot checks); v1 launch checklist and production deploy (3–5).
+- **Done when:** metric 4 passes on production for the owner and both sisters; metric 2's free-account tests pass; LAUNCH-CHECKLIST v1 is ticked.
+- **Most likely to run over:** F-14 if many retailers can't be verified.
 
-### Phase 5: E2E, backups, docs (16–25 hrs)
-- **Parts:**
-  - Playwright journey plus header, CSP-console, cookie, axe and enumeration checks; the `manual` mailbox adapter for deployed runs (BUILD CI) (8–12) #22
-  - Backup script and workflow, a restore into a scratch project, recorded (BUILD F-12) (4–7) #23
-  - README: Fedora setup (Podman), "start a new app" checklist, every env var; CLAUDE.md structure and commands; new items in `docs/LAUNCH_CHECKLIST.md` (4–6) #24
-- **Done when:** the full e2e passes in CI on `main`; one encrypted backup has been restored into a fresh Supabase project with matching row counts and a working sign-in; the FR-44 run-through succeeds from the README alone.
-- **Most likely to run over:** flaky e2e around email timing and Turnstile test keys.
+### Phase 5: Map
+- **Parts:** F-9 store and ZIP import with the coverage report (6–10); F-10 location, map, stop list, Google legs (8–12); F-11 Smart Grouping (3–5).
+- **Done when:** the coverage report is in RESEARCH.md (metric 6); a premium user gets a stop list and links with tiles blocked (NFR-7); a free user gets C-104 everywhere.
+- **Most likely to run over:** F-9 (two sources, brand matching, Overture junk).
 
-### Phase 6: Sign-off (5–8 hrs)
-- **Parts (#25):** create a throwaway app from the Template (keys pre-made) and time it; deploy it; link it and push migrations and auth config; the deployed e2e run; one Vercel rollback; the header scan; the manual Google-linking test (NFR-26); record everything; delete the app and its services. The full list is LAUNCH-CHECKLIST.
-- **Done when:** all four success metrics (SPEC §2.1) are met and recorded.
+### Phase 6: Reminders, reports, payments
+- **Parts:** F-12 reminders and one-click turn-off (4–6); F-13 reports, the two Actions, the checker contract (4–6); F-8 Stripe test mode and the off flag (6–8).
+- **Done when:** metric 3 passes in CI with test keys; a doubled reminder run sends once; a report becomes one issue with no personal data.
+- **Most likely to run over:** F-8 (test clocks, webhook ordering).
 
-## Re-estimate (2026-09-28)
-Measured from the request to the pushed commit, so reviews, second-opinion rounds and their fixes are included.
+### Phase 7: v2 sign-off
+- **Parts:** collect metrics 1–5 (DESIGN §5.7), the v2 part of LAUNCH-CHECKLIST (3–5).
+- **Done when:** metrics 1–5 pass. Payments stay off until the owner's decision (DESIGN §5.6).
 
-| Part | Original | Actual |
-| --- | --- | --- |
-| #1 Machine setup | 2–4 h | ~14 min (6 of them your setup script) |
-| #2 Scaffold | 3–5 h | ~17 min |
-| #3 Env schema + bundle scan | 3–5 h | ~16 min |
-| #4 Supabase config + migrations | 5–8 h | ~19 min (half of the T2 fix, decision 0008) |
-| #5 RLS tests + registry | 5–8 h | ~20 min (the other half) |
-| **Total** | **18–30 h** | **~86 min (~6%)** |
-
-The ratio isn't applied to everything: steps only you can do (accounts, keys, DNS, trying flows by hand, the screen-reader pass, the fresh-Fedora and timed sign-off runs) don't shrink, and later phases have more UI and end-to-end work. So each part is split into Claude's build time (~5–8% of the original, 10 min minimum) and your hands-on time:
-
-| Part | Original | Claude | You | Board estimate |
-| --- | --- | --- | --- | --- |
-| #6 CI | 4–7 h | 20–35 min | watch the first run | 0.8 h |
-| #7 Week-1 checks left in phase 1 | – | 10–20 min | – | 0.3 h |
-| #8 Proxy + CSP | 5–9 h | 25–40 min (Grace, overnight) | morning review | 0.7 h |
-| #9 Config, layout, dark mode | 4–6 h | 20–30 min | ~15 min design look | 0.8 h |
-| #10 Public pages, SEO, icons | 5–8 h | 25–35 min | ~15 min look | 0.8 h |
-| #11 Rate limiter + Turnstile | 4–7 h | 20–35 min | – | 0.6 h |
-| #12 Errors + Sentry | 5–8 h | 25–35 min (Grace, overnight) | ~10 min Sentry account | 0.8 h |
-| #13 Sign-up flow | 5–8 h | 25–40 min | ~10 min try it | 0.8 h |
-| #14 Sign-in, magic link, Google | 5–8 h | 25–40 min | ~30 min Google OAuth client | 1.2 h |
-| #15 Password reset | 3–5 h | 15–25 min | – | 0.4 h |
-| #16 Guards + re-auth | 3–5 h | 15–25 min | – | 0.4 h |
-| #17 Email templates + welcome | 6–9 h | 30–45 min | ~40 min Resend + DNS | 1.4 h |
-| #18 Settings | 3–5 h | 15–25 min | – | 0.4 h |
-| #19 MFA | 7–11 h | 35–50 min | ~10 min with your phone | 1.0 h |
-| #20 Data export | 3–5 h | 15–25 min | – | 0.4 h |
-| #21 Delete account | 2–4 h | 10–20 min | – | 0.3 h |
-| #22 Playwright e2e | 8–12 h | 40–60 min | – | 1.0 h |
-| #23 Backups + restore | 4–7 h | 20–35 min | ~45 min hosted project, age key, test restore | 1.3 h |
-| #24 README + docs | 4–6 h | 20–30 min | ~1.5 h fresh-Fedora run | 2.0 h |
-| #25 Sign-off | 5–8 h | 25–40 min | ~2.5 h throwaway app, deploy, Orca, timed run | 3.2 h |
-| **Left for v1** | **85–138 h** | **~7–12 h** | **~5–8 h** | |
-
-Phase dates assume ~2.9 hrs/day from Sep 29, upper estimates plus 15%, with 2–3 days' slack for usage limits. Re-check after each phase: this is based on five parts from the most tightly specified phase.
+### Phase 8: Redesign
+Page by page with the owner, from their visuals; hours estimated when they're ready.
 
 ## Totals
-- **v1:** re-estimated at ~12–20 hrs left (originally 103–168 hrs). Target Fri Oct 9; likely about Oct 6.
-- **After v1 (planned):** FR-13 change email (originally 4–7 hrs; re-estimated ~30 min), if time allows. MFA recovery codes and extra providers are out of v1 (SPEC §2.4).
+- **Phases 0–7:** 71–110 hrs → about 3 weeks at 6 hrs/day (with buffer, done by Oct 28).
+- **Owner's own hands-on time** (dashboards, reviews, F-14 spot checks) is inside these ranges; Claude's share runs faster than the ranges suggest, so the weekly check corrects the dates.
 
-## Cut list (for you to decide on; nothing applied)
-You chose to finish all of v1 (decisions/0003), so moving the date is the default when the plan is late. These are the candidates if you ever prefer to cut, least harmful first:
+## Replaces the legacy tickets
+The old repo (`The-Birthday-Run-Legacy`) is archived and read-only, so its tickets can't be closed there. They're covered here:
 
-1. **Backups workflow and restore test** (FR-33–35, 4–7 hrs): needed before an app has real users, not before coding starts, so it could be finished alongside the first app.
-2. **Installable web app** (FR-25, manifest and icons; 2–3 hrs)
-3. **SEO extras**: OG image and sitemap (part of FR-24; 1–3 hrs)
-4. **Welcome email** (FR-30; 2–3 hrs)
-5. **Google sign-in** (FR-5; 4–6 hrs, plus the manual NFR-26 test)
-6. **MFA** (FR-57–59; 7–11 hrs). Last on the list, because it's one of the Template's security features.
+| Legacy | Now |
+| --- | --- |
+| #150 leaked credentials | Rotated 2026-10-06; this repo starts with clean history and the Template's gitleaks + env checks |
+| #152 / PR #168 plan-item IDOR | RLS on every table (F-6) and RLS tests (Template rule 2) |
+| #153, #154 Stripe bugs; #159 redirects, rate limits, racy limits; #165 payments checklist | F-8, BUILD §0.4, D6, DESIGN §5.6 |
+| #155 plaintext birthdays | Month and day only (D4) |
+| #156 Clerk webhook | Gone: no Clerk (D1) |
+| #158 validation and error leaks | Template rules 9 and 12, BR codes (BUILD §0.3) |
+| #160 Google Maps key, debug UI, location prompt | No Google APIs (D11), no debug tools (SPEC §2.4), location on a button press (NFR-3) |
+| #161 tests | Each feature's test table; Template CI |
+| #164 backend to Vercel; #169 WishJar's guards; #170 duplicated code | Moot: the Template is the base |
+| #34 edit birthday · #36 error handling · #38 empty states · #42 production testing · #43 README URL | FR-9 · BR codes · SPEC §3 states · LAUNCH-CHECKLIST · README |
+| #45, #134 monetization | C-104 and F-8 |
+| #126, #127 images and logo | Phase 8 |
+| #46, #63, #68, #69, #125 | Dropped (old stack or unclear); re-open as new issues if still wanted |
 
-Never on the list (security core): RLS and its tests, the auth checks, CSP/headers, rate limits, Turnstile, export/delete (CLAUDE.md rule 19), Sentry scrubbing.
+## Cut list (drop first if behind)
+1. F-11 Smart Grouping (the map and manual groups still work).
+2. F-13's automatic checker hand-off (reports still stored; the owner reads them by SQL).
+3. FR-28 duplicate group.
+v1 (phases 0–4) is never cut.
 
 ## Weekly check
-Every **Sunday evening**, log the real hours per part and compare them with this table.
-- **Flag point:** a phase is more than a week past its "finish by" date, or the hours already spent on the current phase exceed its upper estimate. Claude then says so plainly at the start of the next session: "We're past the flag point: X hrs left in this phase, Y hrs a week available. Move the date or cut from the list?" **You decide**; nothing is cut or moved without you.
-- First real signal: **Sun Oct 4** (Phases 2–4 due). If a phase takes more than twice its re-estimate, re-estimate the rest from the new actuals.
+Every Sunday, compare hours spent against this table. If a phase is past the flag point, apply the cut list before moving a date. The owner decides.
 
-## Decide at v1 sign-off
-Look at: phases done, the four success metrics (met / not met), and hours spent vs the estimate.
-- **All metrics met:** v1 is done. Set the gift registry's start and its launch date (SPEC §1 open question), and create it from the Template.
-- **Security core done, some cut-list items left:** your call whether to start the gift registry and finish them in parallel. Fixes flow back from the app.
-- **Security core not done:** keep going; no app starts on a Template with gaps in auth or RLS.
+## Decide on Wed 2026-10-28
+After phase 7: are the sisters using it on their next birthdays, how many strangers signed up (Vercel Analytics, Supabase auth count), and has any free user hit an upgrade prompt? Enough interest → plan payments (DESIGN §5.6: Vercel Pro, live keys). Little interest → keep it for the family and stop at phase 8.

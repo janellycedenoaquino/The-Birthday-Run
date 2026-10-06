@@ -2,13 +2,19 @@
 
 Instructions for Claude Code sessions in this repo.
 
-## What this repo is
+## What this project is
 
-A **reusable, secure starter template** for web apps. Every future app is created from it on GitHub ("Use this template"). Its only job is to give each new app the things every app needs, done right once: accounts, security, emails, legal pages, tests and deployment.
+**The Birthday Run** (thebirthdayrun.com): a web app that lists the free birthday rewards from the loyalty programs you belong to, counts down how long each lasts, and plans the run to pick them up. Built for the owner and their sisters first, open to anyone. v1 is free for everyone; v2 premium (granted by the owner's script, or paid through Stripe, which stays switched off) adds the map, Smart Grouping, more plan room and reminder emails. No deadline: complete and secure over fast (SPEC §1).
 
-**Keep it generic.** Nothing in this repo may belong to one specific app idea: no app features, app wording, app tables or app pages. Before adding anything, ask: *would every future app want this?* If not, it doesn't go in the template. Payments, teams/organizations, multiple languages and admin panels are deliberately left out.
-
-**Security is the point of this template.** A shortcut here gets copied into every app made from it. When security and convenience conflict, choose security and explain the trade-off to the user.
+Created from the Template; its rules below all apply. App-specific rules:
+- **Security first.** When security and convenience conflict, choose security and explain the trade-off to the owner.
+- **$0 to run.** No Google Maps APIs or keys, no paid map/geocoding/routing services (NFR-4). Directions are Google Maps *links* only.
+- **Payments stay off** (`PAYMENTS_ENABLED`) until the owner decides; Stripe is test mode only (FR-38).
+- **Premium is enforced on the server**; free users get no premium data or actions (NFR-2, metric 2).
+- **All date logic goes through `src/lib/birthday/timing.ts`** (NFR-5).
+- **Retailer data changes only through `data/retailers.csv` PRs** (D2); nothing user-written ever goes to GitHub (D16).
+- **No `Co-authored-by` trailer on commits in this repo** (Vercel Hobby blocks co-authored commits).
+- The legacy app (`~/Projects/The-Birthday-Run-Legacy`, archived) is reference only; never build from it or edit it.
 
 ## Environment
 - **Fedora 44 Linux.** Use Linux commands and tools (`dnf`, `flatpak`, `systemd`). Never give Windows, PowerShell or Homebrew instructions.
@@ -112,11 +118,11 @@ Every change that adds a table, a form or an endpoint includes:
 - [ ] Lint, typecheck, tests and build passing locally before committing
 
 ## Planning docs (read before building a phase)
-- **`docs/template/OVERVIEW.md`: read first, every session.** Then read only the sections that `ROADMAP.md` lists for the current phase, not whole documents.
-- `docs/template/SPEC.md` (goals, requirements with FR-/NFR- IDs, screens, **all user-facing text**) · `docs/template/DESIGN.md` (decisions D1–D24, architecture, data model, security, operations) · `docs/template/BUILD.md` (conventions + one section per feature F-1–F-13, CI) · `ROADMAP.md` · `docs/template/LAUNCH-CHECKLIST.md` (the Template's v1 sign-off) · `docs/template/decisions/`
-- `docs/LAUNCH_CHECKLIST.md` and `docs/decisions/` are the generic starters that apps made from this template fill in; the Template's own planning lives in `docs/template/`.
-- **Every fact lives in one place.** When something changes, edit its home only; everything else refers to it by ID (FR-, NFR-, D-, S-, M-, T-, F-) or section. Never copy or paraphrase a fact into another place, including another section of the same file. After changing docs, rebuild the affected lines of `OVERVIEW.md`.
-- Approved decisions (DESIGN §1, the data model in DESIGN §3, SPEC §1) aren't reopened without asking. `docs/archive/` holds the old eight-document version for reference only; never build from it.
+- **`docs/OVERVIEW.md`: read first, every session.** Then read only the sections that `ROADMAP.md` lists for the current phase, not whole documents.
+- `docs/SPEC.md` (goals, requirements FR-/NFR-, screens S-1xx, **all user-facing text** M-1xx) · `docs/DESIGN.md` (decisions D1–D17, architecture, data model, security T-1xx, operations) · `docs/BUILD.md` (conventions + F-1–F-14, CI) · `ROADMAP.md` · `docs/LAUNCH-CHECKLIST.md` · `docs/decisions/`
+- The Template's own planning (foundations: auth, guards, emails, backups) is in `docs/template/`; app docs cite it as "Template D21", "Template F-11". `docs/LAUNCH_CHECKLIST.md` is the Template's generic list; this app's is `docs/LAUNCH-CHECKLIST.md`.
+- **Every fact lives in one place.** When something changes, edit its home only; everything else refers to it by ID (FR-, NFR-, D-, S-, M-, T-, F-) or section. Never copy or paraphrase a fact into another place, including another section of the same file. After changing docs, rebuild the affected lines of `docs/OVERVIEW.md`.
+- Approved decisions (DESIGN §1, the data model in DESIGN §3, SPEC §1) aren't reopened without asking. `docs/archive/` holds the Template's old docs for reference only; never build from it.
 
 ## How to work
 - **Build one roadmap phase at a time** and say which FR/NFR IDs a change covers. If the code has to differ from the design docs, update the doc in the same change and say why.
@@ -125,7 +131,7 @@ Every change that adds a table, a form or an endpoint includes:
 - **Work in small steps.** Commit after each working step with a clear message.
 - **Branches and pull requests:** work on a branch (`feature/<short-name>` or `phase-N-<name>`), never commit directly to `main` once the first version exists. (GitHub Free can't enforce branch protection on a private repo, so this is a convention backed by CI and the local hooks.) Merge through a pull request after CI passes. Reference the GitHub issue the work belongs to (`Closes #12`).
 - **Pull request flow (the user reviews on GitHub, not in local files):** once a step works, Claude runs `pre-commit-review` and commits, runs `pre-push-review` and pushes the branch, then opens a PR with `gh pr create` without asking first. Pushing a reviewed feature branch and opening a PR need no separate OK; pushing to `main` does. The PR description says what changed and why, the FR/NFR IDs and issue it covers, how it was tested, and anything the user should look at closely (migrations, auth, RLS, security settings first). **Claude never merges.** The user reviews the PR on GitHub, asks for changes in PR comments (Claude addresses them on the same branch), and merges it themselves once CI is green. GitHub doesn't let you approve a PR opened from your own account, so merging is the approval.
-- **Decision log:** if a change goes against an approved decision (SPEC §1, DESIGN §1 or §3) or makes a choice that would surprise someone later, add a file to `docs/template/decisions/` in the same change (in an app: `docs/decisions/`).
+- **Decision log:** if a change goes against an approved decision (SPEC §1, DESIGN §1 or §3) or makes a choice that would surprise someone later, add a file to `docs/decisions/` in the same change.
 - **Ask before** creating or changing GitHub repos, making anything public, deploying, changing Supabase auth settings, or loosening any security setting. The user creates accounts and API keys themselves; tell them exactly what's needed and where.
 - **Before any `git commit`, run the `pre-commit-review` skill** (global, from the Claude-Skills repo). It reviews exactly what's staged and records that snapshot as reviewed. The pre-commit hook blocks anything unreviewed, and changing what's staged afterwards means reviewing again. Both reviews use `.claude/security-checklist.md` (add new kinds of risk there) and `.claude/quality-checklist.md` (spec match, code smells, test quality).
 - **Before any `git push`, run the `pre-push-review` skill** (global, from the Claude-Skills repo). It reviews the commits being pushed against the security rules above and records them as reviewed. The pre-push hook (`.githooks/pre-push`) blocks unreviewed commits. Never bypass either hook with `--no-verify` unless the user explicitly says to.

@@ -1,8 +1,23 @@
-# Web App Starter Template
+# The Birthday Run
 
-A reusable starting point for new web apps. It has everything every app needs (accounts, security, emails, legal pages, tests, deployment) and nothing specific to any one app. Each new idea starts from this repo on GitHub ("Use this template") instead of rebuilding sign-in and security from scratch.
+Every free birthday reward from the programs you belong to, how long each one lasts, and the route to pick them all up. → `thebirthdayrun.com`
 
-> **Status: v1 signed off 2026-09-30** ([decisions/0016](docs/template/decisions/0016-v1-sign-off.md)). Start with [OVERVIEW](docs/template/OVERVIEW.md).
+> **Status: planning complete (2026-10-06).** Building starts with ROADMAP phase 0; v1 target Sun 2026-10-18, v2 build Wed 2026-10-28. Start with [OVERVIEW](docs/OVERVIEW.md).
+
+## What it does
+- Pick your loyalty programs; see each birthday reward with a countdown, by its real timing (from the birthday, all birth month, or starting early) (F-1–F-4)
+- Mark rewards picked up and keep a history per birthday (F-5)
+- Plan pickup runs in groups with drag-and-drop (F-6)
+- **Premium** (granted, or paid when switched on): map and stop list with Google Maps legs, Smart Grouping, state and timing filters, bigger plans, reminder emails (F-7–F-12)
+- Report a wrong reward; stale data gets flagged automatically (F-13)
+
+## Docs
+Start with [OVERVIEW](docs/OVERVIEW.md). Then: [SPEC](docs/SPEC.md) · [DESIGN](docs/DESIGN.md) · [BUILD](docs/BUILD.md) · [ROADMAP](ROADMAP.md) · [Research](docs/RESEARCH.md) · [Launch checklist](docs/LAUNCH-CHECKLIST.md) · [Decisions](docs/decisions/)
+
+## Stack
+Built from the Template (Next.js, Supabase, Vercel, Resend, Sentry, Turnstile; details below), plus MapLibre GL with OpenFreeMap tiles, @dnd-kit, Stripe (test mode, off), PostGIS, and DuckDB for the store import (dev only). DESIGN D1.
+
+The rest of this README is the Template's: what the foundations include, local setup and operations.
 
 ## What's included
 
@@ -201,21 +216,4 @@ Every new table gets **row-level security and a test** in the same change, and e
 **Lost authenticator app** (D24.29): remove the MFA factor in the Supabase dashboard (Auth → Users) only when the request comes from, or is confirmed by, the account's own email address.
 
 ## Planning docs
-The Template's own planning lives in `docs/template/`. Start with the overview; each roadmap phase lists the few sections it needs.
-
-| Doc | What's in it |
-| --- | --- |
-| [Overview](docs/template/OVERVIEW.md) | **read first:** the map, with what to read per phase |
-| [Spec](docs/template/SPEC.md) | goals and constraints, requirements (FR-/NFR-), screens and every user-facing text |
-| [Design](docs/template/DESIGN.md) | decisions D1–D24, architecture, data model, threats, privacy, operations |
-| [Build](docs/template/BUILD.md) | conventions, one section per feature (F-1–F-13), CI and deployment |
-| [Roadmap](ROADMAP.md) | phases, hours, dates, cut list, what to read |
-| [Research](docs/template/RESEARCH.md) | skipped (internal infrastructure) |
-| [Sign-off checklist](docs/template/LAUNCH-CHECKLIST.md) | the Template's v1 sign-off |
-| [Decisions](docs/template/decisions/) | decisions made after planning |
-| [Launch checklist (generic)](docs/LAUNCH_CHECKLIST.md) | what each app checks before real users |
-
-## Apps built from this template
-| App | Repo | Started |
-| --- | --- | --- |
-| Gift registry (cash goals via Venmo/Cash App/Zelle) | *(to be added)* | 2026-10-01 |
+This app's planning is in `docs/` (see **Docs** above). The Template's own planning, which this app builds on, is in `docs/template/`.
