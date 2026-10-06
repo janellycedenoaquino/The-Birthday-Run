@@ -10,3 +10,4 @@ The Template's own decisions are in `docs/template/decisions/`.
 | 0001 | Planning decisions (DESIGN §1 D1–D17) | accepted | 2026-10-06 |
 | 0002 | Permissions-Policy allows geolocation for this site | accepted | 2026-10-06 |
 | 0003 | Guards gain `not_onboarded` and `not_premium` results | accepted | 2026-10-06 |
+| 0004 | Own local Supabase name and ports | accepted | 2026-10-06 |
