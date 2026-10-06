@@ -2,7 +2,7 @@
 
 Every free birthday reward from the programs you belong to, how long each one lasts, and the route to pick them all up. → `thebirthdayrun.com`
 
-> **Status: planning complete (2026-10-06).** Building starts with ROADMAP phase 0; v1 target Sun 2026-10-18, v2 build Wed 2026-10-28. Start with [OVERVIEW](docs/OVERVIEW.md).
+> **Status: planning complete (2026-10-06).** Building starts with ROADMAP phase 0 once WishJar is finished; v1 ≈ 12 days later. Start with [OVERVIEW](docs/OVERVIEW.md).
 
 ## What it does
 - Pick your loyalty programs; see each birthday reward with a countdown, by its real timing (from the birthday, all birth month, or starting early) (F-1–F-4)

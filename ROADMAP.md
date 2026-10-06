@@ -1,20 +1,22 @@
 # The Birthday Run: Roadmap
 
-Last updated: 2026-10-06 · Capacity: about 6 hrs/day, every day, from Wed 2026-10-07 (SPEC §1 Time) · Deadline: none. **Flag point:** a phase more than 3 days past its "finish by", or over its upper hours.
+Last updated: 2026-10-06 · Capacity: about 6 hrs/day, every day (SPEC §1 Time), **starting once WishJar is finished** (owner's decision 2026-10-06; WishJar is a few days from done) · Deadline: none. **Flag point:** a phase more than 3 days past its "finish by", or over its upper hours.
 
 ## Summary
-Eight phases. v1 (everyone's features, premium by grant) goes live on thebirthdayrun.com after phase 4, around **Oct 18**. The full v2 premium build (map, Smart Grouping, reminders, reports, Stripe in test mode) is done after phase 7, around **Oct 28**. The redesign (phase 8) waits for the owner's visuals. Estimates are ranges of real working hours (Claude building, the owner reviewing, merging and doing dashboard steps); dates use the upper end plus 15% buffer at 6 hrs/day. The catalogue check (F-14) runs alongside phases 1–4 as overnight batches.
+**Why the start waits:** WishJar and this app can't run their local databases at the same time on this machine yet (decisions/0004), so the owner finishes WishJar first and builds this app after, with the full 6 hrs/day.
 
-| Phase | Features | FRs | Hours | Finish by | Read | Issues |
+Eight phases. v1 (everyone's features, premium by grant) goes live on thebirthdayrun.com after phase 4, about **12 days after the start**. The full v2 premium build (map, Smart Grouping, reminders, reports, Stripe in test mode) is done after phase 7, about **22 days after the start**. Calendar dates are set on the start day. The redesign (phase 8) waits for the owner's visuals. Estimates are ranges of real working hours (Claude building, the owner reviewing, merging and doing dashboard steps); dates use the upper end plus 15% buffer at 6 hrs/day. The catalogue check (F-14) runs alongside phases 1–4 as overnight batches.
+
+| Phase | Features | FRs | Hours | Finish by (day after start) | Read | Issues |
 | --- | --- | --- | --- | --- | --- | --- |
-| 0. Set up | Template setup, CI section | – | 3–5 | Wed Oct 7 | BUILD "CI, deployment and migrations" · DESIGN §5.1, §5.4 · README | |
-| 1. Catalogue + timing | F-1, F-2 | FR-1, FR-6–FR-11, FR-44 | 9–14 | Sat Oct 10 | BUILD §0, notes, F-1, F-2 · DESIGN D2–D4, §3 (profiles, retailers) · SPEC §2.2 (Retailers, Profile, Window), S-101, S-108, §3.4 | |
-| 2. Core journey | F-3, F-4, F-5 | FR-2–FR-5, FR-8, FR-12–FR-21, FR-45 | 12–18 | Wed Oct 14 | BUILD §0.2–§0.5, F-3, F-4, F-5 · DESIGN D3, D4, D7, §3 (enrollments, pickups) · SPEC S-102–S-105, S-107, C-102, C-103, C-108, C-109, §3.4 | |
-| 3. Plan | F-6 | FR-22–FR-28, FR-40 | 6–10 | Thu Oct 15 | BUILD §0.2, §0.4, F-6 · DESIGN D6, D13, §3 (groups, items) · SPEC S-106, C-108, §3.4, §3.7 | |
-| 4. Premium + v1 launch | F-7, F-14 done, launch | FR-35, FR-36, FR-39, FR-40, FR-46 | 7–11 | Sun Oct 18 | BUILD F-7, F-14 · DESIGN D5, §4.3, §4.4 · SPEC S-110, C-104 · LAUNCH-CHECKLIST (v1) | |
-| 5. Map | F-9, F-10, F-11 | FR-29–FR-34, FR-43 | 17–27 | Fri Oct 23 | BUILD §0.6, §0.7, F-9, F-10, F-11 · DESIGN D9–D12, §3 (stores, ZIPs), §5.1 · SPEC C-105, C-106, S-105, S-106 · RESEARCH | |
-| 6. Reminders, reports, payments | F-12, F-13, F-8 | FR-37, FR-38, FR-41, FR-42, FR-47, FR-48 | 14–20 | Tue Oct 27 | BUILD §0.2, §0.6, F-8, F-12, F-13 · DESIGN D8, D14–D16, §4.2, §5.2, §5.3, §5.6 · SPEC S-109–S-112, C-107, E-101, E-102 | |
-| 7. v2 sign-off | metrics, launch checklist (v2) | all | 3–5 | Wed Oct 28 | SPEC §2.1 · DESIGN §5.7 · LAUNCH-CHECKLIST | |
+| 0. Set up | Template setup, CI section | – | 3–5 | day 1 | BUILD "CI, deployment and migrations" · DESIGN §5.1, §5.4 · README | |
+| 1. Catalogue + timing | F-1, F-2 | FR-1, FR-6–FR-11, FR-44 | 9–14 | day 4 | BUILD §0, notes, F-1, F-2 · DESIGN D2–D4, §3 (profiles, retailers) · SPEC §2.2 (Retailers, Profile, Window), S-101, S-108, §3.4 | |
+| 2. Core journey | F-3, F-4, F-5 | FR-2–FR-5, FR-8, FR-12–FR-21, FR-45 | 12–18 | day 8 | BUILD §0.2–§0.5, F-3, F-4, F-5 · DESIGN D3, D4, D7, §3 (enrollments, pickups) · SPEC S-102–S-105, S-107, C-102, C-103, C-108, C-109, §3.4 | |
+| 3. Plan | F-6 | FR-22–FR-28, FR-40 | 6–10 | day 9 | BUILD §0.2, §0.4, F-6 · DESIGN D6, D13, §3 (groups, items) · SPEC S-106, C-108, §3.4, §3.7 | |
+| 4. Premium + v1 launch | F-7, F-14 done, launch | FR-35, FR-36, FR-39, FR-40, FR-46 | 7–11 | day 12 | BUILD F-7, F-14 · DESIGN D5, §4.3, §4.4 · SPEC S-110, C-104 · LAUNCH-CHECKLIST (v1) | |
+| 5. Map | F-9, F-10, F-11 | FR-29–FR-34, FR-43 | 17–27 | day 17 | BUILD §0.6, §0.7, F-9, F-10, F-11 · DESIGN D9–D12, §3 (stores, ZIPs), §5.1 · SPEC C-105, C-106, S-105, S-106 · RESEARCH | |
+| 6. Reminders, reports, payments | F-12, F-13, F-8 | FR-37, FR-38, FR-41, FR-42, FR-47, FR-48 | 14–20 | day 21 | BUILD §0.2, §0.6, F-8, F-12, F-13 · DESIGN D8, D14–D16, §4.2, §5.2, §5.3, §5.6 · SPEC S-109–S-112, C-107, E-101, E-102 | |
+| 7. v2 sign-off | metrics, launch checklist (v2) | all | 3–5 | day 22 | SPEC §2.1 · DESIGN §5.7 · LAUNCH-CHECKLIST | |
 | 8. Redesign | page by page with the owner | – | set later | after the owner's visuals | SPEC §3.6 | |
 
 ## Phases
@@ -63,7 +65,7 @@ Eight phases. v1 (everyone's features, premium by grant) goes live on thebirthda
 Page by page with the owner, from their visuals; hours estimated when they're ready.
 
 ## Totals
-- **Phases 0–7:** 71–110 hrs → about 3 weeks at 6 hrs/day (with buffer, done by Oct 28).
+- **Phases 0–7:** 71–110 hrs → about 3 weeks at 6 hrs/day, with buffer.
 - **Owner's own hands-on time** (dashboards, reviews, F-14 spot checks) is inside these ranges; Claude's share runs faster than the ranges suggest, so the weekly check corrects the dates.
 
 ## Replaces the legacy tickets
@@ -94,5 +96,5 @@ v1 (phases 0–4) is never cut.
 ## Weekly check
 Every Sunday, compare hours spent against this table. If a phase is past the flag point, apply the cut list before moving a date. The owner decides.
 
-## Decide on Wed 2026-10-28
+## Decide on day 22
 After phase 7: are the sisters using it on their next birthdays, how many strangers signed up (Vercel Analytics, Supabase auth count), and has any free user hit an upgrade prompt? Enough interest → plan payments (DESIGN §5.6: Vercel Pro, live keys). Little interest → keep it for the family and stop at phase 8.
