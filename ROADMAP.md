@@ -1,11 +1,9 @@
 # The Birthday Run: Roadmap
 
-Last updated: 2026-10-06 · Capacity: about 6 hrs/day, every day (SPEC §1 Time), **starting once WishJar is finished** (owner's decision 2026-10-06; WishJar is a few days from done) · Deadline: none. **Flag point:** a phase more than 3 days past its "finish by", or over its upper hours.
+Last updated: 2026-11-09 · Capacity: about 6 hrs/day, every day (SPEC §1 Time), **started Mon 2026-11-09 (day 1)** (owner's decision; WishJar is paused) · Deadline: none. **Flag point:** a phase more than 3 days past its "finish by", or over its upper hours.
 
 ## Summary
-**Why the start waits:** WishJar and this app can't run their local databases at the same time on this machine yet (decisions/0004), so the owner finishes WishJar first and builds this app after, with the full 6 hrs/day.
-
-Eight phases. v1 (everyone's features, premium by grant) goes live on thebirthdayrun.com after phase 4, about **12 days after the start**. The full v2 premium build (map, Smart Grouping, reminders, reports, Stripe in test mode) is done after phase 7, about **22 days after the start**. Calendar dates are set on the start day. The redesign (phase 8) waits for the owner's visuals. Estimates are ranges of real working hours (Claude building, the owner reviewing, merging and doing dashboard steps); dates use the upper end plus 15% buffer at 6 hrs/day. The catalogue check (F-14) runs alongside phases 1–4 as overnight batches.
+Eight phases. v1 (everyone's features, premium by grant) goes live on thebirthdayrun.com after phase 4, about **12 days after the start**. The full v2 premium build (map, Smart Grouping, reminders, reports, Stripe in test mode) is done after phase 7, about **22 days after the start**. Day 1 is Mon 2026-11-09. The redesign (phase 8) waits for the owner's visuals. Estimates are ranges of real working hours (Claude building, the owner reviewing, merging and doing dashboard steps); dates use the upper end plus 15% buffer at 6 hrs/day. The catalogue check (F-14) runs alongside phases 1–4 as overnight batches.
 
 | Phase | Features | FRs | Hours | Finish by (day after start) | Read | Issues |
 | --- | --- | --- | --- | --- | --- | --- |
