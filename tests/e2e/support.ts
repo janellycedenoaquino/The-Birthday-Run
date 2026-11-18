@@ -5,7 +5,7 @@ import { expect, type Page } from "@playwright/test";
 // sign-in, and the CSP-console watcher.
 
 const DEPLOYED = process.env.E2E_TARGET === "deployed";
-const MAILPIT = process.env.MAILPIT_URL ?? "http://127.0.0.1:54324";
+const MAILPIT = process.env.MAILPIT_URL ?? "http://127.0.0.1:54424";
 const MANUAL_LINK = "playwright/.manual-link";
 
 export type Mail = { subject: string; html: string };
