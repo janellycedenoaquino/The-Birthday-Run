@@ -4,14 +4,13 @@ import { appConfigSchema } from "./schema";
 // public/brand/. Validated at import: a bad value fails the build. The site URL is not here: it
 // comes from NEXT_PUBLIC_SITE_URL through getSiteUrl() (D24.23).
 //
-// PLACEHOLDERS (FR-27): replace name, shortName, description, supportEmail, legal.entityName and the
-// logo before launch (README, "Start a new app").
+// Still a placeholder: the logo files in public/brand/ (replaced in the redesign, ROADMAP phase 8).
 export const appConfig = Object.freeze(
   appConfigSchema.parse({
-    name: "Template App",
-    shortName: "Template",
-    description: "A secure starting point for a new web app.",
-    supportEmail: "support@example.com",
+    name: "The Birthday Run",
+    shortName: "Birthday Run",
+    description: "Find free birthday rewards and pick them all up in time.",
+    supportEmail: "hello@thebirthdayrun.com",
     // Pairs must reach 4.5:1 (D24.24; the config test checks). Placeholder: soft sage neutrals.
     brand: {
       primary: "#4a5d56",
@@ -22,8 +21,8 @@ export const appConfig = Object.freeze(
     logo: {
       svg: "/brand/logo.svg",
       png: "/brand/logo.png",
-      alt: "Template App logo",
+      alt: "The Birthday Run logo",
     },
-    legal: { entityName: "<Your legal entity>" },
+    legal: { entityName: "The Birthday Run" },
   }),
 );
