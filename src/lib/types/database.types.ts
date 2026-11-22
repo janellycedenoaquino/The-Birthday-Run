@@ -27,6 +27,7 @@ export type Database = {
                   Row: {
                     "created_at": string,"display_name": string | null,"id": string,"password_set_at": string | null,"updated_at": string,"welcome_email_sent_at": string | null
                   }
+                  ComputedFields: never
                   Insert: {
                     "created_at"?: string,"display_name"?: string | null,"id": string,"password_set_at"?: string | null,"updated_at"?: string,"welcome_email_sent_at"?: string | null
                   }
@@ -180,4 +181,3 @@ export const Constants = {
           }
         }
 } as const
-
