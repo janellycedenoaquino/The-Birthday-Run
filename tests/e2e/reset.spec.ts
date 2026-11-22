@@ -6,7 +6,7 @@ import { expect, test, type Page } from "@playwright/test";
 if (existsSync(".env.local")) process.loadEnvFile(".env.local");
 const { createUser, PASSWORD, uniqueEmail } = await import("../rls/helpers");
 
-const MAILPIT = process.env.MAILPIT_URL ?? "http://127.0.0.1:54324";
+const MAILPIT = process.env.MAILPIT_URL ?? "http://127.0.0.1:54424";
 const NEW_PASSWORD = "a-brand-new-password-2";
 
 async function confirmPath(to: string): Promise<string> {
