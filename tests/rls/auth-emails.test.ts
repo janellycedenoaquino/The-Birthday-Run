@@ -13,7 +13,7 @@ import {
 // The auth emails end to end against local Supabase (BUILD F-5, FR-29, D7; week-1 check 3): GoTrue
 // sends our generated templates (npm run email:build + config.toml) to Mailpit, and each link's
 // baked-in `type` verifies. Needs `db:stop && db:start` after a template change.
-const MAILPIT = process.env.MAILPIT_URL ?? "http://127.0.0.1:54324";
+const MAILPIT = process.env.MAILPIT_URL ?? "http://127.0.0.1:54424";
 const created: (TestUser | { id: string })[] = [];
 afterAll(() => deleteUsers(...created));
 

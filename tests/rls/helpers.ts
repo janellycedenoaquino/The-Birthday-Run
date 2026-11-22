@@ -87,7 +87,7 @@ export async function deleteUsers(
  * reads those two values and calls verifyOtp. Returns the signed-in client.
  */
 export async function confirmFromEmail(email: string): Promise<Client> {
-  const mailpit = process.env.MAILPIT_URL ?? "http://127.0.0.1:54324";
+  const mailpit = process.env.MAILPIT_URL ?? "http://127.0.0.1:54424";
   for (let attempt = 0; attempt < 20; attempt++) {
     const search = await fetch(
       `${mailpit}/api/v1/search?query=${encodeURIComponent(`to:${email}`)}`,
