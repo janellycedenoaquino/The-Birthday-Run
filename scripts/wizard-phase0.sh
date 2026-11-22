@@ -203,7 +203,7 @@ finish() {
 }
 
 # ──────────────────────────────────────────────────────────────────────────
-# STAGES: The Birthday Run phase 0 (ROADMAP phase 0; Template README "Start a new app" steps 2–10).
+# STAGES: phase 0 for this app (ROADMAP phase 0; Template README "Start a new app" steps 2–10).
 # Adapted from WishJar's tested phase-0 wizard. Local values go to the local env file.
 # Production values are typed in when needed, held in memory only, and handed to Supabase,
 # Vercel and GitHub; never written to a file in the repo. Save every production secret in
@@ -217,6 +217,8 @@ REPO_ROOT=$(git rev-parse --show-toplevel)
 cd "$REPO_ROOT"
 REF_FILE="supabase/.temp/project-ref"
 DOMAIN="thebirthdayrun.com"
+APP_NAME=$(sed -n 's/^ *name: "\(.*\)",$/\1/p' src/config/app.ts | head -n 1)
+[[ -n "$APP_NAME" ]] || { warn "Couldn't read the app name from src/config/app.ts"; exit 1; }
 
 # prod KEY "Prompt" REGEX [hint]: a production value, visible input, never saved. Reuses the
 # value typed earlier in this run. Loops until it matches REGEX.
@@ -254,8 +256,8 @@ site_url() {
   SITE_URL="${SITE_URL:-https://$DOMAIN}"; SITE_URL="${SITE_URL%/}"
 }
 sender() {
-  prod SENDER_NAME "Email sender name (Enter: The Birthday Run):" '^([A-Za-z0-9 ]{1,40})?$'
-  SENDER_NAME="${SENDER_NAME:-The Birthday Run}"
+  prod SENDER_NAME "Email sender name (Enter: $APP_NAME):" '^([A-Za-z0-9 ]{1,40})?$'
+  SENDER_NAME="${SENDER_NAME:-$APP_NAME}"
   prod SENDER_ADDRESS "Sender address (Enter: hello@$DOMAIN):" '^([^@ ]+@thebirthdayrun\.com)?$' "an address on $DOMAIN"
   SENDER_ADDRESS="${SENDER_ADDRESS:-hello@$DOMAIN}"
 }
@@ -276,7 +278,7 @@ vercel_var() {
   pause "Saved? Enter for the next one"
 }
 
-banner "The Birthday Run phase 0: accounts, production config and deploy"
+banner "$APP_NAME phase 0: accounts, production config and deploy"
 
 # ── 1 ──────────────────────────────────────────────────────────────────────
 if want 1; then
@@ -290,7 +292,7 @@ say "You need:"
 step "A password manager open: save every secret there as you create it. Production"
 say "  secrets aren't saved by this wizard, and Resend shows its API key only once."
 step "To run this in your own terminal, not through Claude, so nothing lands in a transcript."
-step "Claude's app-name PR (\"The Birthday Run\" in src/config/app.ts) merged before stage 10,"
+step "Claude's app-name PR (#15, the name in src/config/app.ts) merged before stage 10,"
 say "  so the first deploy shows the real app name."
 say ""
 note "All free tiers. Supabase Free allows 2 active projects (WishJar + thebirthdayrun);"
@@ -336,7 +338,7 @@ write_env NEXT_PUBLIC_TURNSTILE_SITE_KEY "1x00000000000000000000AA"
 write_env TURNSTILE_SECRET_KEY "1x0000000000000000000000000000000AA"
 write_env EMAIL_TRANSPORT "mailpit"
 write_env MAILPIT_URL "http://127.0.0.1:54424"
-write_env EMAIL_FROM "The Birthday Run Local <local@example.com>"
+write_env EMAIL_FROM "$APP_NAME Local <local@example.com>"
 write_env GOOGLE_CLIENT_ID "local-placeholder"
 write_env GOOGLE_CLIENT_SECRET "local-placeholder"
 write_env RESEND_API_KEY "local-placeholder"
@@ -434,7 +436,7 @@ fi
 if want 6; then
 stage "Cloudflare Turnstile widget"
 open_url "https://dash.cloudflare.com/?to=/:account/turnstile"
-step "Add widget: name ${BOLD}The Birthday Run${RESET}, mode ${BOLD}Managed${RESET}."
+step "Add widget: name ${BOLD}$APP_NAME${RESET}, mode ${BOLD}Managed${RESET}."
 step "Hostnames: ${BOLD}$DOMAIN${RESET} and ${BOLD}localhost${RESET}."
 step "Save the site key and the secret key in your password manager."
 pause
@@ -451,13 +453,13 @@ step "Pick the old app's Google Cloud project. Under API keys, ${BOLD}delete${RE
 step "APIs & Services → Enabled APIs: disable Maps JavaScript, Places and Routes/Directions."
 pause "Done (or there was none)? Enter to continue"
 open_url "https://console.cloud.google.com/projectcreate"
-step "Create a project named ${BOLD}The Birthday Run${RESET} and select it (or reuse the old one)."
+step "Create a project named ${BOLD}$APP_NAME${RESET} and select it (or reuse the old one)."
 open_url "https://console.cloud.google.com/auth/overview"
-step "Get started: app name ${BOLD}The Birthday Run${RESET}, support email: yours, audience ${BOLD}External${RESET}."
+step "Get started: app name ${BOLD}$APP_NAME${RESET}, support email: yours, audience ${BOLD}External${RESET}."
 step "Branding → Authorized domains: add ${BOLD}$REF.supabase.co${RESET}. Skip the logo (it triggers a review)."
 step "Audience → ${BOLD}Publish app${RESET} (otherwise only listed test users can sign in)."
 open_url "https://console.cloud.google.com/auth/clients"
-step "Create client → ${BOLD}Web application${RESET}, name The Birthday Run."
+step "Create client → ${BOLD}Web application${RESET}, name $APP_NAME."
 step "Authorized redirect URI: ${BOLD}https://$REF.supabase.co/auth/v1/callback${RESET}"
 step "Save the client ID and client secret in your password manager."
 pause

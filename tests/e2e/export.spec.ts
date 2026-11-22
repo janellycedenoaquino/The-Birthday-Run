@@ -36,7 +36,7 @@ test("download: a JSON file with the account; then rate limited → inline M-5 (
     page.getByRole("link", { name: "Download my data" }).click(),
   ]);
   expect(download.suggestedFilename()).toMatch(
-    /^template-app-data-\d{4}-\d{2}-\d{2}\.json$/,
+    /^the-birthday-run-data-\d{4}-\d{2}-\d{2}\.json$/,
   );
   const file = JSON.parse(await readFile((await download.path())!, "utf8"));
   expect(file).toMatchObject({
