@@ -1,6 +1,6 @@
 # The Birthday Run: Launch Checklist
 
-Two launches (ROADMAP): **v1** after phase 4 (target Sun 2026-10-18) and **v2 sign-off** after phase 7 (target Wed 2026-10-28). Items point to their home; details live there. Built from the Template's generic list (`docs/LAUNCH_CHECKLIST.md`).
+Two launches (ROADMAP): **v1** after phase 4 and **v2 sign-off** after phase 7 (dates: ROADMAP). Items point to their home; details live there. Built from the Template's generic list (`docs/LAUNCH_CHECKLIST.md`).
 
 ## v1: Product
 - [ ] Every [v1] FR works end to end on thebirthdayrun.com (SPEC §2.2; metric 1's checklist)
