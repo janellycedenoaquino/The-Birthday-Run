@@ -38,8 +38,10 @@ jobs:
       NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: sb_publishable_ci-typegen-only
       SUPABASE_SECRET_KEY: sb_secret_ci-typegen-only
     steps:
+      # Full history, so origin/main is there for the duplicate-code check (template decision 0020).
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
+          fetch-depth: 0
           persist-credentials: false
       - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
@@ -54,6 +56,8 @@ jobs:
       - run: npm run check:env
       - run: npm run lint
       - run: npm run format:check
+      # Fails only on duplicate code that main doesn't already have (template decision 0020).
+      - run: npm run check:duplicates
       - run: npm run typecheck
       - run: npm test
       - run: npm audit --audit-level=high
