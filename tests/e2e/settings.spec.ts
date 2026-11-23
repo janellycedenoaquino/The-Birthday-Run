@@ -1,5 +1,9 @@
 import { existsSync } from "node:fs";
 import { expect, test, type Page } from "@playwright/test";
+import { ownIp } from "./support";
+
+// Its own client IP, so sign-ins don't share one per-IP budget (support.ts ownIp).
+test.use(ownIp(18));
 
 // Settings in a real browser (BUILD F-11 "Tests": FR-12, FR-14, D24.4).
 if (existsSync(".env.local")) process.loadEnvFile(".env.local");

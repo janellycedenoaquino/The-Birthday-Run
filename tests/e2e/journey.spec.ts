@@ -4,10 +4,14 @@ import {
   completeOnboarding,
   confirmLink,
   newestMail,
+  ownIp,
   passwordSignIn,
   waitForTurnstile,
   watchCsp,
 } from "./support";
+
+// Its own client IP, so sign-ins don't share one per-IP budget (support.ts ownIp).
+test.use(ownIp(12));
 
 // The whole account life cycle in one browser (BUILD CI "E2E journey", FR-39, metric 2): sign up →
 // verify → welcome → set password → sign out → sign in → reset → MFA on → sign in with code →

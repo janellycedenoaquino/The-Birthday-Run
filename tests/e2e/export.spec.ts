@@ -1,6 +1,10 @@
 import { existsSync } from "node:fs";
 import { readFile } from "node:fs/promises";
 import { expect, test } from "@playwright/test";
+import { ownIp } from "./support";
+
+// Its own client IP, so sign-ins don't share one per-IP budget (support.ts ownIp).
+test.use(ownIp(11));
 
 // "Download my data" in a real browser (BUILD F-11 "Tests": FR-15, D24.19, NFR-3).
 if (existsSync(".env.local")) process.loadEnvFile(".env.local");

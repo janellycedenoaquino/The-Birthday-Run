@@ -1,5 +1,8 @@
-import { completeOnboarding } from "./support";
+import { completeOnboarding, ownIp } from "./support";
 import { expect, test, type Page } from "@playwright/test";
+
+// Its own client IP, so sign-ins don't share one per-IP budget (support.ts ownIp).
+test.use(ownIp(20));
 
 // The sign-up journey in a real browser (BUILD F-6 "Tests": FR-1, FR-2, NFR-12, NFR-13): the built
 // app against local Supabase, emails read from Mailpit. Turnstile runs with Cloudflare's

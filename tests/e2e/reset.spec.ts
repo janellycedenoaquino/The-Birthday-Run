@@ -1,5 +1,9 @@
 import { existsSync } from "node:fs";
 import { expect, test, type Page } from "@playwright/test";
+import { ownIp } from "./support";
+
+// Its own client IP, so sign-ins don't share one per-IP budget (support.ts ownIp).
+test.use(ownIp(16));
 
 // Password reset in a real browser (BUILD F-8 "Tests": FR-7, FR-8, NFR-12, D24.4, D24.6).
 // Two browser contexts stand for two devices.

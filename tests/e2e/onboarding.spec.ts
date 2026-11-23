@@ -1,6 +1,9 @@
 import { existsSync } from "node:fs";
 import { expect, test } from "@playwright/test";
-import { passwordSignIn } from "./support";
+import { ownIp, passwordSignIn } from "./support";
+
+// Its own client IP, so sign-ins don't share one per-IP budget (support.ts ownIp).
+test.use(ownIp(14));
 
 // Onboarding step 1 and the Settings birthday card (BUILD F-2 "Tests": FR-6, FR-9, FR-10, FR-49).
 if (existsSync(".env.local")) process.loadEnvFile(".env.local");

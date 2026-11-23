@@ -1,5 +1,9 @@
 import { existsSync } from "node:fs";
 import { expect, test, type Page } from "@playwright/test";
+import { ownIp } from "./support";
+
+// Its own client IP, so sign-ins don't share one per-IP budget (support.ts ownIp).
+test.use(ownIp(13));
 
 // Two-step sign-in in a real browser (BUILD F-10 "Tests": FR-57, FR-58, FR-59). The RFC 6238
 // helper plays the authenticator app.
