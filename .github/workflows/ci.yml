@@ -107,6 +107,8 @@ jobs:
           echo "NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=$PUBLISHABLE_KEY" >> "$GITHUB_ENV"
           echo "SUPABASE_SECRET_KEY=$SECRET_KEY" >> "$GITHUB_ENV"
       - run: npx supabase db reset
+      # The real catalogue imports into a fresh database (BUILD F-1 "Tests", FR-1).
+      - run: npm run import:retailers
       - name: Generated types match the migrations
         run: |
           npm run db:types

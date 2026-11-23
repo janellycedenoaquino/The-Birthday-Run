@@ -24,7 +24,8 @@
     "db:types": "supabase gen types typescript --local > src/lib/types/database.types.ts",
     "check:env": "bash scripts/check-env-example.sh",
     "check:bundle": "node scripts/check-bundle-secrets.ts",
-    "check:supabase-env": "node --env-file-if-exists=supabase/.env --env-file-if-exists=supabase/.env.local --env-file-if-exists=.env --env-file-if-exists=.env.local scripts/check-supabase-env.ts"
+    "check:supabase-env": "node --env-file-if-exists=supabase/.env --env-file-if-exists=supabase/.env.local --env-file-if-exists=.env --env-file-if-exists=.env.local scripts/check-supabase-env.ts",
+    "import:retailers": "node scripts/import-retailers.ts"
   },
   "dependencies": {
     "@sentry/nextjs": "^11.12.0",
