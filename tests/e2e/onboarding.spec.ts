@@ -52,7 +52,7 @@ test("a new user: onboarding, Discover, then Settings (FR-3, FR-6, FR-7, FR-8, F
   await expect(page).toHaveURL(/\/dashboard$/);
   await page.goto("/discover?q=starbucks");
   await expect(
-    page.getByRole("button", { name: "Added: Starbucks" }),
+    page.getByRole("button", { name: "Add Starbucks" }),
   ).toHaveAttribute("aria-pressed", "true");
 
   // Discover (FR-3, FR-8): search and category combine; no match → M-179 and "Clear filters".
@@ -74,20 +74,24 @@ test("a new user: onboarding, Discover, then Settings (FR-3, FR-6, FR-7, FR-8, F
   await expect(page.getByText("Birthday only")).toBeVisible();
 
   // Add, then remove; the saved state survives a reload (FR-8).
-  const add = page.getByRole("button", { name: "Add: Sugarfish" });
+  const add = page.getByRole("button", { name: "Add Sugarfish" });
   const enrolled = page.waitForResponse((r) => r.request().method() === "POST");
   await add.click();
-  const added = page.getByRole("button", { name: "Added: Sugarfish" });
+  const added = page.getByRole("button", { name: "Add Sugarfish" });
   // Shown at once while saving (optimistic), then kept once the save is done.
   await expect(added).toHaveAttribute("aria-pressed", "true");
   await enrolled;
   await expect(added).toBeEnabled();
   await page.reload();
-  await expect(added).toBeVisible();
+  await expect(added).toHaveAttribute("aria-pressed", "true");
   await added.click();
   await expect(
-    page.getByRole("button", { name: "Add: Sugarfish" }),
+    page.getByRole("button", { name: "Add Sugarfish" }),
   ).toHaveAttribute("aria-pressed", "false");
+  // Keyboard focus comes back to the toggle after the save (WCAG 2.4.3).
+  await expect(
+    page.getByRole("button", { name: "Add Sugarfish" }),
+  ).toBeFocused();
 
   // Settings › Birthday (FR-9, D4): shows the onboarding answers; both forms save.
   await page.goto("/settings#birthday");

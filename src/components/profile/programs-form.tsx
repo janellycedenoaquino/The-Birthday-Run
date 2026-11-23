@@ -33,7 +33,10 @@ export function ProgramsForm({
   const [state, action, pending] = useActionState(saveOnboarding, null);
   const [q, setQ] = useState("");
   const [category, setCategory] = useState<string | undefined>();
-  const [selected, setSelected] = useState(() => new Set(enrolledIds));
+  // Programs joined already (e.g. from Discover) show ticked and locked: this step only adds,
+  // so an untick here couldn't be saved. Leaving a program is Discover's toggle (FR-8).
+  const joined = new Set(enrolledIds);
+  const [selected, setSelected] = useState(() => new Set<string>());
   const hydrated = useSyncExternalStore(
     noSubscribe,
     () => true,
@@ -67,6 +70,10 @@ export function ProgramsForm({
           placeholder="Search programs"
           value={q}
           onChange={(e) => setQ(e.target.value)}
+          // Enter would submit the form's first button ("Save"): it only filters here.
+          onKeyDown={(e) => {
+            if (e.key === "Enter") e.preventDefault();
+          }}
           hidden={!hydrated}
           className="h-11 w-full rounded-md border border-input bg-background px-3 text-base"
         />
@@ -97,7 +104,8 @@ export function ProgramsForm({
                   type="checkbox"
                   name="retailerIds"
                   value={r.id}
-                  checked={selected.has(r.id)}
+                  checked={joined.has(r.id) || selected.has(r.id)}
+                  disabled={joined.has(r.id)}
                   onChange={(e) => toggle(r.id, e.target.checked)}
                   className="size-5 shrink-0"
                 />
@@ -131,7 +139,9 @@ export function ProgramsForm({
                 ? "Save programs"
                 : count === 0
                   ? msg("M-111b")
-                  : msg("M-110").replace("{count}", String(count))}
+                  : count === 1
+                    ? "Save 1 program"
+                    : msg("M-110").replace("{count}", String(count))}
           </Button>
           <Button
             type="submit"

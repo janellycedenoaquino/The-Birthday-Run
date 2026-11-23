@@ -111,7 +111,7 @@ async function saveOnboardingPrograms(
     const { supabase, user } = await requireUser();
     const { data: profile, error } = await supabase
       .from("profiles")
-      .select("birth_month, time_zone")
+      .select("birth_month, time_zone, onboarded_at")
       .eq("id", user.id)
       .maybeSingle();
     if (error || !profile)
@@ -120,6 +120,9 @@ async function saveOnboardingPrograms(
       });
     if (profile.birth_month === null || !profile.time_zone)
       return { ok: false, error: "BR-1" };
+    // Runs once, like step 1: after onboarding it's a no-op, so it can't become a bulk enroll
+    // endpoint around `enroll`'s own rate limit.
+    if (profile.onboarded_at) return { ok: true };
     const limit = await rateLimit("saveOnboarding", { userId: user.id });
     if (!limit.ok) return limit;
 
@@ -139,7 +142,9 @@ async function saveOnboardingPrograms(
         retailerIds.map((retailer_id) => ({ user_id: user.id, retailer_id })),
         { onConflict: "user_id,retailer_id", ignoreDuplicates: true },
       );
-      if (insertError?.code === "42501") return { ok: false, error: "BR-3" };
+      // Retired since the check (RLS) or removed (FK): same as enroll.
+      if (insertError?.code === "42501" || insertError?.code === "23503")
+        return { ok: false, error: "BR-3" };
       if (insertError)
         throw new Error("saveOnboarding: enroll failed", {
           cause: insertError,

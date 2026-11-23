@@ -1,6 +1,13 @@
 // Retailer labels shown on C-102 and S-104 (SPEC §3.4: M-170, M-180, M-181–M-184b, M-189a–c).
 // Lists live here, keyed by the enum value; single messages are in src/lib/messages.ts.
-import type { Timing } from "@/lib/birthday/timing";
+import {
+  compareDates,
+  formatDate,
+  joinByDate,
+  type LocalDate,
+  type Timing,
+} from "@/lib/birthday/timing";
+import { msg } from "@/lib/messages";
 
 /** M-170 (without "All", which is the tab for no category). */
 export const CATEGORY_LABELS: Record<string, string> = {
@@ -35,34 +42,56 @@ export const REWARD_TYPE_LABELS: Record<
   },
 };
 
-/** M-181–M-184b: how long a reward lasts, in words. */
+const days = (n: number) => `${n} ${n === 1 ? "day" : "days"}`;
+
+/** M-181–M-184b: how long a reward lasts, in words ("1 day", not "1 days"). */
 export function timingLabel(t: Timing): string {
   switch (t.type) {
     case "from_birthday":
       return t.days === 1
         ? "Birthday only"
-        : `${t.days} days from your birthday`;
+        : `${days(t.days)} from your birthday`;
     case "birth_month":
       return "All birth month";
     case "around_birthday":
       return t.after === 0
-        ? `From ${t.before} days before to your birthday`
-        : `From ${t.before} days before to ${t.after} days after your birthday`;
+        ? `From ${days(t.before)} before to your birthday`
+        : `From ${days(t.before)} before to ${days(t.after)} after your birthday`;
     case "month_start":
-      return `${t.days} days from the 1st of your birth month`;
+      return `${days(t.days)} from the 1st of your birth month`;
     case "to_month_end":
       return "From your birthday to the end of your birth month";
   }
 }
 
-/** The name's initials, for a card without a logo (C-102). */
+/** The name's initials, for a card without a logo (C-102): "e.l.f. Cosmetics" → "EC". */
 export function initialsOf(name: string): string {
   const words = name
-    .replace(/[^\p{L}\p{N}\s]/gu, " ")
+    .replace(/[^\p{L}\p{N}\s]/gu, "")
     .trim()
-    .split(/\s+/);
-  return words
+    .split(/\s+/)
+    .filter(Boolean);
+  const initials = words
     .slice(0, 2)
     .map((w) => w[0]!.toUpperCase())
     .join("");
+  return initials || "?";
+}
+
+/**
+ * FR-49's join-by line: "Join by {date}" up to that date (N days before the next birthday), then
+ * the "may not come this year" text (M-277, M-277b).
+ */
+export function joinByLine(r: {
+  brand: string;
+  leadDays: number;
+  nextBirthday: LocalDate;
+  today: LocalDate;
+}): string {
+  const by = joinByDate(r.nextBirthday, r.leadDays);
+  return compareDates(r.today, by) <= 0
+    ? msg("M-277").replace("{date}", formatDate(by, "long"))
+    : msg("M-277b")
+        .replace("{brand}", r.brand)
+        .replace("{days}", String(r.leadDays));
 }

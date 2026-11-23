@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+import type { LocalDate } from "@/lib/birthday/timing";
 import { filterRetailers, type FilterRow } from "@/lib/retailers/filter";
 
 // BUILD F-3 "Tests": FR-3 (search + category), FR-5 (state), FR-45 (exclusive length buckets,
@@ -14,7 +15,7 @@ const row = (id: string, over: Partial<FilterRow> = {}): FilterRow => ({
   state_codes: [],
   ...over,
 });
-const JUN15 = { birthday: { month: 6, day: 15 } };
+const JUN15 = { occurrence: "2026-06-15" as LocalDate };
 const ids = (r: { shown: FilterRow[] }) => r.shown.map((x) => x.id);
 
 describe("search and category (FR-3)", () => {
@@ -23,6 +24,21 @@ describe("search and category (FR-3)", () => {
     row("starbucks", { name: "Starbucks" }),
     row("sephora", { name: "Sephora", category: "beauty" }),
   ];
+
+  it("search ignores punctuation and spaces too (real catalogue names)", () => {
+    const real = [
+      row("chilis", { name: "Chili's" }),
+      row("elf", { name: "e.l.f. Cosmetics" }),
+      row("chick-fil-a", { name: "Chick-fil-A" }),
+      row("h-and-m", { name: "H&M" }),
+    ];
+    expect(ids(filterRetailers(real, { q: "chilis" }, {}))).toEqual(["chilis"]);
+    expect(ids(filterRetailers(real, { q: "elf" }, {}))).toEqual(["elf"]);
+    expect(ids(filterRetailers(real, { q: "chick fil a" }, {}))).toEqual([
+      "chick-fil-a",
+    ]);
+    expect(ids(filterRetailers(real, { q: "hm" }, {}))).toEqual(["h-and-m"]);
+  });
 
   it("search ignores case and accents and matches inside the name", () => {
     expect(ids(filterRetailers(rows, { q: "haagen" }, {}))).toEqual([
@@ -97,7 +113,7 @@ describe("length buckets are exclusive (FR-45)", () => {
         filterRetailers(
           rows,
           { early: true },
-          { birthday: { month: 6, day: 1 } },
+          { occurrence: "2026-06-01" as LocalDate },
         ),
       ),
     ).toEqual(["around"]);
@@ -124,9 +140,50 @@ describe("state (FR-5)", () => {
     expect(r).toMatchObject({ total: 4, hiddenByState: 1 });
   });
 
-  it("hiddenByState counts only state, not the other filters", () => {
+  it("counts only rows the state alone hides, not ones a category hides too", () => {
+    const two = [
+      row("a", {
+        category: "food_drink",
+        states_scope: "listed",
+        state_codes: ["CA"],
+      }),
+      row("b", {
+        category: "retail",
+        states_scope: "listed",
+        state_codes: ["CA"],
+      }),
+    ];
+    expect(
+      filterRetailers(two, { state: "NY", category: "food_drink" }, {})
+        .hiddenByState,
+    ).toBe(1);
+  });
+
+  it("measures lengths for the given year: to_month_end on Feb 28 is 1 day in 2027, 2 in 2028", () => {
+    const r = [row("tme", { timing_type: "to_month_end", days_after: null })];
+    expect(
+      ids(
+        filterRetailers(
+          r,
+          { length: "day" },
+          { occurrence: "2027-02-28" as LocalDate },
+        ),
+      ),
+    ).toEqual(["tme"]);
+    expect(
+      ids(
+        filterRetailers(
+          r,
+          { length: "week" },
+          { occurrence: "2028-02-28" as LocalDate },
+        ),
+      ),
+    ).toEqual(["tme"]);
+  });
+
+  it("a row the search already hides isn't counted as hidden by state", () => {
     const r = filterRetailers(rows, { state: "NY", q: "every" }, {});
     expect(ids(r)).toEqual(["everywhere"]);
-    expect(r.hiddenByState).toBe(1);
+    expect(r.hiddenByState).toBe(0);
   });
 });

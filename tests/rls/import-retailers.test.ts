@@ -12,7 +12,8 @@ import { sql } from "./helpers";
 
 // `import:retailers` on the local DB (BUILD F-1 "Tests": FR-1, FR-44, A-22). The test owns the
 // table while it runs: it empties it first and re-imports the real CSV at the end.
-// (Once F-5 adds pickups with an FK `restrict`, the delete below needs to skip referenced rows.)
+// Enrollments point at retailers with an FK `restrict`, so they go first (test users' only; F-5's
+// pickups will need the same). This file runs alone in the rls project (no file parallelism).
 const db = sql();
 const LOGOS = mkdtempSync(join(tmpdir(), "retailer-logos-"));
 writeFileSync(join(LOGOS, "fixture-a.png"), "");
@@ -56,12 +57,15 @@ const three = (cells: Record<string, Cells> = {}) =>
   csv(...ids3.map((id) => row(id, cells[id])));
 
 beforeAll(async () => {
+  await db`delete from public.enrollments`;
   await db`delete from public.retailers`;
 });
 beforeEach(async () => {
+  await db`delete from public.enrollments`;
   await db`delete from public.retailers`;
 });
 afterAll(async () => {
+  await db`delete from public.enrollments`;
   await db`delete from public.retailers`;
   await importRetailers(db, readFileSync("data/retailers.csv", "utf8"), {
     logoDir: "public/retailers",

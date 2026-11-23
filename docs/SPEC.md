@@ -313,7 +313,7 @@ flowchart TD
 **C-102 Retailer card** (S-101, S-103)
 - Logo (`alt` = retailer name) or, if missing or it fails to load, the name's initials on `--muted`; name (h3); category label (M-170); reward description; reward-type label (M-180).
 - Whole card links to S-104 (signed out: popular ones only, FR-2).
-- Signed in: toggle button M-103/M-104 (`aria-pressed`), F-3 `enroll`/`unenroll`; optimistic, reverts with the error inline on the card (M-5, M-7, BR-3).
+- Signed in: toggle button M-103/M-104 (`aria-pressed`; its accessible name stays "Add {name}" so the state isn't read twice; focus stays on it after saving), F-3 `enroll`/`unenroll`; optimistic, reverts with the error inline on the card (M-5, M-7, BR-3).
 
 **C-103 Days-left badge** (S-105, S-106, E-102; FR-12, NFR-6)
 - Text first: M-120 (last day, followed by M-276, FR-49), M-121 (one day), M-122 (`{days}` days). Then an urgency word and icon, so colour is never the only cue: red + `alert-circle` + M-123; yellow + `clock` + M-124; green + `circle-check` + M-125. Bands: FR-12.
@@ -433,7 +433,7 @@ Template M-, API-, E- texts apply unchanged. Placeholders in `{braces}` are fill
 - M-107: "Time zone: {timeZone}. You can change it in Settings."
 - M-108: "Continue"
 - M-109 (S-101 h1, step 2): "Which programs are you in?"
-- M-110: "Save {count} programs" · M-111b: "Choose programs to continue" (disabled) · M-111c: "Skip for now"
+- M-110: "Save {count} programs" (one: "Save 1 program") · M-111b: "Choose programs to continue" (disabled) · M-111c: "Skip for now"
 - M-118: "Step {step} of 2"
 - M-111 (S-103 / S-104 sign-up prompt): "And {count} more birthday rewards. Sign up free to see them all and track your own."
 
@@ -470,7 +470,7 @@ Template M-, API-, E- texts apply unchanged. Placeholders in `{braces}` are fill
 - M-178: "Showing {shown} of {total}"
 - M-179: "Nothing matches these filters." with "Clear filters"
 - M-180 (reward types; label: explanation): "Free item: something free, no purchase needed." · "Discount: money off your order." · "Buy one, get one: a second item free when you buy one." · "Points: bonus points added to your account." · "Free with purchase: free when you buy something else."
-- M-181: "Birthday only" · M-182: "{days} days from your birthday" · M-183: "All birth month" · M-184: "From {before} days before to {after} days after your birthday" (`{after}` = 0: "From {before} days before to your birthday") · M-184a: "{days} days from the 1st of your birth month" · M-184b: "From your birthday to the end of your birth month"
+- M-181: "Birthday only" · (every "{n} days" below reads "1 day" for one) · M-182: "{days} days from your birthday" · M-183: "All birth month" · M-184: "From {before} days before to {after} days after your birthday" (`{after}` = 0: "From {before} days before to your birthday") · M-184a: "{days} days from the 1st of your birth month" · M-184b: "From your birthday to the end of your birth month"
 - M-276: "Brands may end it early by their own clock. Go early in the day."
 - M-277: "Join by {date} to get this one." · M-277b (after that date): "{brand} needs members to join {days} days before the birthday, so it may not come this year."
 - M-278: "In years without Feb 29 we count Feb 28. Some brands use Mar 1, so check their app."

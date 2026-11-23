@@ -5,17 +5,11 @@ import { cache } from "react";
 import { EnrollToggle } from "@/components/retailers/enroll-toggle";
 import { RetailerLogo } from "@/components/retailers/retailer-logo";
 import { Button } from "@/components/ui/button";
-import {
-  compareDates,
-  formatDate,
-  joinByDate,
-  timingOf,
-  today,
-  windowFor,
-} from "@/lib/birthday/timing";
+import { timingOf, today, windowFor } from "@/lib/birthday/timing";
 import { msg } from "@/lib/messages";
 import {
   CATEGORY_LABELS,
+  joinByLine,
   REWARD_TYPE_LABELS,
   timingLabel,
 } from "@/lib/retailers/labels";
@@ -62,8 +56,14 @@ export default async function RetailerPage({
   let joinBy: string | null = null;
   if (!user) {
     // M-111 compact: the real number of other rewards (FR-2).
-    const { data: counts } = await supabase.rpc("retailer_counts").single();
-    more = counts ? counts.total - counts.popular : 0;
+    const { data: counts, error: countError } = await supabase
+      .rpc("retailer_counts")
+      .single();
+    if (countError)
+      throw new Error("S-104: could not count retailers", {
+        cause: countError,
+      });
+    more = counts.total - counts.popular;
   } else {
     const [{ data: row }, { data: profile }] = await Promise.all([
       supabase
@@ -91,13 +91,12 @@ export default async function RetailerPage({
         [],
         now,
       );
-      const by = joinByDate(w.nextBirthday, r.signup_lead_days);
-      joinBy =
-        compareDates(now, by) <= 0
-          ? msg("M-277").replace("{date}", formatDate(by, "long"))
-          : msg("M-277b")
-              .replace("{brand}", r.name)
-              .replace("{days}", String(r.signup_lead_days));
+      joinBy = joinByLine({
+        brand: r.name,
+        leadDays: r.signup_lead_days,
+        nextBirthday: w.nextBirthday,
+        today: now,
+      });
     }
   }
 
@@ -170,9 +169,11 @@ export default async function RetailerPage({
           />
         ) : (
           <div className="flex flex-wrap items-center gap-3 rounded-lg border border-dashed p-4">
-            <p className="text-sm">
-              {msg("M-111").replace("{count}", String(more))}
-            </p>
+            {more > 0 ? (
+              <p className="text-sm">
+                {msg("M-111").replace("{count}", String(more))}
+              </p>
+            ) : null}
             <Button asChild size="sm">
               <Link
                 href={`/sign-up?next=${encodeURIComponent(`/discover/${r.id}`)}`}

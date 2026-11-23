@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState } from "react";
+import { useActionState, useEffect, useRef } from "react";
 import { useFormStatus } from "react-dom";
 import { Button } from "@/components/ui/button";
 import type { ActionResult } from "@/lib/action-result";
@@ -39,6 +39,10 @@ export function EnrollToggle({
   );
 }
 
+// The toggle that was just pressed, so its replacement (a fresh form once the saved state flips)
+// gets keyboard focus back (WCAG 2.4.3). Client-only, one tab's own state.
+let lastPressed: string | null = null;
+
 function ToggleForm({
   retailerId,
   name,
@@ -52,8 +56,21 @@ function ToggleForm({
 }) {
   const [state, action] = useActionState(run, null);
   const error = state && !state.ok ? state.error : null;
+  const form = useRef<HTMLFormElement>(null);
+  useEffect(() => {
+    if (lastPressed !== retailerId) return;
+    lastPressed = null;
+    form.current?.querySelector("button")?.focus();
+  }, [retailerId]);
   return (
-    <form action={action} className="grid gap-1">
+    <form
+      ref={form}
+      action={action}
+      onSubmit={() => {
+        lastPressed = retailerId;
+      }}
+      className="grid gap-1"
+    >
       <input type="hidden" name="retailerId" value={retailerId} />
       <ToggleButton name={name} enrolled={enrolled} />
       {error ? (
@@ -74,7 +91,8 @@ function ToggleButton({ name, enrolled }: { name: string; enrolled: boolean }) {
       size="sm"
       variant={on ? "secondary" : "default"}
       aria-pressed={on}
-      aria-label={`${msg(on ? "M-104" : "M-103")}: ${name}`}
+      // One name; aria-pressed carries the state, so it isn't announced twice (C-102).
+      aria-label={`${msg("M-103")} ${name}`}
       disabled={pending}
     >
       {msg(on ? "M-104" : "M-103")}
