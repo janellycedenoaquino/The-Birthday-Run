@@ -1,0 +1,47 @@
+name: Retailers import
+
+# Imports data/retailers.csv into production after a merge to main (BUILD F-1, D2, FR-1, FR-44).
+# A run that would retire more than 5 retailers stops (A-22); to allow it, run this workflow by
+# hand on main with `allow_retire` set to the number you expect.
+on:
+  push:
+    branches: [main]
+    paths: ["data/retailers.csv", "public/retailers/**"]
+  workflow_dispatch:
+    inputs:
+      allow_retire:
+        description: "Allow this many retirements (A-22). Leave empty for the default of 5."
+        required: false
+        default: ""
+
+permissions:
+  contents: read
+
+concurrency:
+  group: retailers-import
+  cancel-in-progress: false
+
+jobs:
+  import:
+    # The production secret is only used with main's CSV and code, never a dispatched branch's.
+    if: github.ref == 'refs/heads/main'
+    # SUPABASE_DB_URL lives in the `production` environment, which only main may use
+    # (decision 0006): a workflow pushed on any other branch can't read it.
+    environment: production
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+      - run: npm ci --ignore-scripts
+      - name: Import into production
+        env:
+          SUPABASE_DB_URL: ${{ secrets.SUPABASE_DB_URL }}
+          # Passed through env, not pasted into the script; the script accepts digits only.
+          ALLOW_RETIRE: ${{ inputs.allow_retire }}
+        run: npm run import:retailers -- --target=production ${ALLOW_RETIRE:+--allow-retire="$ALLOW_RETIRE"}

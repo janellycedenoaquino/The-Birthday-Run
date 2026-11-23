@@ -307,17 +307,18 @@ grant execute on function public.retailer_counts() to anon, authenticated;
 ```yaml
 on:
   push: { branches: [main], paths: ['data/retailers.csv', 'public/retailers/**'] }
-  workflow_dispatch:
+  workflow_dispatch: { inputs: { allow_retire: { required: false } } }   # A-22 allowance, digits only
 permissions: { contents: read }
 concurrency: { group: retailers-import, cancel-in-progress: false }
 jobs:
   import:
+    if: github.ref == 'refs/heads/main'   # a dispatch from another branch never gets the production secret
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:   # actions pinned by SHA, as in backup.yml
       - checkout (persist-credentials: false) · setup-node (node-version-file: .nvmrc, cache: npm)
       - run: npm ci --ignore-scripts
-      - run: npm run import:retailers -- --target=production
+      - run: npm run import:retailers -- --target=production ${ALLOW_RETIRE:+--allow-retire="$ALLOW_RETIRE"}
         env: { SUPABASE_DB_URL: '${{ secrets.SUPABASE_DB_URL }}' }
 ```
 Fails loudly when the CSV needs a column whose migration hasn't been pushed (D2 consequence).
@@ -334,7 +335,7 @@ Fails loudly when the CSV needs a column whose migration hasn't been pushed (D2 
 | `validityDays` 30 | `birth_month` (**provisional**) |
 | `rewardType` `FREE_ITEM` … | lower-case enum value |
 | `requiresPurchase`, `purchaseRequirement`, `membershipRequirement`, `requirements` | `requires_purchase`, `purchase_requirement`, `membership_requirement`, `other_requirement` |
-| `logoUrl` `/logos/<file>` | file copied from the legacy repo `client/public/logos/<file>` to `public/retailers/<id>.png` or `.svg`; the 26 JPG/JPEG/AVIF/WebP/GIF files are converted once to PNG by the Builder's local image tool (no dependency); `logo_file` set |
+| `logoUrl` `/logos/<file>` | file copied from the legacy repo `client/public/logos/<file>` to `public/retailers/<id>.png` or `.svg`; the 26 JPG/JPEG/AVIF/WebP/GIF files are converted once to PNG by the Builder's local image tool (no dependency); PNGs are scaled to fit 512×512 and stripped of metadata; a file that isn't an image (Wingstop's was an HTML page) is dropped, so the card shows initials; `logo_file` set |
 | `websiteUrl` | `website_url`; also `source_url` provisionally (`store_finder_url` empty) |
 | `availableStates` `{ALL}` / `{}` / list | `all` / empty / `;`-joined codes |
 | — | `is_popular` = yes for the 15 entries of the legacy `PREVIEW_RETAILERS` (`client/src/lib/constants/data.ts`), matched by logo file |

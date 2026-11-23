@@ -9,11 +9,13 @@ import { appConfig } from "@/config/app";
 const root = resolve(import.meta.dirname, "../..");
 const SCANNED = ["src", "supabase", "scripts", "public", ".github"];
 const ROOT_FILES = /^[^/]+\.(ts|mts|mjs|json)$/;
-// Logos are the only brand assets outside the config (D16); generated email templates copy the
+// Logos are the only brand assets outside the config (D16); retailer logos are other brands'
+// files, so their colours can match ours by chance (F-1); generated email templates copy the
 // config on purpose (F-5); tests hold test values.
 const SKIPPED = [
   "src/config/app.ts",
   "public/brand/",
+  "public/retailers/",
   "supabase/templates/",
   "supabase/.temp/",
   "supabase/.branches/",
