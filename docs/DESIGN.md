@@ -243,12 +243,13 @@ Owner: the CSV (D2). Written only by the import, connecting as the database owne
 | `name` | text | no | unique |
 | `category` | enum `retailer_category` | no | `food_drink`, `entertainment`, `retail`, `beauty` (FR-3) |
 | `description`, `reward_description` | text | no | |
-| `timing_type` | enum `timing_type` | no | `from_birthday`, `birth_month`, `around_birthday` (FR-11) |
+| `timing_type` | enum `timing_type` | no | `from_birthday`, `birth_month`, `around_birthday`, `month_start`, `to_month_end` (FR-11, decision 0007) |
 | `days_before` | smallint | yes | only for `around_birthday` (≥1) |
-| `days_after` | smallint | yes | `from_birthday`: the length N (1 = birthday only); `around_birthday`: M (≥0); null for `birth_month`. Length limits: A-1 |
+| `days_after` | smallint | yes | `from_birthday` and `month_start`: the length N (1 = one day); `around_birthday`: M (≥0); null for `birth_month` and `to_month_end`. Length limits: A-1 |
 | `reward_type` | enum `reward_type` | no | `free_item`, `discount`, `bogo`, `points`, `free_with_purchase` |
 | `requires_purchase` | boolean | no | |
 | `purchase_requirement`, `membership_requirement`, `other_requirement` | text | yes | |
+| `signup_lead_days` | smallint | yes | 1–90: days before the birthday a member must have joined (FR-49); null = none stated |
 | `logo_file` | text | yes | file in `public/retailers/` (A-16) |
 | `website_url`, `store_finder_url` | text | yes | `https:` only |
 | `states_scope` | enum | no | `all`, `listed`, `unknown` (FR-5's three cases) |

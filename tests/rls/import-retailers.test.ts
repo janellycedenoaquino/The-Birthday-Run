@@ -34,6 +34,7 @@ const row = (id: string, cells: Cells = {}) => {
     purchase_requirement: "",
     membership_requirement: "",
     other_requirement: "",
+    signup_lead_days: "",
     logo_file: "",
     website_url: "https://example.com",
     store_finder_url: "",

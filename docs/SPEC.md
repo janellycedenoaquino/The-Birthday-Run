@@ -55,7 +55,7 @@ Only what the app **adds** to the Template; Template features are referenced as 
 
 **Tags:** **[v1]** everyone · **[v2-premium]** premium only (granted or paid) · **[v2-payments]** Stripe-only parts, built and tested, off by a flag.
 
-**Terms:** **Day 0** is the birthday (negative days are before it). A reward's **timing** (FR-1, FR-11) says which days it can be used. The user's **window** runs from the earliest day any of their enrolled rewards opens to the last day any closes, and never ends before day 30. A **cycle** runs from one window's start to the next. A **reward** is an enrolled retailer's birthday reward. **Premium** is the entitlement in FR-35.
+**Terms:** **Day 0** is the birthday (negative days are before it). A reward's **timing** (FR-1, FR-11) says which days it can be used. The user's **window** runs from the earliest day any of their enrolled rewards opens to the last day any closes, and never ends before day 30. A **cycle** runs from 31 days before one birthday (the most any reward opens early, FR-1) to the day before the same point next year, so a pickup's cycle never changes when enrollments do (decision 0008). A **reward** is an enrolled retailer's birthday reward. **Premium** is the entitlement in FR-35.
 
 ### 2.1 Success metrics
 Metrics 1–5 are §1's "done when" (all required). Metric 6 is reported, not a gate.
@@ -75,7 +75,7 @@ All priorities are **must**.
 #### Retailers and Discover
 | ID | Requirement | Acceptance | Priority |
 | --- | --- | --- | --- |
-| FR-1 | **[v1]** Retailers come from a CSV in the repo, loaded by an import script (no admin UI). Each has: a stable ID, unique name, category, description, reward description, timing (FR-11), last-checked date (FR-47), reward type (free item, discount, BOGO, points, free with purchase), purchase required (yes/no), purchase, membership and other requirements, logo, website, store-finder link, available states ("all" or state codes), and a "popular" mark (shown to signed-out visitors, FR-2). | Import on an empty database loads every row (190 at launch); re-running changes nothing; an edited row updates its retailer (matched by its stable ID column). A bad row (missing required field, unknown type, bad state code, timing that doesn't fit FR-11's types or a length outside 1–31 days, **A-1**) is rejected with its row number and nothing is half-imported. | must |
+| FR-1 | **[v1]** Retailers come from a CSV in the repo, loaded by an import script (no admin UI). Each has: a stable ID, unique name, category, description, reward description, timing (FR-11), last-checked date (FR-47), reward type (free item, discount, BOGO, points, free with purchase), purchase required (yes/no), purchase, membership and other requirements, sign-up lead time (FR-49), logo, website, store-finder link, available states ("all" or state codes), and a "popular" mark (shown to signed-out visitors, FR-2). | Import on an empty database loads every row (190 at launch); re-running changes nothing; an edited row updates its retailer (matched by its stable ID column). A bad row (missing required field, unknown type, bad state code, timing that doesn't fit FR-11's types or a length outside 1–31 days, **A-1**) is rejected with its row number and nothing is half-imported. | must |
 | FR-2 | **[v1]** Signed out, Discover shows only the **popular** retailers (marked in the CSV, FR-1); at the end of that list a sign-up prompt says how many more rewards there are. Signed in, Discover shows every retailer. | Each card shows name, logo (initials if missing or broken), category and reward. Signed out: no other retailer is in the page or reachable by URL or API (checked by test); the prompt shows the real count of the rest. (Changed: old showed a fixed set of 15 logos.) | must |
 | FR-3 | **[v1]** Signed in, Discover can be filtered by category (all, food and drink, entertainment, retail, beauty) and searched by name. | Filters combine; clearing restores the list; no match → empty state. | must |
 | FR-45 | **[v2-premium]** Discover can be filtered by how long a reward lasts, in exclusive buckets: birthday only (1 day), up to a week (2–7 days), longer (8+ days or the whole birth month); plus a separate "starts before the birthday" toggle (timing per FR-11). | Combines with FR-3 and FR-5. Free users see FR-39 in its place; the server ignores the filter for them. | must |
@@ -94,7 +94,7 @@ All priorities are **must**.
 | ID | Requirement | Acceptance | Priority |
 | --- | --- | --- | --- |
 | FR-10 | **[v1]** The app works out today's day number and whether it's in the window. | Unit tests: day 0; day 30 (in); day 31 (out, unless a reward is still open, otherwise planning next cycle); the day before the birthday (in only if a reward opens early); a window crossing New Year (birthday Dec 20, today Jan 5 → day 16, in; the old client got this wrong); Feb 29 in a non-leap year (day 0 is **Feb 28**; changed: old used Mar 1). "Today" is the date in the user's time zone, stored on the profile (detected at onboarding, editable in settings), so the server and reminder emails agree with the user's device. | must |
-| FR-11 | **[v1]** Each reward has a status: available, expired or picked up. | Each retailer has one of three timing types: **from the birthday for N days** (1 = the birthday only, 7 = days 0–6; changed: old counted one day extra), **the whole birth month** (the 1st to the last day of the calendar month; Feb 29 birthdays use February), or **N days before to M days after** the birthday. Available inside its days, expired after, not yet open before. Unit tests per type, including a birth-month reward for a birthday on the 25th (ends on the 31st, not 30 days later; the old data got this wrong). Picked up = a pickup exists in the current cycle (FR-17). Outside the window nothing is expired. | must |
+| FR-11 | **[v1]** Each reward has a status: available, expired or picked up. | Each retailer has one of five timing types (decision 0007): **from the birthday for N days** (1 = the birthday only, 7 = days 0–6; changed: old counted one day extra), **the whole birth month** (the 1st to the last day of the calendar month; Feb 29 birthdays use February), **N days before to M days after** the birthday, **from the 1st of the birth month for N days** (it can run into the next month), or **from the birthday to the end of the birth month**. Available inside its days, expired after, not yet open before. Unit tests per type, including a birth-month reward for a birthday on the 25th (ends on the 31st, not 30 days later; the old data got this wrong). Picked up = a pickup exists in the current cycle (FR-17). Outside the window nothing is expired. | must |
 | FR-12 | **[v1]** In the window, My Rewards lists every available reward with its days left. | Expired and picked-up rewards are hidden. Each shows logo, reward description, timing label (FR-4) and days left, with the last day shown as such (changed: old showed blank). Urgency: under 4 days red, 4–10 yellow, over 10 green (NFR-6). | must |
 | FR-13 | **[v1]** My Rewards can be searched by name and filtered to rewards expiring within 1, 7 or 14 days. | Filters combine; shows matches out of total; long lists load in pages. | must |
 | FR-14 | **[v1]** My Rewards has a birthday header: days until the next birthday and one of four states (birthday today, birth month, later window day with rewards open, otherwise). | Each state has its own message (SPEC §3) and uses the display name when set. | must |
@@ -158,6 +158,7 @@ All priorities are **must**.
 | FR-46 | **[v1]** Before launch, every retailer's timing type, reward and requirements are checked against the brand's own site and its last-checked date set. | The import (FR-1) rejects a retailer with no timing type or no last-checked date. A source link per retailer is kept in the CSV. | must |
 | FR-47 | **[v1]** Stale reward data is flagged automatically. | A monthly job lists retailers not re-checked in 6 months (**A-10**) and opens one GitHub issue for the owner with that list. Nothing changes in the app until the owner merges a CSV fix. | must |
 | FR-48 | **[v1]** A signed-in user can report a reward as wrong (expired, different reward, wrong timing, store closed) by picking a reason (no free text, so nothing personal or planted reaches the automatic check). | One report per user per retailer per cycle; rate limited (Template rule 13). Reports are stored for the owner and trigger an automatic check of that brand's site (NFR-11), which opens a GitHub issue or a CSV-fix PR for the owner to review. The user sees "thanks, we'll check it". | must |
+| FR-49 | **[v1]** Users are warned about brand rules our dates can't see (decision 0007). | (1) **Join-by:** a retailer with a sign-up lead time of N days (FR-1) shows M-277 with the date N days before the user's next birthday, on S-104 and on its S-105 card; after that date the text says it may not arrive this year. (2) **Last day:** on a reward's last day C-103 adds M-276, because brands may expire rewards by their own clock, not the user's. (3) **Feb 29:** S-101 and S-108 show M-278 when Feb 29 is picked. | must |
 | FR-44 | **[v1]** Removing a retailer from the CSV retires it instead of deleting it; renaming keeps its identity. | A retired retailer disappears from Discover, My Rewards and Plan (its group items are removed), but its pickups stay in History (changed: the old database deleted them). Renames are matched by a stable ID column in the CSV, not by name. | must |
 
 ### 2.3 Non-functional
@@ -255,6 +256,7 @@ Each requirement → where it's shown (SPEC §3), decided (DESIGN) and built (BU
 | FR-46 | n/a (no UI) | D2, D3 | F-1, F-14 |
 | FR-47 | n/a (no UI) | D14, D16 | F-13 |
 | FR-48 | C-107, S-104, S-105 | D14, D16 | F-13 |
+| FR-49 | S-101, S-104, S-105, S-108, C-103 | D4 | F-1, F-2, F-4 |
 | NFR-1 | – | §4.1 | all (Template checklist) |
 | NFR-2 | – | D5, §4.2 | F-7 |
 | NFR-3 | – | D10, §4.3 | F-10 |
@@ -314,7 +316,7 @@ flowchart TD
 - Signed in: toggle button M-103/M-104 (`aria-pressed`), F-3 `enroll`/`unenroll`; optimistic, reverts with the error inline on the card (M-5, M-7, BR-3).
 
 **C-103 Days-left badge** (S-105, S-106, E-102; FR-12, NFR-6)
-- Text first: M-120 (last day), M-121 (one day), M-122 (`{days}` days). Then an urgency word and icon, so colour is never the only cue: red + `alert-circle` + M-123; yellow + `clock` + M-124; green + `circle-check` + M-125. Bands: FR-12.
+- Text first: M-120 (last day, followed by M-276, FR-49), M-121 (one day), M-122 (`{days}` days). Then an urgency word and icon, so colour is never the only cue: red + `alert-circle` + M-123; yellow + `clock` + M-124; green + `circle-check` + M-125. Bands: FR-12.
 - Icon `aria-hidden`; the badge's accessible name is the two texts, e.g. "3 days left, ends soon".
 
 **C-104 Upgrade prompt** (FR-39; every premium spot)
@@ -358,7 +360,7 @@ flowchart TD
 #### S-101 Onboarding (`/onboarding`) · FR-6, FR-7, FR-10
 - **Who:** signed in, no birthday (onboarded users go to S-102).
 - **Shows:** M-118 step label; h1 M-105.
-  1. **Birthday:** text M-106; "Month" select and "Day" select (days follow the month; Feb 29 listed); no year field. Detected time zone shown as M-107 (changed in S-108); if detection fails, S-108's time-zone picker shows inline here and is required. Button "Continue" (M-108).
+  1. **Birthday:** text M-106; "Month" select and "Day" select (days follow the month; Feb 29 listed; picking it shows M-278, FR-49); no year field. Detected time zone shown as M-107 (changed in S-108); if detection fails, S-108's time-zone picker shows inline here and is required. Button "Continue" (M-108).
   2. **Programs:** h1 M-109; search "Search programs"; category tabs (M-170); list of C-102 as checkboxes (not toggles; saved together). Primary M-110 (`{count}` selected) or, with none selected, M-111b; secondary "Skip for now" (M-111c).
 - **Main action:** F-2 `saveOnboarding` ("Saving…") → S-102.
 - **States:** loading: skeleton list · empty search: M-171 · error: BR-18 (date), BR-19, M-5, M-7 above the button; going back keeps the birthday.
@@ -376,7 +378,7 @@ flowchart TD
 
 #### S-104 Retailer details (`/discover/[retailerId]`) · FR-4, FR-8, FR-48
 - **Who:** anyone for popular retailers; signed in for all. Others (and retired, unknown IDs) → Template S-19.
-- **Shows:** back link M-171c; logo; h1 name; category; reward description; timing label (M-181–M-184); reward type with its explanation (M-180); requirements list when present (M-189a purchase, M-189b membership, M-189c other); website link (new tab). Signed in: enroll toggle (C-102 button) and C-107 trigger. Signed out: M-111 compact with "Sign up free".
+- **Shows:** back link M-171c; logo; h1 name; category; reward description; timing label (M-181–M-184, M-184a, M-184b); join-by line M-277 when the retailer has a lead time (FR-49); reward type with its explanation (M-180); requirements list when present (M-189a purchase, M-189b membership, M-189c other); website link (new tab). Signed in: enroll toggle (C-102 button) and C-107 trigger. Signed out: M-111 compact with "Sign up free".
 - **States:** error on toggle: inline (BR-3, M-5, M-7).
 
 #### S-105 My Rewards (`/rewards`) · FR-12–FR-18, FR-32, FR-48
@@ -403,7 +405,7 @@ flowchart TD
 - **States:** none ever: M-253 → S-105 · edit/delete errors: BR-11, M-5, M-7, M-117 · success: toast M-254 / M-255.
 
 #### S-108 Settings › Birthday (`#birthday`, new card in Template S-13) · FR-9, FR-10
-- Exempt from onboarding (BUILD §0.2). **Shows:** Month/Day selects (as S-101), "Time zone" searchable select of IANA names (current shown first), helper M-256, "Save".
+- Exempt from onboarding (BUILD §0.2). **Shows:** Month/Day selects (as S-101, with M-278 for Feb 29), "Time zone" searchable select of IANA names (current shown first), helper M-256, "Save".
 - **Main action:** F-2 `updateBirthday` / `updateTimeZone` ("Saving…") → toast M-257. **States:** BR-18, BR-19, M-5, M-7.
 
 #### S-109 Settings › Reminders (`#reminders`) · FR-41, FR-42
@@ -468,7 +470,10 @@ Template M-, API-, E- texts apply unchanged. Placeholders in `{braces}` are fill
 - M-178: "Showing {shown} of {total}"
 - M-179: "Nothing matches these filters." with "Clear filters"
 - M-180 (reward types; label: explanation): "Free item: something free, no purchase needed." · "Discount: money off your order." · "Buy one, get one: a second item free when you buy one." · "Points: bonus points added to your account." · "Free with purchase: free when you buy something else."
-- M-181: "Birthday only" · M-182: "{days} days from your birthday" · M-183: "All birth month" · M-184: "From {before} days before to {after} days after your birthday" (`{after}` = 0: "From {before} days before to your birthday")
+- M-181: "Birthday only" · M-182: "{days} days from your birthday" · M-183: "All birth month" · M-184: "From {before} days before to {after} days after your birthday" (`{after}` = 0: "From {before} days before to your birthday") · M-184a: "{days} days from the 1st of your birth month" · M-184b: "From your birthday to the end of your birth month"
+- M-276: "Brands may end it early by their own clock. Go early in the day."
+- M-277: "Join by {date} to get this one." (after that date: "{brand} needs members to join {days} days before the birthday, so it may not come this year.")
+- M-278: "In years without Feb 29 we count Feb 28. Some brands use Mar 1, so check their app."
 - M-189a: "Purchase: {text}" · M-189b: "Membership: {text}" · M-189c: "Also: {text}"
 
 **Dialogs and reports**

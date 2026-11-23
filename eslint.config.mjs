@@ -103,6 +103,29 @@ const eslintConfig = defineConfig([
     rules: { "local/server-only-first": "error" },
   },
   {
+    // Decision 0007: `new Date("2026-06-15")` is UTC midnight, so in the US it shows June 14.
+    // Civil dates go through src/lib/birthday/timing.ts (formatDate, addDays, today); instants
+    // use `new Date()` (now) or `Date.now()`.
+    files: ["src/**/*.{ts,tsx}"],
+    ignores: ["src/lib/birthday/timing.ts"],
+    rules: {
+      "no-restricted-syntax": [
+        "error",
+        {
+          selector: "NewExpression[callee.name='Date'][arguments.length>0]",
+          message:
+            "Don't build a Date from a string or number here: use the timing module (src/lib/birthday/timing.ts, decision 0007).",
+        },
+        {
+          selector:
+            "CallExpression[callee.object.name='Date'][callee.property.name='parse']",
+          message:
+            "Date.parse reads date-only strings as UTC: use the timing module (decision 0007).",
+        },
+      ],
+    },
+  },
+  {
     // The only files allowed to use the secret-key client (rule 6).
     files: [
       "src/server/supabase/admin.ts",
