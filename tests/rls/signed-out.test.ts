@@ -45,6 +45,8 @@ const VALID: Record<string, Record<string, string>> = {
   },
   updateBirthday: { month: "6", day: "15" },
   updateTimeZone: { timeZone: "America/New_York" },
+  enroll: { retailerId: "starbucks" },
+  unenroll: { retailerId: "starbucks" },
   changePassword: { password: "a-long-new-password-1" },
   deleteAccount: { email: "someone@example.com" },
   startMfaEnrollment: {},
