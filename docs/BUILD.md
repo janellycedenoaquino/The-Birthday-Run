@@ -550,7 +550,7 @@ create policy enrollments_delete_own on public.enrollments for delete to authent
 Registry: `USER_DATA_TABLES` += `{ schema: 'public', table: 'enrollments', ownerColumn: 'user_id' }`.
 
 ### Modules
-**`src/lib/retailers/filter.ts`** (§0.1, §0.8): `filterRetailers(rows, filters, ctx) → { shown: Row[]; total: number; hiddenByState: number }`, pure, used by S-103 on the server and S-101 in the browser. `filters`: `{ q?, category?, length?, early?, state? }`; `ctx`: `{ birthday?: Birthday }`. Name search is case- and accent-insensitive substring. `length` (FR-45, exclusive buckets): `day` = 1 day; `week` = 2–7 days; `longer` = 8+ days or `birth_month`; length = `closes − opens + 1` from `timing.rewardDays` for the user's birthday. `early` (separate toggle) = `opens` before the birthday. `state` (FR-5): keeps `all`, `unknown`, and `listed` rows containing the state.
+**`src/lib/retailers/filter.ts`** (§0.1, §0.8): `filterRetailers(rows, filters, ctx) → { shown: Row[]; total: number; hiddenByState: number }`, pure, used by S-103 on the server and S-101 in the browser. `filters`: `{ q?, category?, length?, early?, state? }`; `ctx`: `{ occurrence?: LocalDate }`, the user's planning birthday (`windowFor(...).planning.birthday`), so lengths like `to_month_end` use the right year and the function stays pure (no clock). Name search is a substring match ignoring case, accents, spaces and punctuation ("chilis" finds Chili's). `length` (FR-45, exclusive buckets): `day` = 1 day; `week` = 2–7 days; `longer` = 8+ days or `birth_month`; length = `closes − opens + 1` from `timing.rewardDays` for the user's birthday. `early` (separate toggle) = `opens` before the birthday. `state` (FR-5): keeps `all`, `unknown`, and `listed` rows containing the state.
 
 ### Operations
 #### `/discover` page (S-103)
@@ -566,7 +566,7 @@ Registry: `USER_DATA_TABLES` += `{ schema: 'public', table: 'enrollments', owner
     state: z.string().regex(/^[A-Z]{2}$/).optional().catch(undefined),   // a coarse code, accepted in URLs
   })
   ```
-  `length`, `early`, `state` are **dropped unless `getEntitlement().premium`** (FR-45 "server ignores"; FR-5); free users get C-104 (M-131) in their place (F-7). Filters are a GET form, so they work without JS and combine.
+  `length`, `early`, `state` are **dropped unless `getEntitlement().premium`** (FR-45 "server ignores"; FR-5); free users get C-104 (M-131) in their place (F-7). Filters are a GET form, so they work without JS and combine. **Until F-7 (Phase 4)** there's no entitlement, so the page doesn't parse those three at all and shows no premium row or C-104; F-7's PR adds both.
 #### `/discover/[retailerId]` page (S-104)
 - Who: `public`. `params.retailerId` through `retailerIdSchema`; invalid, unknown, retired, or (signed out) non-popular → `notFound()` (Template S-19). Timing label: `timingOf(row)` → M-181–M-184. Signed in: enroll toggle and C-107 (reports feature).
 

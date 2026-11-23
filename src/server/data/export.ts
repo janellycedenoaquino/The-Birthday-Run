@@ -31,8 +31,11 @@ export async function buildExport(
   now: Date,
 ): Promise<AccountDataExport> {
   const data: AccountDataExport["data"] = {};
+  // The registry names tables at run time, so the generated types can't follow the loop (a union
+  // of tables narrows `.eq` to their shared columns). Same client and RLS, just untyped here.
+  const untyped = supabase as unknown as SupabaseClient;
   for (const { schema, table, ownerColumn } of USER_DATA_TABLES) {
-    const { data: rows, error } = await supabase
+    const { data: rows, error } = await untyped
       .from(table)
       .select("*")
       .eq(ownerColumn, user.id);

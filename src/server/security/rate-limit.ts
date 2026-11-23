@@ -38,6 +38,9 @@ export const LIMITS = {
   saveOnboarding: { user: [30, HOUR] },
   updateBirthday: { user: [30, HOUR] },
   updateTimeZone: { user: [30, HOUR] },
+  // "Plan and pickup writes": 300 per user per hour, a separate key each (§0.4).
+  enroll: { user: [300, HOUR] },
+  unenroll: { user: [300, HOUR] },
   authConfirm: { ip: [30, 10 * MIN] },
   authCallback: { ip: [30, 10 * MIN] },
 } as const satisfies Record<string, Limit>;

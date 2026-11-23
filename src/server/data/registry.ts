@@ -10,6 +10,7 @@ type NonUserDataTable = { schema: string; table: string; reason: string };
 
 export const USER_DATA_TABLES = [
   { schema: "public", table: "profiles", ownerColumn: "id" },
+  { schema: "public", table: "enrollments", ownerColumn: "user_id" },
 ] as const satisfies readonly UserDataTable[];
 
 export const NON_USER_DATA_TABLES = [

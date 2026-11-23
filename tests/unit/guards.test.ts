@@ -53,15 +53,7 @@ vi.mock("@/server/supabase/server", () => ({
 vi.mock("next/headers", () => ({
   headers: async () => new Headers({ "x-pathname": state.pathname }),
 }));
-vi.mock("next/navigation", () => ({
-  redirect: (url: string) => {
-    throw Object.assign(new Error(`NEXT_REDIRECT ${url}`), { url });
-  },
-  unstable_rethrow: (error: unknown) => {
-    if (error instanceof Error && error.message.startsWith("NEXT_REDIRECT"))
-      throw error;
-  },
-}));
+vi.mock("next/navigation", () => import("./next-navigation-mock"));
 vi.mock("@/server/errors", async (importOriginal) => ({
   ...(await importOriginal<typeof import("@/server/errors")>()),
   logError: vi.fn(),

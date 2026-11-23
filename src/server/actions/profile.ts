@@ -7,6 +7,7 @@ import type { ActionResult } from "@/lib/action-result";
 import {
   birthdaySchema,
   onboardingBirthdaySchema,
+  onboardingProgramsSchema,
   timeZoneInputSchema,
 } from "@/lib/validation/profile";
 import { parseForm } from "@/lib/validation/form";
@@ -43,11 +44,18 @@ async function updateOwnProfile(op: RateLimitAction, values: ProfileUpdate) {
   return null;
 }
 
-/**
- * S-101 step 1: birthday and time zone, then the dashboard. Step 2 (programs, which sets
- * `onboarded_at`) comes with Phase 2, so `onboarded_at` stays empty until then (ROADMAP).
- */
+/** S-101 (F-2 `saveOnboarding`): step 1 (birthday) or step 2 (programs), by the `step` field. */
 export async function saveOnboarding(
+  prev: ActionResult | null,
+  formData: FormData,
+): Promise<ActionResult> {
+  return formData.get("step") === "programs"
+    ? saveOnboardingPrograms(formData)
+    : saveOnboardingBirthday(prev, formData);
+}
+
+/** Step 1: birthday and time zone, then step 2. Runs once (a no-op when both are saved). */
+async function saveOnboardingBirthday(
   _prev: ActionResult | null,
   formData: FormData,
 ): Promise<ActionResult> {
@@ -55,8 +63,8 @@ export async function saveOnboarding(
   if (!input.ok) return input.result;
 
   const result = await runAction("saveOnboarding", async () => {
-    // Step 1 only runs once: with both saved it's a no-op, so it can't become a second
-    // birthday endpoint with its own rate limit (Settings is the place to change them, FR-9).
+    // With both saved it's a no-op, so it can't become a second birthday endpoint with its own
+    // rate limit (Settings is the place to change them, FR-9).
     const { supabase, user } = await requireUser();
     const { data: saved, error } = await supabase
       .from("profiles")
@@ -78,7 +86,81 @@ export async function saveOnboarding(
     revalidatePath("/dashboard");
     return { ok: true };
   });
-  // Outside runAction: redirect() throws, and a double submit is harmless (same values).
+  // Outside runAction: redirect() throws. /onboarding shows step 2 (or the dashboard if done).
+  if (result.ok) redirect("/onboarding");
+  return result;
+}
+
+/**
+ * Step 2: join the chosen programs (none = "Skip for now"), then mark onboarding done
+ * (`onboarded_at`, only where it's empty). Every ID must be listed, or nothing is saved (BR-3).
+ */
+async function saveOnboardingPrograms(
+  formData: FormData,
+): Promise<ActionResult> {
+  // Repeated keys: read with getAll (BUILD §0.2), never Object.fromEntries.
+  const ids = formData.getAll("retailerIds");
+  const parsed = onboardingProgramsSchema.safeParse({
+    step: formData.get("step"),
+    ...(ids.length ? { retailerIds: ids } : {}),
+  });
+  if (!parsed.success) return { ok: false, error: "API-4" };
+  const retailerIds = [...new Set(parsed.data.retailerIds ?? [])];
+
+  const result = await runAction("saveOnboarding", async () => {
+    const { supabase, user } = await requireUser();
+    const { data: profile, error } = await supabase
+      .from("profiles")
+      .select("birth_month, time_zone, onboarded_at")
+      .eq("id", user.id)
+      .maybeSingle();
+    if (error || !profile)
+      throw new Error("saveOnboarding: could not read the profile", {
+        cause: error ?? "profile row missing",
+      });
+    if (profile.birth_month === null || !profile.time_zone)
+      return { ok: false, error: "BR-1" };
+    // Runs once, like step 1: after onboarding it's a no-op, so it can't become a bulk enroll
+    // endpoint around `enroll`'s own rate limit.
+    if (profile.onboarded_at) return { ok: true };
+    const limit = await rateLimit("saveOnboarding", { userId: user.id });
+    if (!limit.ok) return limit;
+
+    if (retailerIds.length) {
+      const { data: listed, error: listError } = await supabase
+        .from("retailers")
+        .select("id")
+        .in("id", retailerIds)
+        .is("retired_at", null);
+      if (listError)
+        throw new Error("saveOnboarding: could not check retailers", {
+          cause: listError,
+        });
+      if (listed.length !== retailerIds.length)
+        return { ok: false, error: "BR-3" };
+      const { error: insertError } = await supabase.from("enrollments").upsert(
+        retailerIds.map((retailer_id) => ({ user_id: user.id, retailer_id })),
+        { onConflict: "user_id,retailer_id", ignoreDuplicates: true },
+      );
+      // Retired since the check (RLS) or removed (FK): same as enroll.
+      if (insertError?.code === "42501" || insertError?.code === "23503")
+        return { ok: false, error: "BR-3" };
+      if (insertError)
+        throw new Error("saveOnboarding: enroll failed", {
+          cause: insertError,
+        });
+    }
+    const { error: doneError } = await supabase
+      .from("profiles")
+      .update({ onboarded_at: new Date().toISOString() })
+      .eq("id", user.id)
+      .is("onboarded_at", null);
+    if (doneError)
+      throw new Error("saveOnboarding: could not finish", { cause: doneError });
+    for (const path of ["/dashboard", "/discover", "/rewards"])
+      revalidatePath(path);
+    return { ok: true };
+  });
   if (result.ok) redirect("/dashboard");
   return result;
 }

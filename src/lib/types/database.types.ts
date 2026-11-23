@@ -23,7 +23,27 @@ export type Database = {
           }
         },"public": {
           Tables: {
-            "profiles": {
+            "enrollments": {
+                  Row: {
+                    "created_at": string,"retailer_id": string,"user_id": string
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "created_at"?: string,"retailer_id": string,"user_id": string
+                  }
+                  Update: {
+                    "created_at"?: string,"retailer_id"?: string,"user_id"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "enrollments_retailer_id_fkey"
+      columns: ["retailer_id"]
+isOneToOne: false
+      referencedRelation: "retailers"
+      referencedColumns: ["id"]
+    }
+                  ]
+                },"profiles": {
                   Row: {
                     "birth_day": number | null,"birth_month": number | null,"created_at": string,"display_name": string | null,"id": string,"onboarded_at": string | null,"password_set_at": string | null,"reminders_enabled": boolean,"time_zone": string | null,"updated_at": string,"welcome_email_sent_at": string | null
                   }

@@ -43,6 +43,8 @@ describe("LIMITS (the §0.4 table)", () => {
     ["saveOnboarding", { user: [30, 3600] }],
     ["updateBirthday", { user: [30, 3600] }],
     ["updateTimeZone", { user: [30, 3600] }],
+    ["enroll", { user: [300, 3600] }],
+    ["unenroll", { user: [300, 3600] }],
     ["authConfirm", { ip: [30, 600] }],
   ] as const)("%s", (action, expected) => {
     expect(LIMITS[action]).toEqual(expected);
@@ -70,6 +72,8 @@ describe("LIMITS (the §0.4 table)", () => {
         "saveOnboarding",
         "updateBirthday",
         "updateTimeZone",
+        "enroll",
+        "unenroll",
         "authConfirm",
         "authCallback",
       ].sort(),
