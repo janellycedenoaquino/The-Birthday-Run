@@ -1,3 +1,4 @@
+import { existsSync, readFileSync, readdirSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 import {
   CSV_COLUMNS,
@@ -292,5 +293,35 @@ describe("readCsv", () => {
         { line: 2, fields: ["b"] },
       ],
     });
+  });
+});
+
+// BUILD "CI": the real catalogue parses, so a bad CSV PR fails before merge (FR-1, FR-46).
+describe("data/retailers.csv", () => {
+  const text = readFileSync("data/retailers.csv", "utf8");
+  const r = parseRetailerCsv(text);
+
+  it("passes the checker", () => {
+    expect(r.ok ? [] : r.errors).toEqual([]);
+  });
+
+  it("is sorted by id, and every logo file exists", () => {
+    if (!r.ok) return;
+    const ids = r.rows.map((x) => x.id);
+    expect(ids).toEqual([...ids].sort());
+    const missing = r.rows
+      .filter(
+        (x) => x.logo_file && !existsSync(`public/retailers/${x.logo_file}`),
+      )
+      .map((x) => x.id);
+    expect(missing).toEqual([]);
+  });
+
+  it("has no logo file that no row uses", () => {
+    if (!r.ok) return;
+    const used = new Set(r.rows.map((x) => x.logo_file));
+    expect(readdirSync("public/retailers").filter((f) => !used.has(f))).toEqual(
+      [],
+    );
   });
 });
