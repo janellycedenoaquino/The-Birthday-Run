@@ -1,6 +1,7 @@
 import { z } from "zod";
 import { isValidMonthDay } from "@/lib/birthday/timing";
 import { msg } from "@/lib/messages";
+import { retailerIdsSchema } from "@/lib/validation/retailers";
 
 // Profile schemas (BUILD §0.5, F-2: FR-6, FR-9, FR-10, D4). Calendar rules live in the timing
 // module (NFR-5); this file only shapes form input.
@@ -62,4 +63,12 @@ export const onboardingBirthdaySchema = z
 
 export const timeZoneInputSchema = z
   .object({ timeZone: timeZoneSchema })
+  .strict();
+
+/** S-101 step 2 (F-2 `saveOnboarding`): the chosen programs; none = "Skip for now". */
+export const onboardingProgramsSchema = z
+  .object({
+    step: z.literal("programs"),
+    retailerIds: retailerIdsSchema.optional(),
+  })
   .strict();

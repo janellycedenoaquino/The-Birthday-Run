@@ -83,9 +83,32 @@ export const M = {
   "M-257": "Birthday saved.",
   "M-278":
     "In years without Feb 29 we count Feb 28. Some brands use Mar 1, so check their app.",
+  "M-101": "Discover",
+  "M-103": "Add",
+  "M-104": "Added",
+  "M-109": "Which programs are you in?",
+  "M-110": "Save {count} programs",
+  "M-111":
+    "And {count} more birthday rewards. Sign up free to see them all and track your own.",
+  "M-111b": "Choose programs to continue",
+  "M-111c": "Skip for now",
+  "M-118": "Step {step} of 2",
+  "M-171": "No programs match that search.",
+  "M-171a": "Discover",
+  "M-171b": "Free birthday rewards from popular loyalty programs.",
+  "M-171c": "Back to Discover",
+  "M-178": "Showing {shown} of {total}",
+  "M-179": "Nothing matches these filters.",
+  "M-189a": "Purchase: {text}",
+  "M-189b": "Membership: {text}",
+  "M-189c": "Also: {text}",
+  "M-277": "Join by {date} to get this one.",
+  "M-277b":
+    "{brand} needs members to join {days} days before the birthday, so it may not come this year.",
   "BR-1": "Add your birthday first.",
   "BR-18": "Choose a real date.",
   "BR-19": "Choose a time zone from the list.",
+  "BR-3": "That program is no longer listed.",
 } as const;
 
 export type MessageId = keyof typeof M;

@@ -566,7 +566,7 @@ Registry: `USER_DATA_TABLES` += `{ schema: 'public', table: 'enrollments', owner
     state: z.string().regex(/^[A-Z]{2}$/).optional().catch(undefined),   // a coarse code, accepted in URLs
   })
   ```
-  `length`, `early`, `state` are **dropped unless `getEntitlement().premium`** (FR-45 "server ignores"; FR-5); free users get C-104 (M-131) in their place (F-7). Filters are a GET form, so they work without JS and combine.
+  `length`, `early`, `state` are **dropped unless `getEntitlement().premium`** (FR-45 "server ignores"; FR-5); free users get C-104 (M-131) in their place (F-7). Filters are a GET form, so they work without JS and combine. **Until F-7 (Phase 4)** there's no entitlement, so the page doesn't parse those three at all and shows no premium row or C-104; F-7's PR adds both.
 #### `/discover/[retailerId]` page (S-104)
 - Who: `public`. `params.retailerId` through `retailerIdSchema`; invalid, unknown, retired, or (signed out) non-popular → `notFound()` (Template S-19). Timing label: `timingOf(row)` → M-181–M-184. Signed in: enroll toggle and C-107 (reports feature).
 

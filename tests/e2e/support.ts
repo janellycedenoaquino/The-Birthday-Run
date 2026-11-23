@@ -110,7 +110,7 @@ export async function watchCsp(page: Page): Promise<string[]> {
 
 /**
  * After S-9's "Save password", a brand-new user lands on onboarding with the M-27 notice carried
- * along (decision 0009), then S-101 step 1: Jun 15, the detected zone, the dashboard (FR-6).
+ * along (decision 0009), then S-101: step 1 Jun 15 and the detected zone, step 2 skipped (FR-6, FR-7).
  */
 export async function completeOnboarding(page: Page) {
   await expect(page).toHaveURL(/\/onboarding$/);
@@ -118,5 +118,10 @@ export async function completeOnboarding(page: Page) {
   await page.getByLabel("Month").selectOption("6");
   await page.getByLabel("Day").selectOption("15");
   await page.getByRole("button", { name: "Continue" }).click();
+  // Step 2 (programs): skipped here; tests/e2e/onboarding.spec.ts picks some.
+  await expect(
+    page.getByRole("heading", { name: "Which programs are you in?" }),
+  ).toBeVisible();
+  await page.getByRole("button", { name: "Skip for now" }).click();
   await expect(page).toHaveURL(/\/dashboard$/);
 }

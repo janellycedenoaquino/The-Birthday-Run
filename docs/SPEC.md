@@ -472,7 +472,7 @@ Template M-, API-, E- texts apply unchanged. Placeholders in `{braces}` are fill
 - M-180 (reward types; label: explanation): "Free item: something free, no purchase needed." · "Discount: money off your order." · "Buy one, get one: a second item free when you buy one." · "Points: bonus points added to your account." · "Free with purchase: free when you buy something else."
 - M-181: "Birthday only" · M-182: "{days} days from your birthday" · M-183: "All birth month" · M-184: "From {before} days before to {after} days after your birthday" (`{after}` = 0: "From {before} days before to your birthday") · M-184a: "{days} days from the 1st of your birth month" · M-184b: "From your birthday to the end of your birth month"
 - M-276: "Brands may end it early by their own clock. Go early in the day."
-- M-277: "Join by {date} to get this one." (after that date: "{brand} needs members to join {days} days before the birthday, so it may not come this year.")
+- M-277: "Join by {date} to get this one." · M-277b (after that date): "{brand} needs members to join {days} days before the birthday, so it may not come this year."
 - M-278: "In years without Feb 29 we count Feb 28. Some brands use Mar 1, so check their app."
 - M-189a: "Purchase: {text}" · M-189b: "Membership: {text}" · M-189c: "Also: {text}"
 

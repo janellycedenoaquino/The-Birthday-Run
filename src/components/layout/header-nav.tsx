@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Button } from "@/components/ui/button";
+import { msg } from "@/lib/messages";
 import { AccountMenu, type Account } from "./account-menu";
 
 // C-1's right side (SPEC §3.2). A client component because it depends on the current path, and
@@ -17,6 +18,17 @@ export function HeaderNav({ account }: { account: Account | null }) {
 
   return (
     <nav aria-label="Account" className="flex shrink-0 items-center gap-2">
+      {/* C-101's first app link (M-101); the others arrive with their pages (Phase 2). */}
+      {path !== "/onboarding" && (
+        <Button asChild variant="ghost" size="lg">
+          <Link
+            href="/discover"
+            aria-current={path.startsWith("/discover") ? "page" : undefined}
+          >
+            {msg("M-101")}
+          </Link>
+        </Button>
+      )}
       {account ? (
         <AccountMenu {...account} />
       ) : (

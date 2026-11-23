@@ -41,8 +41,10 @@ describe("C-1 site header, signed out", () => {
     const html = header("/");
     expect(html).toContain(`alt="${escaped(appConfig.logo.alt)}"`);
     expect(html).toMatch(/src="\/brand\/logo.svg"/);
+    // C-101's Discover link (M-101) is public, so it shows signed out too.
     expect(links(html)).toEqual([
       ["/", NAME],
+      ["/discover", "Discover"],
       ["/sign-in", "Sign in"],
       ["/sign-up", "Sign up"],
     ]);
@@ -51,10 +53,12 @@ describe("C-1 site header, signed out", () => {
   it("hides its own button on S-4 and S-5", () => {
     expect(links(header("/sign-in"))).toEqual([
       ["/", NAME],
+      ["/discover", "Discover"],
       ["/sign-up", "Sign up"],
     ]);
     expect(links(header("/sign-up"))).toEqual([
       ["/", NAME],
+      ["/discover", "Discover"],
       ["/sign-in", "Sign in"],
     ]);
   });
@@ -80,7 +84,10 @@ describe("C-1 site header, signed in", () => {
       email: "someone@example.com",
       displayName: "Sam",
     });
-    expect(links(html)).toEqual([["/dashboard", NAME]]);
+    expect(links(html)).toEqual([
+      ["/dashboard", NAME],
+      ["/discover", "Discover"],
+    ]);
     expect(html).toMatch(/<button[^>]*>.*someone@example\.com.*<\/button>/);
     expect(html).not.toContain(">Sign in<");
   });
