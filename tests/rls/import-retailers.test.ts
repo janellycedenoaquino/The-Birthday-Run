@@ -57,14 +57,17 @@ const three = (cells: Record<string, Cells> = {}) =>
   csv(...ids3.map((id) => row(id, cells[id])));
 
 beforeAll(async () => {
+  await db`delete from public.pickups`;
   await db`delete from public.enrollments`;
   await db`delete from public.retailers`;
 });
 beforeEach(async () => {
+  await db`delete from public.pickups`;
   await db`delete from public.enrollments`;
   await db`delete from public.retailers`;
 });
 afterAll(async () => {
+  await db`delete from public.pickups`;
   await db`delete from public.enrollments`;
   await db`delete from public.retailers`;
   await importRetailers(db, readFileSync("data/retailers.csv", "utf8"), {

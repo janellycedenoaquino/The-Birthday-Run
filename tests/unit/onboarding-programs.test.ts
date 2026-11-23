@@ -61,13 +61,13 @@ vi.mock("@/server/auth/guards", async (importOriginal) => ({
   ...(await importOriginal<typeof import("@/server/auth/guards")>()),
   requireUser: async () => ({ supabase: fakeClient, user: { id: "user-1" } }),
 }));
-vi.mock("@/server/security/rate-limit", () => ({
-  rateLimit: async () => ({ ok: true }),
-}));
-vi.mock("@/server/errors", async (importOriginal) => ({
-  ...(await importOriginal<typeof import("@/server/errors")>()),
-  logError: vi.fn(),
-}));
+vi.mock(
+  "@/server/security/rate-limit",
+  async () => (await import("./mock-helpers")).allowAll,
+);
+vi.mock("@/server/errors", async (io) =>
+  (await import("./mock-helpers")).quietErrors(io),
+);
 vi.mock("next/navigation", () => import("./next-navigation-mock"));
 vi.mock("next/cache", () => ({ revalidatePath: () => {} }));
 

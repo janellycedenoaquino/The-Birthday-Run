@@ -14,6 +14,7 @@ import { buildCsp, newNonce } from "@/server/security/csp";
 // /settings rather than to the download (BUILD F-11, D24.19).
 const PROTECTED_PREFIXES = [
   "/dashboard",
+  "/history",
   "/onboarding",
   "/rewards",
   "/settings",

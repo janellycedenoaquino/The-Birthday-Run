@@ -41,3 +41,32 @@ export function totp(
 ): string {
   return hotp(base32Decode(secret), Math.floor(now / 1000 / step), digits);
 }
+
+/** Enrolls and verifies a TOTP factor for a signed-in test client (D8); returns what a later
+ *  sign-in needs to step up to aal2. */
+export async function enrollTotp(client: {
+  auth: {
+    mfa: {
+      enroll: (p: { factorType: "totp" }) => Promise<{
+        data: { id: string; totp: { secret: string } } | null;
+        error: unknown;
+      }>;
+      challengeAndVerify: (p: {
+        factorId: string;
+        code: string;
+      }) => Promise<{ error: unknown }>;
+    };
+  };
+}): Promise<{ factorId: string; secret: string }> {
+  const { data: factor, error } = await client.auth.mfa.enroll({
+    factorType: "totp",
+  });
+  if (error || !factor) throw new Error("TOTP enroll failed", { cause: error });
+  const { error: verifyError } = await client.auth.mfa.challengeAndVerify({
+    factorId: factor.id,
+    code: totp(factor.totp.secret),
+  });
+  if (verifyError)
+    throw new Error("TOTP verify failed", { cause: verifyError });
+  return { factorId: factor.id, secret: factor.totp.secret };
+}
