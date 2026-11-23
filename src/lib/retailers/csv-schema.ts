@@ -78,6 +78,7 @@ export const CSV_COLUMNS = [
   "purchase_requirement",
   "membership_requirement",
   "other_requirement",
+  "signup_lead_days",
   "logo_file",
   "website_url",
   "store_finder_url",
@@ -215,7 +216,13 @@ export const retailerCsvRowSchema = z
     reward_description: required,
     timing_type: required.pipe(
       z.enum(
-        ["from_birthday", "birth_month", "around_birthday"],
+        [
+          "from_birthday",
+          "birth_month",
+          "around_birthday",
+          "month_start",
+          "to_month_end",
+        ],
         "invalid_enum",
       ),
     ),
@@ -231,6 +238,11 @@ export const retailerCsvRowSchema = z
     purchase_requirement: optional,
     membership_requirement: optional,
     other_requirement: optional,
+    // Days before the birthday a member must have joined (decision 0007); empty = none stated.
+    signup_lead_days: days.refine(
+      (v) => v === null || (v >= 1 && v <= 90),
+      "invalid",
+    ),
     logo_file: optional.refine(
       (v) => v === null || /^[a-z0-9-]+\.(png|svg)$/.test(v),
       "invalid",
@@ -263,16 +275,16 @@ export const retailerCsvRowSchema = z
   } satisfies Record<CsvColumn, z.ZodType>)
   .strict()
   .superRefine((r, ctx) => {
-    // FR-11's three types, same rule as the SQL check `retailers_timing_columns`.
+    // FR-11's five types (decision 0007), same rule as the SQL check `retailers_timing_columns`.
     const b = r.days_before;
     const a = r.days_after;
+    const nDays = a !== null && a >= REWARD_DAYS_MIN && a <= REWARD_DAYS_MAX;
     const ok =
-      (r.timing_type === "from_birthday" &&
+      (r.timing_type === "from_birthday" && b === null && nDays) ||
+      (r.timing_type === "month_start" && b === null && nDays) ||
+      ((r.timing_type === "birth_month" || r.timing_type === "to_month_end") &&
         b === null &&
-        a !== null &&
-        a >= REWARD_DAYS_MIN &&
-        a <= REWARD_DAYS_MAX) ||
-      (r.timing_type === "birth_month" && b === null && a === null) ||
+        a === null) ||
       (r.timing_type === "around_birthday" &&
         b !== null &&
         a !== null &&
@@ -294,8 +306,11 @@ export type RetailerRow = Omit<Parsed, "states"> & Parsed["states"];
 function isRealDate(v: string): boolean {
   const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(v);
   if (!m) return false;
-  const d = new Date(Date.UTC(+m[1]!, +m[2]! - 1, +m[3]!));
-  return d.toISOString().slice(0, 10) === v;
+  // Plain calendar arithmetic, no Date (BUILD F-2: dates are civil, see decision 0007).
+  const [y, mo, d] = [+m[1]!, +m[2]!, +m[3]!];
+  const leap = y % 4 === 0 && (y % 100 !== 0 || y % 400 === 0);
+  const days = [31, leap ? 29 : 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
+  return mo >= 1 && mo <= 12 && d >= 1 && d <= days[mo - 1]!;
 }
 
 const KNOWN_CODES = new Set<string>([

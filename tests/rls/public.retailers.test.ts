@@ -156,6 +156,11 @@ describe("public.retailers CHECK constraints (FR-1, FR-11)", () => {
       { timing_type: "around_birthday", days_before: 16, days_after: 15 },
     ],
     ["birth_month with days", { days_after: 7 }],
+    ["month_start with NULL days", { timing_type: "month_start" }],
+    ["month_start 32 days", { timing_type: "month_start", days_after: 32 }],
+    ["to_month_end with days", { timing_type: "to_month_end", days_after: 7 }],
+    ["signup lead 0 days", { signup_lead_days: 0 }],
+    ["signup lead 91 days", { signup_lead_days: 91 }],
     ["listed with no codes", { states_scope: "listed" }],
     [
       "listed with a NULL code",

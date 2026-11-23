@@ -292,7 +292,7 @@ grant execute on function public.retailer_counts() to anon, authenticated;
 - Not user data, so no MFA policy. Registry: `NON_USER_DATA_TABLES` gets `{ schema: 'public', table: 'retailers', reason: 'CSV catalogue (D2)' }`.
 - Template's catalog test "no `anon` table privileges on app tables" gains an allow-list of one: `public.retailers` (`SELECT` only). Its function-grant test adds: `retailer_counts()` executable by `anon`.
 
-**`data/retailers.csv`** (UTF-8, RFC 4180, header row, sorted by `id`). One column per DESIGN §3 `retailers` column, same names and order, except: `retired_at`, `created_at`, `updated_at` are never in the CSV; `states_scope` + `state_codes` are one column `states` (`all`, empty = `unknown`, or `;`-separated codes = `listed`); booleans are `yes`/`no`; empty cell = null. `id` never changes (renames edit `name`, FR-44); `days_before`/`days_after` carry N/M per D4; `last_checked_on` is `YYYY-MM-DD`, not in the future, and `source_url` is the page it was checked against (FR-46).
+**`data/retailers.csv`** (UTF-8, RFC 4180, header row, sorted by `id`). Decision 0007 adds the `month_start` and `to_month_end` timing types and `signup_lead_days` (empty or 1–90) in two later migrations (`retailer_timing_types`, `retailer_timing_rules`); the SQL above is the first migration. One column per DESIGN §3 `retailers` column, same names and order, except: `retired_at`, `created_at`, `updated_at` are never in the CSV; `states_scope` + `state_codes` are one column `states` (`all`, empty = `unknown`, or `;`-separated codes = `listed`); booleans are `yes`/`no`; empty cell = null. `id` never changes (renames edit `name`, FR-44); `days_before`/`days_after` carry N/M per D4; `last_checked_on` is `YYYY-MM-DD`, not in the future, and `source_url` is the page it was checked against (FR-46).
 
 **`src/lib/retailers/csv-schema.ts`** (§0.8): `retailerCsvRowSchema` (Zod, `.strict()` on the header set) and `parseRetailerCsv(text) → { ok: true, rows: RetailerRow[] } | { ok: false, errors: { row: number, column?: string, code: string }[] }`. Includes a small RFC 4180 reader (quoted fields, `""`, CRLF/LF; no new package, D1). `row` is the 1-based CSV line of the record (header = 1). Checks per row: required fields, enum values, the timing rule (same as the SQL check, using `/*FR-1*/` constants), state codes in the `US_STATE_CODES` list (50 states + DC; A-8), URL scheme, date format; across rows: duplicate `id`, duplicate `name`, unknown or missing header. Imports only `zod` and relative `.ts` files (scripts run on Node's type stripping, like `scripts/check-supabase-env.ts`).
 
@@ -407,7 +407,9 @@ export type Birthday = { month: number; day: number };
 export type Timing =
   | { type: "from_birthday"; days: number }                 // days 0 … N-1
   | { type: "birth_month" }                                 // 1st … last day of the birth month
-  | { type: "around_birthday"; before: number; after: number };
+  | { type: "around_birthday"; before: number; after: number }
+  | { type: "month_start"; days: number }                   // 1st of the birth month … N days (decision 0007)
+  | { type: "to_month_end" };                               // birthday … last day of the birth month
 export type RewardStatus = "not_open" | "available" | "expired" | "picked_up";
 export type Occurrence = { birthday: LocalDate; start: LocalDate; end: LocalDate };  // one cycle's window
 export type BirthdayWindow = {
@@ -433,11 +435,13 @@ export function headerState(w: BirthdayWindow, anyAvailable: boolean): "birthday
 export function pickupDateRange(w: BirthdayWindow): { min: LocalDate; max: LocalDate } | null;  // FR-17: [current.start, today] in window, else null
 export function planRange(w: BirthdayWindow): { min: LocalDate; max: LocalDate };               // FR-23: in window [today, end], else [planning.start, planning.end]
 export function addDays(d: LocalDate, n: number): LocalDate;
-export function compareDates(a: LocalDate, b: LocalDate): number;
+export function compareDates(a: LocalDate, b: LocalDate): number;      // a − b in days
+export function joinByDate(birthday: LocalDate, leadDays: number): LocalDate;  // FR-49: birthday − N
+export function formatDate(d: LocalDate, style: "short" | "long"): string;     // "Jun 15" / "Monday, June 15"; never via new Date("YYYY-MM-DD")
 ```
 Rules inside (the definitions; FR-10/FR-11 are the requirements):
 - `today` and `localTime`: `Intl.DateTimeFormat("en-CA", { timeZone, year, month, day, hour, minute, hourCycle: "h23" }).formatToParts(now)` (MDN `Intl.DateTimeFormat`; `formatToParts` avoids locale string parsing).
-- `rewardDays` for occurrence B: `from_birthday` → [B, B+N−1]; `birth_month` → [first, last day of B's calendar month] (Feb 29 birthdays: February); `around_birthday` → [B−before, B+after].
+- `rewardDays` for occurrence B: `from_birthday` → [B, B+N−1]; `birth_month` → [first, last day of B's calendar month] (Feb 29 birthdays: February); `around_birthday` → [B−before, B+after]; `month_start` → [first of B's month, that day + N−1] (can run into the next month); `to_month_end` → [B, last day of B's month].
 - An occurrence's window: `start` = min(B, every enrolled reward's `opens`); `end` = max(B+30, every `closes`) (SPEC Terms: never ends before day 30). Its `cycleEnd` = the day before the next occurrence's `start`.
 - `current` = the latest occurrence whose `start` ≤ today (checks the years around today's year). `planning` = `current` if today ≤ `current.end`, else the next occurrence.
 - `rewardStatus` uses `planning`: `picked_up` if a pickup date lies in [`planning.start`, `planning.cycleEnd`]; else `not_open` before `opens`, `expired` after `closes`, `available` between. When `planning` is the next occurrence, nothing is expired (FR-11).
