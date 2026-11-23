@@ -45,6 +45,9 @@ describe("LIMITS (the §0.4 table)", () => {
     ["updateTimeZone", { user: [30, 3600] }],
     ["enroll", { user: [300, 3600] }],
     ["unenroll", { user: [300, 3600] }],
+    ["createPickup", { user: [300, 3600] }],
+    ["deletePickup", { user: [300, 3600] }],
+    ["updatePickup", { user: [300, 3600] }],
     ["authConfirm", { ip: [30, 600] }],
   ] as const)("%s", (action, expected) => {
     expect(LIMITS[action]).toEqual(expected);
@@ -74,6 +77,9 @@ describe("LIMITS (the §0.4 table)", () => {
         "updateTimeZone",
         "enroll",
         "unenroll",
+        "createPickup",
+        "deletePickup",
+        "updatePickup",
         "authConfirm",
         "authCallback",
       ].sort(),

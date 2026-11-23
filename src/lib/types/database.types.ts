@@ -43,6 +43,26 @@ isOneToOne: false
       referencedColumns: ["id"]
     }
                   ]
+                },"pickups": {
+                  Row: {
+                    "created_at": string,"id": string,"location_label": string | null,"note": string | null,"picked_up_on": string,"retailer_id": string,"updated_at": string,"user_id": string
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "created_at"?: string,"id"?: string,"location_label"?: string | null,"note"?: string | null,"picked_up_on": string,"retailer_id": string,"updated_at"?: string,"user_id": string
+                  }
+                  Update: {
+                    "created_at"?: string,"id"?: string,"location_label"?: string | null,"note"?: string | null,"picked_up_on"?: string,"retailer_id"?: string,"updated_at"?: string,"user_id"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "pickups_retailer_id_fkey"
+      columns: ["retailer_id"]
+isOneToOne: false
+      referencedRelation: "retailers"
+      referencedColumns: ["id"]
+    }
+                  ]
                 },"profiles": {
                   Row: {
                     "birth_day": number | null,"birth_month": number | null,"created_at": string,"display_name": string | null,"id": string,"onboarded_at": string | null,"password_set_at": string | null,"reminders_enabled": boolean,"time_zone": string | null,"updated_at": string,"welcome_email_sent_at": string | null
@@ -79,6 +99,9 @@ isOneToOne: false
           Functions: {
             "claim_welcome_email":
 { Args: Record<PropertyKey, never>; Returns: boolean
+                           },
+"create_pickup":
+{ Args: { "p_cycle_end": string,"p_cycle_start": string,"p_location_label": string,"p_note": string,"p_picked_up_on": string,"p_retailer_id": string }; Returns: string
                            },
 "mark_password_set":
 { Args: Record<PropertyKey, never>; Returns: boolean

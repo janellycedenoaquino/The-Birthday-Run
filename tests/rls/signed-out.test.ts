@@ -47,6 +47,15 @@ const VALID: Record<string, Record<string, string>> = {
   updateTimeZone: { timeZone: "America/New_York" },
   enroll: { retailerId: "starbucks" },
   unenroll: { retailerId: "starbucks" },
+  createPickup: { retailerId: "starbucks" },
+  deletePickup: {
+    pickupId: "00000000-0000-4000-8000-000000000000",
+    intent: "delete",
+  },
+  updatePickup: {
+    pickupId: "00000000-0000-4000-8000-000000000000",
+    note: "x",
+  },
   changePassword: { password: "a-long-new-password-1" },
   deleteAccount: { email: "someone@example.com" },
   startMfaEnrollment: {},

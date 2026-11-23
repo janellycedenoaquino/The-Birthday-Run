@@ -105,6 +105,105 @@ test("My Rewards: the list, filters, pages, and the other views (FR-12–FR-16, 
   await expect(page.getByText("Showing 1 of 22")).toBeVisible();
   await expect(cards).toHaveCount(1);
 
+  // Mark one picked up (FR-17): it leaves the list, and "Undo" brings it back (FR-18).
+  await page.goto("/rewards");
+  const target = cards.nth(1);
+  const name = (
+    await target.getByRole("heading", { level: 2 }).innerText()
+  ).trim();
+  await target.getByRole("button", { name: "Mark picked up" }).click();
+  const dialog = page.getByRole("dialog");
+  await expect(
+    dialog.getByRole("heading", { name: `Mark ${name} picked up` }),
+  ).toBeVisible();
+  await dialog.getByLabel("Note (optional)").fill("Free cupcake");
+  await dialog.getByLabel("Where (optional)").fill("Main St");
+  await dialog.getByRole("button", { name: "Mark picked up" }).click();
+  await expect(page.getByText(`${name} picked up.`)).toBeVisible();
+  await expect(page.getByText("Showing 21 of 21")).toBeVisible();
+  await page.getByRole("button", { name: "Undo" }).click();
+  await expect(page.getByText("Pickup undone.")).toBeVisible();
+  await expect(page.getByText("Showing 22 of 22")).toBeVisible();
+
+  // Again, then History shows it with note and place under this year's Birthday Run (FR-19).
+  await page
+    .getByRole("heading", { name, level: 2 })
+    .locator("xpath=ancestor::li")
+    .getByRole("button", { name: "Mark picked up" })
+    .click();
+  await page
+    .getByRole("dialog")
+    .getByLabel("Note (optional)")
+    .fill("Free cupcake");
+  await page
+    .getByRole("dialog")
+    .getByRole("button", { name: "Mark picked up" })
+    .click();
+  await expect(page.getByText(`${name} picked up.`)).toBeVisible();
+  // A second pickup of the same reward isn't possible: it's no longer in the list.
+  await expect(page.getByRole("heading", { name, level: 2 })).toHaveCount(0);
+
+  await page.goto("/dashboard");
+  await expect(page.getByText("1 picked up this Birthday Run")).toBeVisible();
+  await page.goto("/history");
+  await expect(
+    page.getByRole("heading", { name: /^\d{4} Birthday Run$/ }).first(),
+  ).toBeVisible();
+  const entry = page.getByRole("listitem").filter({ hasText: name });
+  await expect(entry).toContainText("Free cupcake");
+
+  // Edit the note (FR-20).
+  await entry.getByRole("button", { name: `Edit ${name} pickup` }).click();
+  await page
+    .getByRole("dialog")
+    .getByLabel("Note (optional)")
+    .fill("Two cupcakes");
+  await page.getByRole("dialog").getByRole("button", { name: "Save" }).click();
+  await expect(page.getByText("Pickup saved.")).toBeVisible();
+  await expect(entry).toContainText("Two cupcakes");
+
+  // Delete asks first, with "Cancel" focused; confirming removes it and the reward is back (FR-20).
+  await entry.getByRole("link", { name: `Delete ${name} pickup` }).click();
+  const confirm = page.getByRole("alertdialog");
+  await expect(
+    confirm.getByRole("heading", { name: "Delete this pickup?" }),
+  ).toBeVisible();
+  await expect(confirm.getByRole("button", { name: "Cancel" })).toBeFocused();
+  await confirm.getByRole("button", { name: "Delete" }).click();
+  await expect(page.getByText("Pickup deleted.")).toBeVisible();
+  await expect(
+    page.getByText(
+      "No pickups yet. When you mark a reward picked up, it shows here.",
+    ),
+  ).toBeVisible();
+  await page.goto("/rewards");
+  await expect(page.getByText("Showing 22 of 22")).toBeVisible();
+
+  // The no-JS delete path: "Delete" links to ?confirm=<id>, which shows C-108's text and a form.
+  const { data: seeded } = await admin
+    .from("pickups")
+    .insert({
+      user_id: user.id,
+      retailer_id: ids[1]!,
+      picked_up_on: new Date().toISOString().slice(0, 10),
+    })
+    .select("id")
+    .single();
+  await page.goto(`/history?confirm=${seeded!.id}`);
+  const block = page.getByRole("region", { name: "Delete this pickup?" });
+  await expect(block).toBeVisible();
+  await block.getByRole("button", { name: "Delete" }).click();
+  await expect(
+    page.getByText(
+      "No pickups yet. When you mark a reward picked up, it shows here.",
+    ),
+  ).toBeVisible();
+  // Someone else's or a made-up ID shows no confirmation at all.
+  await page.goto("/history?confirm=00000000-0000-4000-8000-000000000000");
+  await expect(
+    page.getByRole("region", { name: "Delete this pickup?" }),
+  ).toHaveCount(0);
+
   // Three months ahead: M-207 with the opening date, and no list in the page (FR-15).
   await setBirthday(todayIn(ZONE, 92));
   await page.goto("/rewards");

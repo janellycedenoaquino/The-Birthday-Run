@@ -2,18 +2,27 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { z } from "zod";
 import { DaysLeftBadge } from "@/components/rewards/days-left-badge";
+import { PickupDialog } from "@/components/rewards/pickup-dialog";
+import { UndoBar } from "@/components/rewards/undo-bar";
 import { RetailerLogo } from "@/components/retailers/retailer-logo";
 import { Button } from "@/components/ui/button";
-import { formatDate, timingOf, today } from "@/lib/birthday/timing";
+import {
+  formatDate,
+  pickupDateRange,
+  timingOf,
+  today,
+  windowFor,
+  type LocalDate,
+} from "@/lib/birthday/timing";
 import { msg } from "@/lib/messages";
 import { joinByLine, timingLabel } from "@/lib/retailers/labels";
 import { myRewards, type RewardItem } from "@/lib/rewards/my-rewards";
+import { createPickup, deletePickup } from "@/server/actions/pickups";
 import { requireOnboarded } from "@/server/auth/app-guards";
 
 // S-105 My Rewards (SPEC §3.3, BUILD F-4: FR-12–FR-16). `onboarded` level. The rules live in
-// src/lib/rewards/my-rewards.ts; this page loads rows and renders. Pickups (F-5) and the
-// pickup button arrive in the next PR; the report menu (F-13) and the Route section (F-7) in
-// later phases.
+// src/lib/rewards/my-rewards.ts; this page loads rows and renders. The report menu (F-13) and the
+// Route section (F-7) arrive in later phases.
 export const metadata: Metadata = {
   title: "My Rewards",
   robots: { index: false },
@@ -40,11 +49,24 @@ export default async function RewardsPage({
   if (error) throw new Error("S-105: could not read rewards", { cause: error });
 
   const now = today(profile.timeZone, new Date());
+  const enrolled = data.map((row) => row.retailer);
+  // Only pickups that can count: on or after the planning cycle's start (decision 0008).
+  const cycleStart = windowFor(profile.birthday, enrolled.map(timingOf), now)
+    .planning.cycleStart;
+  const { data: pickups, error: pError } = await supabase
+    .from("pickups")
+    .select("retailer_id, picked_up_on")
+    .gte("picked_up_on", cycleStart);
+  if (pError)
+    throw new Error("S-105: could not read pickups", { cause: pError });
   const r = myRewards({
     birthday: profile.birthday,
     today: now,
-    enrolled: data.map((row) => row.retailer),
-    pickups: [], // F-5 (next PR): the user's pickups in the planning cycle
+    enrolled,
+    pickups: pickups.map((p) => ({
+      retailerId: p.retailer_id,
+      date: p.picked_up_on as LocalDate,
+    })),
     filters: {
       q: filters.q,
       within: filters.within
@@ -54,6 +76,8 @@ export default async function RewardsPage({
     },
   });
   const w = r.window;
+  // In the list view the window is open, so the pickup date range exists (FR-17).
+  const range = pickupDateRange(w);
   const name = profile.displayName;
   const heading = {
     birthday: name ? msg("M-201").replace("{name}", name) : msg("M-201b"),
@@ -79,6 +103,9 @@ export default async function RewardsPage({
             : msg("M-205").replace("{days}", String(w.daysUntilBirthday))}
         </p>
       ) : null}
+
+      {/* FR-18: recent pickups with "Undo", kept outside the list (the card leaves it at once). */}
+      <UndoBar deletePickup={deletePickup} />
 
       {r.view === "none" ? (
         <Notice text={msg("M-211")} />
@@ -154,6 +181,7 @@ export default async function RewardsPage({
                 <RewardCard
                   key={item.id}
                   item={item}
+                  range={range!}
                   joinBy={
                     item.signup_lead_days && w.dayNumber < 0
                       ? joinByLine({
@@ -204,9 +232,11 @@ function Notice({ text }: { text: string }) {
 function RewardCard({
   item,
   joinBy,
+  range,
 }: {
   item: RewardItem;
   joinBy: string | null;
+  range: { min: string; max: string };
 }) {
   return (
     <li className="flex gap-4 rounded-lg border border-border/70 p-4">
@@ -226,6 +256,15 @@ function RewardCard({
         </p>
         {joinBy ? <p className="text-sm">{joinBy}</p> : null}
         <DaysLeftBadge daysLeft={item.daysLeft} />
+        <div className="mt-2">
+          <PickupDialog
+            retailerId={item.id}
+            retailer={item.name}
+            minDate={range.min}
+            maxDate={range.max}
+            createPickup={createPickup}
+          />
+        </div>
       </div>
     </li>
   );

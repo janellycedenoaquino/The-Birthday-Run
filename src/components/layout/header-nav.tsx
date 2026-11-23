@@ -39,6 +39,16 @@ export function HeaderNav({ account }: { account: Account | null }) {
           </Link>
         </Button>
       )}
+      {account && path !== "/onboarding" && (
+        <Button asChild variant="ghost" size="lg">
+          <Link
+            href="/history"
+            aria-current={path.startsWith("/history") ? "page" : undefined}
+          >
+            {msg("M-101c")}
+          </Link>
+        </Button>
+      )}
       {account ? (
         <AccountMenu {...account} />
       ) : (

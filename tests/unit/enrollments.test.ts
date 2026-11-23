@@ -39,10 +39,9 @@ vi.mock("@/server/security/rate-limit", () => ({
     state.limited ? { ok: false, error: "M-5" } : { ok: true },
 }));
 vi.mock("next/cache", () => ({ revalidatePath: () => {} }));
-vi.mock("@/server/errors", async (importOriginal) => ({
-  ...(await importOriginal<typeof import("@/server/errors")>()),
-  logError: vi.fn(),
-}));
+vi.mock("@/server/errors", async (io) =>
+  (await import("./mock-helpers")).quietErrors(io),
+);
 
 const { enroll, unenroll } = await import("@/server/actions/enrollments");
 const form = (retailerId: string) => {

@@ -425,7 +425,7 @@ flowchart TD
 Template M-, API-, E- texts apply unchanged. Placeholders in `{braces}` are filled as text. Plurals: one message per form where shown (`{days}` = 1 uses the singular ID). Dates: "Oct 6" style in the user's time zone; times "10:00 AM".
 
 **Navigation and onboarding**
-- M-101 (C-101): "Dashboard" · "Discover" · "My Rewards" (M-101b) · "Plan" · "History"
+- M-101 (C-101): "Dashboard" · "Discover" · "My Rewards" (M-101b) · "Plan" · "History" (M-101c)
 - M-102 (S-1): "Browse rewards"
 - M-103 / M-104 (C-102 toggle): "Add" / "Added"
 - M-105 (S-101 h1): "When's your birthday?"
@@ -447,7 +447,7 @@ Template M-, API-, E- texts apply unchanged. Placeholders in `{braces}` are fill
 - M-120: "Last day" · M-121: "1 day left" (unused: days left count today, so one day is the last day) · M-122: "{days} days left"
 - M-123: "Ends soon" · M-124: "Coming up" · M-125: "Plenty of time"
 - M-126 (S-102): "{count} picked up this Birthday Run" · M-127: "Last pickup: {date}" · M-128: "No pickups yet this Birthday Run."
-- M-129a–d (S-102 cards): "Find birthday rewards and add your programs." · "See what's open now and how long it lasts." · "Group pickups into runs." · "Everything you've picked up."
+- M-129a–d (S-102 cards; M-129d is History): "Find birthday rewards and add your programs." · "See what's open now and how long it lasts." · "Group pickups into runs." · "Everything you've picked up."
 - M-201 (header, birthday): "Happy birthday, {name}" / M-201b "Happy birthday"
 - M-202 (birth month): "Happy birth month, {name}" / M-202b "Happy birth month"
 - M-203 (later window day, rewards open): "Your birthday's passed, but your rewards haven't."
@@ -540,10 +540,11 @@ Template M-, API-, E- texts apply unchanged. Placeholders in `{braces}` are fill
 | BR-5 | "A group can hold up to {limit} rewards. Choose fewer or remove some first." (+ C-104 M-134 for free users) |
 | BR-6 (field `name`) | "You already have a group with this name." |
 | BR-7 | "That reward is already in this group, or it isn't one of your programs." |
-| BR-8 (field) | "Choose a date and time between {start} and {end}." (pickups: date only) |
+| BR-8 (field) | "Choose a date and time between {start} and {end}." · BR-8b (pickups, date only): "Choose a date between {start} and {end}." |
 | BR-9 | "You've already picked this up this Birthday Run." |
 | BR-10 | "This reward isn't open right now. It may have ended or not started yet." |
 | BR-11 | "We couldn't find that. It may have been deleted. Refresh the page." |
+| BR-22 | "Add this program first, then mark it picked up." |
 | BR-12 (field `zip`) | "We don't recognise that ZIP code." |
 | BR-13 | "We couldn't look up stores right now, so these stops have no map pin. Try again later." |
 | BR-14 | "You've already reported this one. We're checking it." |
