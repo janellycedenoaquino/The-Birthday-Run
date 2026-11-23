@@ -5,8 +5,8 @@ name: Backup
 # session pooler) and BACKUP_AGE_RECIPIENT (variable, the age public key) are set.
 on:
   workflow_dispatch:
-  # schedule:
-  #   - cron: "17 3 * * *"
+  schedule:
+    - cron: "17 3 * * *"
 
 permissions:
   contents: read

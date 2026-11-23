@@ -442,16 +442,16 @@ secret = "env(GOOGLE_CLIENT_SECRET)"
 # "start a new app" step fills it in. Pushing config without it clears production SMTP
 # (the CLI sends an empty host) and sends the local site_url and redirect URLs, so auth
 # emails would link to localhost.
-# [remotes.production]
-# project_id = "<your-project-ref>"
-# [remotes.production.auth]
-# site_url = "<your-site-url>"
-# additional_redirect_urls = ["<your-site-url>/**"]
-# [remotes.production.auth.email.smtp]
-# enabled = true
-# host = "smtp.resend.com"
-# port = 465
-# user = "resend"
-# pass = "env(RESEND_API_KEY)"
-# admin_email = "<sender address>"
-# sender_name = "<sender name>"
+[remotes.production]
+project_id = "mekgzqrswpqfogjivcmq"
+[remotes.production.auth]
+site_url = "https://the-birthday-run-roan.vercel.app"
+additional_redirect_urls = ["https://the-birthday-run-roan.vercel.app/**", "https://*-ella9nell-8133.vercel.app/**"]
+[remotes.production.auth.email.smtp]
+enabled = true
+host = "smtp.resend.com"
+port = 465
+user = "resend"
+pass = "env(RESEND_API_KEY)"
+admin_email = "hello@thebirthdayrun.com"
+sender_name = "The Birthday Run"

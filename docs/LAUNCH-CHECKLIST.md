@@ -37,6 +37,7 @@ Two launches (ROADMAP): **v1** after phase 4 and **v2 sign-off** after phase 7 (
 - [ ] thebirthdayrun.com on this repo's Vercel project, with HTTPS
 - [ ] This app's own sending domain verified in Resend; `EMAIL_FROM` uses it; sign-up and reset emails arrive
 - [ ] Turnstile widget, Google OAuth client and Supabase redirect URLs list thebirthdayrun.com
+- [ ] Google Branding home page and privacy policy links point to thebirthdayrun.com, and thebirthdayrun.com is an authorized domain (they use the *.vercel.app address until launch)
 - [ ] Title, description and share image look right when the link is pasted into a chat
 
 ## v1: Support

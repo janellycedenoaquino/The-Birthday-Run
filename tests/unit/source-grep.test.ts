@@ -20,6 +20,11 @@ const SKIPPED = [
   "tests/",
   "package-lock.json",
 ];
+// Supabase reads config.toml, not the config: its production SMTP sender repeats the name and
+// support email on purpose. Only those two lines are exempt; any other copy there still fails.
+const EXEMPT_LINES: Record<string, RegExp> = {
+  "supabase/config.toml": /^(sender_name|admin_email) = .*$/gm,
+};
 
 function sourceFiles(): string[] {
   const files: string[] = [];
@@ -44,9 +49,11 @@ function sourceFiles(): string[] {
 }
 
 function filesContaining(pattern: RegExp): string[] {
-  return sourceFiles().filter((file) =>
-    pattern.test(readFileSync(join(root, file), "utf8")),
-  );
+  return sourceFiles().filter((file) => {
+    const text = readFileSync(join(root, file), "utf8");
+    const exempt = EXEMPT_LINES[file];
+    return pattern.test(exempt ? text.replace(exempt, "") : text);
+  });
 }
 
 const escape = (s: string) => s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");

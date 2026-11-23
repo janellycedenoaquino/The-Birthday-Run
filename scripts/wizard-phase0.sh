@@ -374,7 +374,10 @@ fi
 fi
 open_url "https://supabase.com/dashboard/new"
 step "New project: name ${BOLD}thebirthdayrun${RESET}, Free plan, region ${BOLD}East US (North Virginia)${RESET}."
-step "Generate a strong database password and save it in your password manager."
+step "Generate a database password with ${BOLD}only letters and digits${RESET} (symbols break the backup URL in stage 12)."
+say "  Save it in your password manager."
+step "Security: ${BOLD}Data API on${RESET}, ${BOLD}auto-grant to new tables off${RESET}, ${BOLD}auto-RLS on${RESET}."
+say "  The migrations grant each table and function themselves, so a missing grant fails closed."
 step "Create, then wait until the project is ready (a minute or two)."
 step "Copy the project ref: the 20 letters in the URL after /project/."
 prod REF "Project ref:" '^[a-z]{20}$' "20 lowercase letters"
@@ -386,10 +389,12 @@ say "Linking (it asks for the database password)..."
 npx supabase link --project-ref "$REF"
 say ""
 say "Next: apply the Template's migrations to the empty production database."
-if confirm "Run supabase db push now?"; then
-  npx supabase db push
+note "Supabase CLI 3 pushes to the LOCAL database unless you pass --remote."
+note "Check the first lines say: Target: project thebirthdayrun · production."
+if confirm "Run supabase db push --remote now?"; then
+  npx supabase db push --remote
 else
-  SKIPPED+=("npx supabase db push")
+  SKIPPED+=("npx supabase db push --remote")
 fi
 pause
 fi
@@ -437,7 +442,7 @@ if want 6; then
 stage "Cloudflare Turnstile widget"
 open_url "https://dash.cloudflare.com/?to=/:account/turnstile"
 step "Add widget: name ${BOLD}$APP_NAME${RESET}, mode ${BOLD}Managed${RESET}."
-step "Hostnames: ${BOLD}$DOMAIN${RESET} and ${BOLD}localhost${RESET}."
+step "Hostnames: ${BOLD}$DOMAIN${RESET} and ${BOLD}localhost${RESET}. Stage 10 adds the *.vercel.app address."
 step "Save the site key and the secret key in your password manager."
 pause
 fi
@@ -457,7 +462,8 @@ step "Create a project named ${BOLD}$APP_NAME${RESET} and select it (or reuse th
 open_url "https://console.cloud.google.com/auth/overview"
 step "Get started: app name ${BOLD}$APP_NAME${RESET}, support email: yours, audience ${BOLD}External${RESET}."
 step "Branding → Authorized domains: add ${BOLD}$REF.supabase.co${RESET}. Skip the logo (it triggers a review)."
-step "Audience → ${BOLD}Publish app${RESET} (otherwise only listed test users can sign in)."
+step "Audience → Test users: add your own Gmail. Publishing needs a live home page and privacy"
+say "  policy, so stage 11 publishes the app once the site is deployed."
 open_url "https://console.cloud.google.com/auth/clients"
 step "Create client → ${BOLD}Web application${RESET}, name $APP_NAME."
 step "Authorized redirect URI: ${BOLD}https://$REF.supabase.co/auth/v1/callback${RESET}"
@@ -487,7 +493,7 @@ say "with your real secrets held in memory only (Template decision 0007; README 
 git checkout -- supabase/config.toml   # start from the committed block on every run
 site_url
 open_url "https://vercel.com/account/settings"
-step "Your Vercel team slug: Vercel → Settings → General (often <name>-projects)."
+step "Your Vercel team slug: the part after vercel.com/ in the address bar on the project page."
 prod VERCEL_SCOPE "Vercel team slug:" '^[a-z0-9-]+$' "lowercase letters, digits, hyphens"
 sender
 say ""
@@ -596,6 +602,7 @@ step "Analytics tab → ${BOLD}Enable${RESET} Web Analytics (free)."
 say ""
 warn "Don't move $DOMAIN: it stays on the birthdayrun-soon project (\"Back soon\") until v1 launches."
 note "Until then the app lives at its *.vercel.app address (the site URL you entered above)."
+step "Cloudflare → Turnstile → the widget → Hostnames: add the *.vercel.app address too."
 step "Deployments → the failed one → ⋯ → ${BOLD}Redeploy${RESET}. Wait for Ready."
 pause
 fi
@@ -607,7 +614,11 @@ site_url
 open_url "$SITE_URL/sign-up"
 step "The page loads on $SITE_URL, and the bot check ${BOLD}doesn't${RESET} say \"Testing only\"."
 step "Sign up with your own email. The email comes from $SENDER_ADDRESS (or hello@$DOMAIN)."
-step "Confirm, set a password, sign in, reach the dashboard. Sign out, then try Google."
+step "Confirm, set a password, sign in, reach the dashboard. Sign out."
+open_url "https://console.cloud.google.com/auth/branding"
+step "Google Branding: home page ${BOLD}$SITE_URL${RESET}, privacy policy ${BOLD}$SITE_URL/privacy${RESET},"
+say "  and add the site's host to Authorized domains. Save, then Audience → ${BOLD}Publish app${RESET}."
+step "Try Google sign-in. You can remove yourself from Test users after publishing."
 step "Write down anything that went wrong (which screen, what it said) for Claude."
 pause
 fi
@@ -626,9 +637,12 @@ warn "Move $KEY_FILE OFFLINE (USB stick plus password manager), then delete it h
 warn "Without it, no backup can ever be decrypted. Keep it apart from WishJar's key."
 project_ref
 open_url "https://supabase.com/dashboard/project/$REF?showConnect=true"
-step "Connect → ${BOLD}Session pooler${RESET} → copy the URI and put your database password in it."
-prod_secret DB_URL "Session pooler URL:" '^postgres(ql)?://[^[:space:]]+pooler\.supabase\.com:5432/[^[:space:]]+$' "the session pooler URI, port 5432"
+step "Connect → ${BOLD}Session pooler${RESET} → copy the URI exactly as shown, with the [password placeholder] still in it."
+prod POOLER_URI "Session pooler URI:" '^postgresql://postgres\.[a-z]{20}:\[[^]@]+\]@[a-z0-9.-]+\.pooler\.supabase\.com:5432/postgres$' "the session pooler URI, port 5432, still with the [password placeholder]"
+prod_secret DB_PASSWORD "Database password (letters and digits only):" '^[A-Za-z0-9]+$' "letters and digits only; reset it in Project Settings → Database if it has symbols"
+DB_URL="${POOLER_URI/\[*\]/$DB_PASSWORD}"
 set_secret SUPABASE_DB_URL "$DB_URL"
+unset DB_URL DB_PASSWORD
 step "GitHub → Settings → Notifications → Actions: email on failed workflows (likely on already)."
 note "Tell Claude 'stage 12 done': it turns on the daily schedule in backup.yml (on a PR)."
 pause
