@@ -1,0 +1,11 @@
+{
+  "ignore": [
+    "**/*.md",
+    "**/*.json",
+    ".github/**",
+    "supabase/migrations/**",
+    "supabase/templates/**",
+    "src/lib/types/database.types.ts"
+  ],
+  "reporters": ["console"]
+}

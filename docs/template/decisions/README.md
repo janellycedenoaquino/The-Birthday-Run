@@ -23,3 +23,4 @@ Add one whenever an approved decision (DESIGN §1, SPEC §1, the stack) changes,
 | 0016 | v1 sign-off (throwaway app runs) | accepted | 2026-09-30 |
 | 0017 | Sign-off checks done in the repo: bad import, week-1 checks 10–13, vercel.json | accepted | 2026-09-29 |
 | 0018 | Proxy matcher excludes exact paths only; Sentry's transaction scrubber stays | accepted | 2026-09-30 |
+| 0020 | CI fails on new duplicate code (jscpd against origin/main) | accepted | 2026-11-23 |

@@ -25,7 +25,8 @@
     "check:env": "bash scripts/check-env-example.sh",
     "check:bundle": "node scripts/check-bundle-secrets.ts",
     "check:supabase-env": "node --env-file-if-exists=supabase/.env --env-file-if-exists=supabase/.env.local --env-file-if-exists=.env --env-file-if-exists=.env.local scripts/check-supabase-env.ts",
-    "import:retailers": "node scripts/import-retailers.ts"
+    "import:retailers": "node scripts/import-retailers.ts",
+    "check:duplicates": "jscpd . --baseline-from-ref origin/main --fail-on-new-clones"
   },
   "dependencies": {
     "@sentry/nextjs": "^11.12.0",
@@ -56,6 +57,7 @@
     "@types/react-dom": "^19",
     "eslint": "^9",
     "eslint-config-next": "16.4.6",
+    "jscpd": "5.4.3",
     "postgres": "^4.1.1",
     "prettier": "^3.10.1",
     "shadcn": "^4.21.0",
