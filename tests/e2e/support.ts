@@ -136,3 +136,23 @@ export async function completeOnboarding(page: Page) {
 export const ownIp = (n: number) => ({
   extraHTTPHeaders: { "x-forwarded-for": `198.51.100.${n}` },
 });
+
+/** Month and day `plusDays` from now in `zone`, for setting a test user's birthday. */
+export function monthDayIn(zone: string, plusDays = 0) {
+  const now = new Date(Date.now() + plusDays * 86_400_000);
+  const parts = new Intl.DateTimeFormat("en-CA", {
+    timeZone: zone,
+    month: "numeric",
+    day: "numeric",
+  }).formatToParts(now);
+  const get = (t: string) => Number(parts.find((p) => p.type === t)!.value);
+  return { month: get("month"), day: get("day") };
+}
+
+/** C-108: checks the title and that "Cancel" has focus, then confirms with "Delete". */
+export async function confirmDelete(page: Page, title: string) {
+  const confirm = page.getByRole("alertdialog");
+  await expect(confirm.getByRole("heading", { name: title })).toBeVisible();
+  await expect(confirm.getByRole("button", { name: "Cancel" })).toBeFocused();
+  await confirm.getByRole("button", { name: "Delete" }).click();
+}

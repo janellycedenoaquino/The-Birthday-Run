@@ -50,11 +50,11 @@ export default async function DashboardPage() {
           <p>{msg("M-128")}</p>
         )}
       </div>
-      {/* Plan gets its card with its page (Phase 3). */}
       <ul className="mt-6 grid gap-4 sm:grid-cols-2">
         {[
           { href: "/discover", title: msg("M-101"), text: msg("M-129a") },
           { href: "/rewards", title: msg("M-101b"), text: msg("M-129b") },
+          { href: "/plan", title: msg("M-101d"), text: msg("M-129c") },
           { href: "/history", title: msg("M-101c"), text: msg("M-129d") },
         ].map((card) => (
           <li key={card.href}>

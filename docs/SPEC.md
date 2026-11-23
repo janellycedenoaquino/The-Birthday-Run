@@ -425,7 +425,7 @@ flowchart TD
 Template M-, API-, E- texts apply unchanged. Placeholders in `{braces}` are filled as text. Plurals: one message per form where shown (`{days}` = 1 uses the singular ID). Dates: "Oct 6" style in the user's time zone; times "10:00 AM".
 
 **Navigation and onboarding**
-- M-101 (C-101): "Dashboard" · "Discover" · "My Rewards" (M-101b) · "Plan" · "History" (M-101c)
+- M-101 (C-101): "Dashboard" · "Discover" · "My Rewards" (M-101b) · "Plan" (M-101d) · "History" (M-101c)
 - M-102 (S-1): "Browse rewards"
 - M-103 / M-104 (C-102 toggle): "Add" / "Added"
 - M-105 (S-101 h1): "When's your birthday?"
@@ -516,6 +516,7 @@ Template M-, API-, E- texts apply unchanged. Placeholders in `{braces}` are fill
 - M-236: "Move {retailer}" (accessible name) · M-237 (announcements): "Picked up {retailer}. Position {pos} of {total}." · "{retailer} moved to position {pos} of {total}." · "{retailer} dropped at position {pos} of {total}." · "Move cancelled."
 - M-238: "Show route"
 - M-239: "Nothing to plan yet. Add programs in Discover." · M-240: "No groups yet. Select rewards above and add them to a group." · M-241: "No rewards in this group yet."
+- M-242 (group name with control characters): "Remove line breaks and tabs from the name." (blank and too long reuse Template M-35 / M-36)
 
 **History and settings**
 - M-250: "History" · M-251: "{year} Birthday Run" · M-252: "Nothing picked up yet." · M-253: "No pickups yet. When you mark a reward picked up, it shows here."

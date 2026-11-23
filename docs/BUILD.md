@@ -846,6 +846,7 @@ grant execute on function public.reorder_group_items(uuid, uuid[]) to authentica
 ```
 - A multi-row item insert is one statement, so a row over the limit rolls back the whole add (FR-25 "refused whole"); each row's trigger sees the rows inserted before it in the same statement (PostgreSQL docs, "Visibility of Data Changes"), so the count is right mid-statement.
 - Registry: `USER_DATA_TABLES` += `reward_groups`, `reward_group_items` (`user_id`). This PR also adds F-1's import retire step (group-item delete).
+- **As built (Phase 3):** before F-7 the migration ships `private.is_premium` returning false (decision 0012); both triggers first refuse a row for anyone but the caller; it also re-creates `create_pickup` with F-5's group-items delete. The new-group form starts at the next whole hour today (or noon tomorrow when late), so its defaults are never in the past.
 
 **Schemas** (`src/lib/validation/plan.ts`): `groupFields = { name: groupNameSchema (+ A-19 length, no control chars), pickupDate: localDateSchema, pickupTime: localTimeSchema }`; `groupId = z.uuid()`; `itemIds = z.array(z.uuid()).min(1).max(/*FR-25 premium*/)`.
 

@@ -88,6 +88,7 @@ describe("C-1 site header, signed in", () => {
       ["/dashboard", NAME],
       ["/discover", "Discover"],
       ["/rewards", "My Rewards"],
+      ["/plan", "Plan"],
       ["/history", "History"],
     ]);
     expect(html).toMatch(/<button[^>]*>.*someone@example\.com.*<\/button>/);

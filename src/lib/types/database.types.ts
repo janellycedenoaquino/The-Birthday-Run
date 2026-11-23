@@ -91,6 +91,46 @@ isOneToOne: false
                   Relationships: [
                     
                   ]
+                },"reward_group_items": {
+                  Row: {
+                    "created_at": string,"group_id": string,"id": string,"position": number,"retailer_id": string,"user_id": string
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "created_at"?: string,"group_id": string,"id"?: string,"position": number,"retailer_id": string,"user_id": string
+                  }
+                  Update: {
+                    "created_at"?: string,"group_id"?: string,"id"?: string,"position"?: number,"retailer_id"?: string,"user_id"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "reward_group_items_group_id_user_id_fkey"
+      columns: ["group_id","user_id"]
+isOneToOne: false
+      referencedRelation: "reward_groups"
+      referencedColumns: ["id","user_id"]
+    },{
+      foreignKeyName: "reward_group_items_user_id_retailer_id_fkey"
+      columns: ["user_id","retailer_id"]
+isOneToOne: false
+      referencedRelation: "enrollments"
+      referencedColumns: ["user_id","retailer_id"]
+    }
+                  ]
+                },"reward_groups": {
+                  Row: {
+                    "created_at": string,"id": string,"name": string,"pickup_date": string,"pickup_time": string,"updated_at": string,"user_id": string
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "created_at"?: string,"id"?: string,"name": string,"pickup_date": string,"pickup_time": string,"updated_at"?: string,"user_id": string
+                  }
+                  Update: {
+                    "created_at"?: string,"id"?: string,"name"?: string,"pickup_date"?: string,"pickup_time"?: string,"updated_at"?: string,"user_id"?: string
+                  }
+                  Relationships: [
+                    
+                  ]
                 }
           }
           Views: {
@@ -111,6 +151,9 @@ isOneToOne: false
                            },
 "release_welcome_email":
 { Args: { "p_user_id": string }; Returns: undefined
+                           },
+"reorder_group_items":
+{ Args: { "p_group_id": string,"p_item_ids": (string)[] }; Returns: undefined
                            },
 "retailer_counts":
 { Args: Record<PropertyKey, never>; Returns: {

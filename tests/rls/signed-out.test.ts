@@ -52,6 +52,26 @@ const VALID: Record<string, Record<string, string>> = {
     pickupId: "00000000-0000-4000-8000-000000000000",
     intent: "delete",
   },
+  createGroup: { name: "Plan", pickupDate: "2026-06-15", pickupTime: "12:00" },
+  addToGroup: {
+    groupId: "00000000-0000-4000-8000-000000000000",
+    retailerIds: "starbucks",
+  },
+  updateGroup: {
+    groupId: "00000000-0000-4000-8000-000000000000",
+    name: "Plan",
+    pickupDate: "2026-06-15",
+    pickupTime: "12:00",
+  },
+  removeFromGroup: {
+    groupId: "00000000-0000-4000-8000-000000000000",
+    itemId: "00000000-0000-4000-8000-000000000000",
+  },
+  reorderGroupItems: {
+    groupId: "00000000-0000-4000-8000-000000000000",
+    itemIds: "00000000-0000-4000-8000-000000000000",
+  },
+  deleteGroup: { groupId: "00000000-0000-4000-8000-000000000000" },
   updatePickup: {
     pickupId: "00000000-0000-4000-8000-000000000000",
     note: "x",

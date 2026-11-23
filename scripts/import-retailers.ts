@@ -116,7 +116,10 @@ export async function importRetailers(
           .join(", ")}`,
         "nothing was written; re-run by manual dispatch with --allow-retire=<n> if this is intended",
       ]);
-    // FR-44: F-6's PR adds `delete from public.reward_group_items where retailer_id = any(…)` here.
+    // FR-44: a retired retailer leaves every plan group (its pickups stay).
+    if (retired.length)
+      await tx`delete from public.reward_group_items
+               where retailer_id = any(${retired.map((r) => r.id)}::text[])`;
 
     const inserted = written.filter((w) => w.inserted).length;
     const restored = written.filter(
