@@ -26,7 +26,10 @@ test("display name: saved, shown on the dashboard (FR-12)", async ({
   await signIn(page, user.email, PASSWORD);
   await page.goto("/settings");
   await page.getByLabel("Display name").fill("  Sam Rivera  ");
-  await page.getByRole("button", { name: "Save", exact: true }).click();
+  await page
+    .locator("#profile")
+    .getByRole("button", { name: "Save", exact: true })
+    .click();
   await expect(page.getByText("Name saved.")).toBeVisible();
   await page.goto("/dashboard");
   await expect(
@@ -35,7 +38,10 @@ test("display name: saved, shown on the dashboard (FR-12)", async ({
 
   await page.goto("/settings");
   await page.getByLabel("Display name").fill("Sam\u0001");
-  await page.getByRole("button", { name: "Save", exact: true }).click();
+  await page
+    .locator("#profile")
+    .getByRole("button", { name: "Save", exact: true })
+    .click();
   await expect(
     page.getByText("Remove line breaks and tabs from your name."),
   ).toBeVisible();

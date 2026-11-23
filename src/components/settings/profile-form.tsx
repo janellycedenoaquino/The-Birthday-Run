@@ -1,14 +1,10 @@
 "use client";
 
 import { useActionState, useId, useRef } from "react";
-import {
-  FormAlert,
-  formError,
-  useFocusOnError,
-} from "@/components/auth/form-alert";
-import { Button } from "@/components/ui/button";
+import { useFocusOnError } from "@/components/auth/form-alert";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { SaveFooter } from "./save-footer";
 import type { ActionResult } from "@/lib/action-result";
 import { useSuccessToast } from "./use-success-toast";
 
@@ -58,12 +54,7 @@ export function ProfileForm({
           </p>
         ) : null}
       </div>
-      <FormAlert id={formError(state)} />
-      <div>
-        <Button type="submit" size="lg" disabled={pending}>
-          {pending ? "Saving…" : "Save"}
-        </Button>
-      </div>
+      <SaveFooter state={state} pending={pending} />
     </form>
   );
 }

@@ -1,6 +1,7 @@
 import { expect, test } from "@playwright/test";
 import { totp } from "../rls/totp";
 import {
+  completeOnboarding,
   confirmLink,
   newestMail,
   passwordSignIn,
@@ -59,8 +60,7 @@ test("the account journey (FR-39)", async ({ page, context }) => {
   }
   await page.locator('input[name="password"]').fill(FIRST);
   await page.getByRole("button", { name: "Save password" }).click();
-  await expect(page).toHaveURL(/\/dashboard$/);
-  await expect(page.getByText("You're all set.")).toBeVisible();
+  await completeOnboarding(page); // no birthday yet: onboarding first (FR-6)
 
   // NFR-14: session cookies HttpOnly, Secure, Lax; nothing in browser storage.
   const session = (await context.cookies()).filter((c) =>
