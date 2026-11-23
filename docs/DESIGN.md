@@ -228,7 +228,7 @@ erDiagram
 | --- | --- | --- | --- | --- |
 | `birth_month` | smallint | yes | null | 1–12; null until onboarding (FR-6) |
 | `birth_day` | smallint | yes | null | valid for the month, Feb 29 allowed; both null or both set |
-| `time_zone` | text | yes | null | IANA name, validated by Zod (BUILD §0.5); null until onboarding |
+| `time_zone` | text | yes | null | IANA name (Area/Location or UTC, never an offset or abbreviation), validated by Zod (BUILD §0.5) and again in the database: a pattern check plus a trigger against `pg_timezone_names`, since the column grant lets users write it directly (decision 0009); null until onboarding |
 | `onboarded_at` | timestamptz | yes | null | set when FR-7 finishes; "isn't sent back" |
 | `reminders_enabled` | boolean | no | true | FR-42; only matters while premium |
 

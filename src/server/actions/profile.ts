@@ -55,6 +55,20 @@ export async function saveOnboarding(
   if (!input.ok) return input.result;
 
   const result = await runAction("saveOnboarding", async () => {
+    // Step 1 only runs once: with both saved it's a no-op, so it can't become a second
+    // birthday endpoint with its own rate limit (Settings is the place to change them, FR-9).
+    const { supabase, user } = await requireUser();
+    const { data: saved, error } = await supabase
+      .from("profiles")
+      .select("birth_month, time_zone")
+      .eq("id", user.id)
+      .maybeSingle();
+    if (error || !saved)
+      throw new Error("saveOnboarding: could not read the profile", {
+        cause: error ?? "profile row missing",
+      });
+    if (saved.birth_month !== null && saved.time_zone) return { ok: true };
+
     const refused = await updateOwnProfile("saveOnboarding", {
       birth_month: input.data.month,
       birth_day: input.data.day,

@@ -20,9 +20,13 @@ type Action = (
 export function OnboardingForm({
   saveOnboarding,
   zones,
+  month,
+  day,
 }: {
   saveOnboarding: Action;
   zones: string[];
+  month?: number | null;
+  day?: number | null;
 }) {
   const [state, action, pending] = useActionState(saveOnboarding, null);
   const form = useRef<HTMLFormElement>(null);
@@ -43,7 +47,11 @@ export function OnboardingForm({
   return (
     <form ref={form} action={action} className="grid gap-6" noValidate>
       <input type="hidden" name="step" value="birthday" />
-      <BirthdayFields dayErrors={fieldErrors?.day ?? fieldErrors?.month} />
+      <BirthdayFields
+        month={month}
+        day={day}
+        dayErrors={fieldErrors?.day ?? fieldErrors?.month}
+      />
       {detected && !tzError ? (
         <>
           <input type="hidden" name="timeZone" value={detected} />

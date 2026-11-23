@@ -1,6 +1,6 @@
 "use client";
 
-import { useId } from "react";
+import { useId, useState } from "react";
 import { Label } from "@/components/ui/label";
 import { selectClass } from "./birthday-fields";
 
@@ -18,6 +18,8 @@ export function TimeZoneSelect({
   hint?: string;
 }) {
   const id = useId();
+  // Controlled, so a failed submit (React resets uncontrolled fields) keeps the user's pick.
+  const [selected, setSelected] = useState(value ?? "");
   const invalid = errors?.length ? true : undefined;
   // The current zone first (SPEC S-108), then the rest in order.
   const ordered = value ? [value, ...zones.filter((z) => z !== value)] : zones;
@@ -32,7 +34,8 @@ export function TimeZoneSelect({
         id={id}
         name="timeZone"
         required
-        defaultValue={value ?? ""}
+        value={selected}
+        onChange={(e) => setSelected(e.target.value)}
         aria-invalid={invalid}
         aria-describedby={describedBy}
         className={selectClass}

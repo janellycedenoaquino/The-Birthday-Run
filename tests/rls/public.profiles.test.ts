@@ -152,6 +152,16 @@ describe("public.profiles: birthday and time zone", () => {
         .single()
     ).data;
 
+  it("both old and new zone names are accepted (Asia/Calcutta, Asia/Kolkata)", async () => {
+    for (const time_zone of ["Asia/Kolkata", "Asia/Calcutta", "Etc/GMT+12"]) {
+      const { error } = await a.client
+        .from("profiles")
+        .update({ time_zone })
+        .eq("id", a.id);
+      expect(error, time_zone).toBeNull();
+    }
+  });
+
   it("A can change their own birthday and time zone", async () => {
     const { data, error } = await a.client
       .from("profiles")
@@ -183,6 +193,10 @@ describe("public.profiles: birthday and time zone", () => {
     ["Apr 31", { birth_month: 4, birth_day: 31 }],
     ["month 13", { birth_month: 13, birth_day: 1 }],
     ["a month without a day", { birth_month: 6, birth_day: null }],
+    // Written straight through the Data API, past the app's Zod check (decision 0009).
+    ["an unknown time zone", { time_zone: "Not/AZone" }],
+    ["an offset as a time zone", { time_zone: "+05:30" }],
+    ["an abbreviation as a time zone", { time_zone: "EST" }],
   ])("the database refuses %s", async (_, values) => {
     const { error } = await a.client
       .from("profiles")

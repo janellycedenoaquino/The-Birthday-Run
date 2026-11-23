@@ -31,6 +31,15 @@ describe("birthdaySchema (FR-6)", () => {
     expect(dayErrors({ month, day })).toEqual([["day", msg("BR-18")]]);
   });
 
+  it.each([
+    ["an unpicked month", { day: "5" }, "month"],
+    ["an unpicked day", { month: "5" }, "day"],
+    ["a fraction", { month: "5", day: "1.5" }, "day"],
+    ["text", { month: "May", day: "5" }, "month"],
+  ])("%s → BR-18, never Zod's own text (rule 12)", (_, input, field) => {
+    expect(dayErrors(input)).toEqual([[field, msg("BR-18")]]);
+  });
+
   it("refuses extra fields (a year can't sneak in: NFR-3)", () => {
     expect(
       birthdaySchema.safeParse({ month: 6, day: 15, year: 1990 }).success,
@@ -51,13 +60,18 @@ describe("timeZoneSchema (D4)", () => {
     expect(Intl.supportedValuesOf("timeZone").concat("UTC")).toContain(a);
   });
 
-  it.each(["Mars/Olympus_Mons", "", "x".repeat(65)])(
-    "refuses %j with BR-19",
-    (tz) => {
-      const r = timeZoneSchema.safeParse(tz);
-      expect(r.success).toBe(false);
-    },
-  );
+  it.each([
+    "Mars/Olympus_Mons",
+    "",
+    "x".repeat(65),
+    "+05:30",
+    "-14:00",
+    "EST",
+    undefined,
+  ])("refuses %j with BR-19", (tz) => {
+    const r = timeZoneSchema.safeParse(tz);
+    expect(r.success).toBe(false);
+  });
 });
 
 describe("onboardingBirthdaySchema (S-101 step 1)", () => {
