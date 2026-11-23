@@ -25,6 +25,9 @@ jobs:
   import:
     # The production secret is only used with main's CSV and code, never a dispatched branch's.
     if: github.ref == 'refs/heads/main'
+    # SUPABASE_DB_URL lives in the `production` environment, which only main may use
+    # (decision 0006): a workflow pushed on any other branch can't read it.
+    environment: production
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:

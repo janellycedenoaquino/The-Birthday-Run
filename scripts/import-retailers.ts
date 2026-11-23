@@ -57,7 +57,7 @@ export async function importRetailers(
   const rows = parsed.rows;
   const missingLogos = rows.flatMap((r, i) =>
     r.logo_file && !existsSync(join(options.logoDir, r.logo_file))
-      ? [`row ${i + 2} logo_file: missing_file`]
+      ? [`row ${parsed.lines[i]} logo_file: missing_file`]
       : [],
   );
   if (missingLogos.length) throw new ImportError(missingLogos);
@@ -67,6 +67,9 @@ export async function importRetailers(
 
   return sql.begin(async (tx) => {
     // Serialise concurrent runs (the Action's concurrency group is the first guard).
+    // Fail fast instead of holding up every other retailers write until the job times out.
+    await tx`set local lock_timeout = '30s'`;
+    await tx`set local statement_timeout = '2min'`;
     await tx`lock table public.retailers in share row exclusive mode`;
     const retiredBefore = new Set(
       (
@@ -80,13 +83,26 @@ export async function importRetailers(
     const mine = COLUMNS.map((c) => `retailers.${c}`).join(", ");
     const theirs = COLUMNS.map((c) => `excluded.${c}`).join(", ");
     const values = rows.map((r) => pick(r));
+    // `xmax = 0` is the usual Postgres upsert idiom for "this row was inserted, not updated".
     const written = values.length
       ? await tx<{ id: string; inserted: boolean }[]>`
           insert into public.retailers ${tx(values, ...COLUMNS)}
           on conflict (id) do update set ${tx.unsafe(set)}, retired_at = null
           where (${tx.unsafe(mine)}, retailers.retired_at)
                 is distinct from (${tx.unsafe(theirs)}, null)
-          returning id, (xmax = 0) as inserted`
+          returning id, (xmax = 0) as inserted`.catch((e: unknown) => {
+          // `name` is unique across all rows, retired ones too, and checked row by row.
+          if (
+            e instanceof postgres.PostgresError &&
+            e.code === "23505" &&
+            e.constraint_name === "retailers_name_key"
+          )
+            throw new ImportError([
+              `name already used by another retailer: ${e.detail ?? ""}`.trim(),
+              "it may belong to a retired retailer (not in the CSV), or two names were swapped in one edit (rename in two PRs)",
+            ]);
+          throw e;
+        })
       : [];
 
     const retired = await tx<{ id: string }[]>`
@@ -155,7 +171,12 @@ async function main() {
     args.target === "production" ? process.env.SUPABASE_DB_URL : LOCAL_DB_URL;
   if (!url)
     throw new ImportError(["--target=production needs SUPABASE_DB_URL"]);
-  const sql = postgres(url, { max: 1, onnotice: () => {} });
+  // Production goes over the internet: require TLS (postgres.js defaults to none without sslmode).
+  const sql = postgres(url, {
+    max: 1,
+    onnotice: () => {},
+    ssl: args.target === "production" ? "require" : false,
+  });
   try {
     const counts = await importRetailers(sql, readFileSync(args.file, "utf8"), {
       logoDir: args.logos,
@@ -174,10 +195,19 @@ async function main() {
 if (import.meta.main) {
   main().catch((e: unknown) => {
     if (e instanceof ImportError) for (const l of e.lines) console.error(l);
-    // A SQL error: print its code and message only, never the connection URL.
+    // Never print connection details: data errors (classes 22, 23) describe CSV values and are
+    // shown; anything else (auth, network) shows only its code, since messages can name the
+    // pooler host or database user.
     else if (e instanceof postgres.PostgresError)
-      console.error(`database error ${e.code}: ${e.message}`);
-    else console.error(e instanceof Error ? e.message : String(e));
+      console.error(
+        /^2[23]/.test(e.code)
+          ? `database error ${e.code}: ${e.message}`
+          : `database error ${e.code}`,
+      );
+    else
+      console.error(
+        `unexpected error${typeof (e as { code?: unknown })?.code === "string" ? ` ${(e as { code: string }).code}` : ""}`,
+      );
     console.error("import-retailers: nothing was written");
     process.exit(1);
   });

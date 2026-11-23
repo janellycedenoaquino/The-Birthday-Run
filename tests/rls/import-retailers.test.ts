@@ -124,6 +124,55 @@ describe("import:retailers (FR-1)", () => {
   });
 });
 
+describe("import:retailers edge cases (FR-1)", () => {
+  it("a missing logo's row number counts blank lines and multi-line fields", async () => {
+    const text =
+      csv(row("fixture-a", { description: '"Line one\nline two"' })).replace(
+        /\n$/,
+        "\n\n",
+      ) +
+      row("fixture-b", { logo_file: "nope.png" }) +
+      "\n";
+    // header = 1, fixture-a = lines 2-3, blank = 4, fixture-b = 5
+    await expect(run(text)).rejects.toMatchObject({
+      lines: ["row 5 logo_file: missing_file"],
+    });
+  });
+
+  it("two names swapped in one edit → a clear error, nothing written", async () => {
+    await run(three());
+    const before = await snapshot();
+    await expect(
+      run(
+        three({
+          "fixture-a": { name: "Fixture fixture-b" },
+          "fixture-b": { name: "Fixture fixture-a" },
+        }),
+      ),
+    ).rejects.toMatchObject({
+      lines: [
+        expect.stringMatching(/^name already used by another retailer/),
+        expect.any(String),
+      ],
+    });
+    expect(await snapshot()).toEqual(before);
+  });
+
+  it("a new id reusing a retired retailer's name → the same clear error", async () => {
+    await run(three());
+    await run(csv(row("fixture-a"), row("fixture-b")));
+    await expect(
+      run(
+        csv(
+          row("fixture-a"),
+          row("fixture-b"),
+          row("fixture-new", { name: "Fixture fixture-c" }),
+        ),
+      ),
+    ).rejects.toBeInstanceOf(ImportError);
+  });
+});
+
 describe("retire and restore (FR-44)", () => {
   it("a removed row is retired, not deleted; adding it back restores it", async () => {
     await run(three());
@@ -161,6 +210,21 @@ describe("retire and restore (FR-44)", () => {
       retired: 6,
     });
   });
+
+  it("exactly 5 retirements is allowed; a header-only CSV is stopped", async () => {
+    const seven = csv(
+      ...Array.from({ length: 7 }, (_, i) => row(`fixture-${i}`)),
+    );
+    await run(seven);
+    await expect(
+      run(csv(row("fixture-0"), row("fixture-1"))),
+    ).resolves.toMatchObject({ retired: 5 });
+    await run(seven);
+    await expect(run(csv())).rejects.toBeInstanceOf(ImportError);
+    expect(
+      (await snapshot()).filter((r) => r.retired_at === null),
+    ).toHaveLength(7);
+  });
 });
 
 describe("the CLI", () => {
@@ -178,6 +242,32 @@ describe("the CLI", () => {
     expect(r.status).toBe(1);
     expect(r.stderr).toContain("row 2 states: state_code");
     expect(r.stderr).toContain("nothing was written");
+  });
+
+  it("--target=local never uses SUPABASE_DB_URL", () => {
+    const dir = mkdtempSync(join(tmpdir(), "retailer-csv-"));
+    const file = join(dir, "ok.csv");
+    writeFileSync(file, csv(row("fixture-a")));
+    const r = spawnSync(
+      process.execPath,
+      ["scripts/import-retailers.ts", `--file=${file}`, `--logos=${LOGOS}`],
+      {
+        encoding: "utf8",
+        // A documentation-range address: any attempt to use it would fail.
+        env: {
+          ...process.env,
+          SUPABASE_DB_URL: "postgresql://nobody:x@192.0.2.1:5432/postgres",
+        },
+      },
+    );
+    expect(r.stderr).toBe("");
+    expect(r.stdout).toContain("import-retailers (local): inserted 1");
+  });
+
+  it("--allow-retire takes digits only", () => {
+    expect(cli("--allow-retire=5;rm").stderr).toContain(
+      "--allow-retire must be a whole number",
+    );
   });
 
   it("refuses production without SUPABASE_DB_URL and unknown flags", () => {

@@ -75,6 +75,7 @@ describe("parseRetailerCsv: valid input (FR-1)", () => {
           source_url: "https://cafe.example/rewards",
         },
       ],
+      lines: [2],
     });
   });
 

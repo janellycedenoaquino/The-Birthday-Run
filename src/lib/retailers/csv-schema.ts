@@ -317,7 +317,9 @@ const KNOWN_CODES = new Set<string>([
 export function parseRetailerCsv(
   input: string,
   options: { today?: string } = {},
-): { ok: true; rows: RetailerRow[] } | { ok: false; errors: CsvError[] } {
+):
+  | { ok: true; rows: RetailerRow[]; lines: number[] }
+  | { ok: false; errors: CsvError[] } {
   const today = options.today ?? new Date().toISOString().slice(0, 10);
   const read = readCsv(input);
   if (!read.ok)
@@ -342,6 +344,7 @@ export function parseRetailerCsv(
   if (errors.length) return { ok: false, errors };
 
   const rows: RetailerRow[] = [];
+  const lines: number[] = []; // lines[i] = CSV line where rows[i] starts
   const ids = new Set<string>();
   const nameSet = new Set<string>();
   for (const rec of records) {
@@ -380,6 +383,7 @@ export function parseRetailerCsv(
     ids.add(row.id);
     nameSet.add(key);
     rows.push(row);
+    lines.push(rec.line);
   }
-  return errors.length ? { ok: false, errors } : { ok: true, rows };
+  return errors.length ? { ok: false, errors } : { ok: true, rows, lines };
 }
