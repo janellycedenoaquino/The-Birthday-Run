@@ -72,6 +72,20 @@ export const M = {
   "M-40": "Placeholder text. Replace this page before launch.",
   "M-41":
     'For your security, set your password with a reset link instead: use "Forgot password" on the sign-in page.',
+
+  // App messages (SPEC §3.4): onboarding and settings (F-2)
+  "M-105": "When's your birthday?",
+  "M-106": "We only need the month and day, never the year.",
+  "M-107": "Time zone: {timeZone}. You can change it in Settings.",
+  "M-108": "Continue",
+  "M-256":
+    "Used to work out which day it is for you and when reminder emails go out.",
+  "M-257": "Birthday saved.",
+  "M-278":
+    "In years without Feb 29 we count Feb 28. Some brands use Mar 1, so check their app.",
+  "BR-1": "Add your birthday first.",
+  "BR-18": "Choose a real date.",
+  "BR-19": "Choose a time zone from the list.",
 } as const;
 
 export type MessageId = keyof typeof M;

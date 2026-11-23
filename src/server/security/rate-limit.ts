@@ -34,6 +34,10 @@ export const LIMITS = {
   accountExport: perUserHourly,
   deleteAccount: perUserHourly,
   updateDisplayName: { user: [30, HOUR] },
+  // BUILD §0.4 (app additions): 30 per user per hour.
+  saveOnboarding: { user: [30, HOUR] },
+  updateBirthday: { user: [30, HOUR] },
+  updateTimeZone: { user: [30, HOUR] },
   authConfirm: { ip: [30, 10 * MIN] },
   authCallback: { ip: [30, 10 * MIN] },
 } as const satisfies Record<string, Limit>;

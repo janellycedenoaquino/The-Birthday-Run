@@ -75,7 +75,19 @@ export async function padToMinimum(start: number, ms: number): Promise<void> {
     await new Promise((resolve) => setTimeout(resolve, remaining));
 }
 
-export type Notice = "account_deleted" | "password_set" | "password_changed";
+export const NOTICES = [
+  "account_deleted",
+  "password_set",
+  "password_changed",
+] as const;
+export type Notice = (typeof NOTICES)[number];
+
+/** The `?notice=` value of a same-site path, if it's one of the §0.2 enum; else null. */
+export function noticeOf(path: string | null): Notice | null {
+  if (!path) return null;
+  const value = new URL(path, "http://x.invalid").searchParams.get("notice");
+  return NOTICES.find((n) => n === value) ?? null;
+}
 
 /** `path` with `?notice=<value>` added (§0.2 enum). `path` must be a same-site path. */
 export function withNotice(path: string, value: Notice): string {

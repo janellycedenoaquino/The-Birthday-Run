@@ -491,7 +491,7 @@ stateDiagram-v2
 ```
 - **FR-9:** after `updateBirthday`, every page recomputes from the new date; pickups regroup by date (D7); groups whose pickup is outside `planRange` show M-235 (F-6).
 - **Time zone change** moves "today" only; group pickups are local date/time and don't move (D4).
-- A browser-detected zone the server's `Intl.supportedValuesOf("timeZone")` doesn't list (an alias such as `Asia/Calcutta`): BR-19, the select appears.
+- A browser-detected zone that's an alias (browsers say `Asia/Kolkata`, Node's ICU may list only `Asia/Calcutta`): accepted and stored under the runtime's own name (decision 0009). A zone the runtime doesn't recognize: BR-19, and the select appears.
 - Feb 29 birthday: S-101 and S-108 list Feb 29; day 0 is Feb 28 in non-leap years.
 
 ### Tests

@@ -140,3 +140,54 @@ describe("public.profiles: MFA (D8, FR-58)", () => {
     expect(after).toEqual([{ id: m.id }]);
   });
 });
+
+// The birthday columns (BUILD F-2 "Tests": FR-6, FR-9, NFR-1, NFR-3).
+describe("public.profiles: birthday and time zone", () => {
+  const birthdayOf = async (id: string) =>
+    (
+      await adminClient()
+        .from("profiles")
+        .select("birth_month, birth_day, time_zone")
+        .eq("id", id)
+        .single()
+    ).data;
+
+  it("A can change their own birthday and time zone", async () => {
+    const { data, error } = await a.client
+      .from("profiles")
+      .update({ birth_month: 2, birth_day: 29, time_zone: "UTC" })
+      .eq("id", a.id)
+      .select("id");
+    expect(error).toBeNull();
+    expect(data).toEqual([{ id: a.id }]);
+    expect(await birthdayOf(a.id)).toEqual({
+      birth_month: 2,
+      birth_day: 29,
+      time_zone: "UTC",
+    });
+  });
+
+  it("B can't change A's birthday (0 rows, A's row unchanged)", async () => {
+    const before = await birthdayOf(a.id);
+    const { data } = await b.client
+      .from("profiles")
+      .update({ birth_month: 1, birth_day: 1 })
+      .eq("id", a.id)
+      .select("id");
+    expect(data).toEqual([]);
+    expect(await birthdayOf(a.id)).toEqual(before);
+  });
+
+  it.each([
+    ["Feb 30", { birth_month: 2, birth_day: 30 }],
+    ["Apr 31", { birth_month: 4, birth_day: 31 }],
+    ["month 13", { birth_month: 13, birth_day: 1 }],
+    ["a month without a day", { birth_month: 6, birth_day: null }],
+  ])("the database refuses %s", async (_, values) => {
+    const { error } = await a.client
+      .from("profiles")
+      .update(values)
+      .eq("id", a.id);
+    expect(error?.code).toBe("23514");
+  });
+});

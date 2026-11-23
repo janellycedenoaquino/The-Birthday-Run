@@ -40,6 +40,9 @@ describe("LIMITS (the §0.4 table)", () => {
     ["startMfaEnrollment", { user: [10, 3600] }],
     ["reauthenticateWithPassword", { ip: [20, 600], user: [5, 900] }],
     ["updateDisplayName", { user: [30, 3600] }],
+    ["saveOnboarding", { user: [30, 3600] }],
+    ["updateBirthday", { user: [30, 3600] }],
+    ["updateTimeZone", { user: [30, 3600] }],
     ["authConfirm", { ip: [30, 600] }],
   ] as const)("%s", (action, expected) => {
     expect(LIMITS[action]).toEqual(expected);
@@ -64,6 +67,9 @@ describe("LIMITS (the §0.4 table)", () => {
         "accountExport",
         "deleteAccount",
         "updateDisplayName",
+        "saveOnboarding",
+        "updateBirthday",
+        "updateTimeZone",
         "authConfirm",
         "authCallback",
       ].sort(),

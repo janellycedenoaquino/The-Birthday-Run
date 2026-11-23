@@ -69,6 +69,19 @@ describe("every app table (NFR-1, NFR-2)", () => {
   });
 });
 
+// NFR-3: the app never stores a birth year or a full birth date, in any app table.
+describe("no birth year anywhere (NFR-3)", () => {
+  it("has no year or birth-date column in an app schema", async () => {
+    const columns = await db<{ col: string }[]>`
+      select table_schema || '.' || table_name || '.' || column_name as col
+      from information_schema.columns
+      where table_schema <> all(${MANAGED})
+        and (column_name ilike '%year%' or column_name ilike '%birth_date%'
+             or column_name ilike '%birthdate%' or column_name ilike '%dob%')`;
+    expect(columns).toEqual([]);
+  });
+});
+
 describe.each(USER_DATA_TABLES.map((t) => [name(t), t] as const))(
   "user-data table %s (D8, D12)",
   (_, t) => {
