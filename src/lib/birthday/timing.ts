@@ -94,19 +94,24 @@ export type Occurrence = {
   start: LocalDate;
   end: LocalDate;
 };
-type Cycle = Occurrence & { cycleEnd: LocalDate };
+/** A cycle (SPEC Terms, decision 0008): fixed bounds, so a pickup's cycle never changes. */
+type Cycle = Occurrence & { cycleStart: LocalDate; cycleEnd: LocalDate };
 
 export type BirthdayWindow = {
   today: LocalDate;
   current: Cycle; // the cycle holding today
   planning: Cycle; // current while today <= current.end, else the next one
   inWindow: boolean; // current.start <= today <= current.end
-  dayNumber: number; // today − current.birthday (negative before it)
-  daysUntilBirthday: number; // 0 on the birthday
+  dayNumber: number; // today − planning.birthday: negative before it, 0 on it
+  nextBirthday: LocalDate; // the birthday on or after today (FR-49's join-by date counts back from it)
+  daysUntilBirthday: number; // nextBirthday − today; 0 on the birthday
 };
 
 /** SPEC Terms: the window never ends before day 30. */
 const MIN_WINDOW_DAYS = 30;
+/** Decision 0008: every cycle starts this many days before its birthday, the most any reward
+ *  can open early (FR-1: 31 days in total), so no window ever starts before its cycle does. */
+const CYCLE_LEAD_DAYS = 31;
 
 const pad = (n: number) => String(n).padStart(2, "0");
 const isLeap = (y: number) => y % 4 === 0 && (y % 100 !== 0 || y % 400 === 0);
@@ -131,17 +136,36 @@ export function birthdayIn(year: number, b: Birthday): LocalDate {
   return `${year}-${pad(b.month)}-${pad(day)}` as LocalDate;
 }
 
-/** A `retailers` row's three timing columns → a Timing. Throws on rows the DB check refuses. */
+/** FR-1 / A-1: a reward lasts 1–31 days in total. */
+const MAX_REWARD_DAYS = 31;
+const isCount = (n: number | null, min: number): n is number =>
+  n !== null && Number.isInteger(n) && n >= min && n <= MAX_REWARD_DAYS;
+
+/** A `retailers` row's three timing columns → a Timing. Throws on any row the DB check refuses. */
 export function timingOf(row: {
   timing_type: string;
   days_before: number | null;
   days_after: number | null;
 }): Timing {
   const { timing_type: type, days_before: before, days_after: after } = row;
-  if (type === "birth_month" || type === "to_month_end") return { type };
-  if ((type === "from_birthday" || type === "month_start") && after !== null)
+  if (
+    (type === "birth_month" || type === "to_month_end") &&
+    before === null &&
+    after === null
+  )
+    return { type };
+  if (
+    (type === "from_birthday" || type === "month_start") &&
+    before === null &&
+    isCount(after, 1)
+  )
     return { type, days: after };
-  if (type === "around_birthday" && before !== null && after !== null)
+  if (
+    type === "around_birthday" &&
+    isCount(before, 1) &&
+    isCount(after, 0) &&
+    before + after + 1 <= MAX_REWARD_DAYS
+  )
     return { type, before, after };
   throw new Error(`timingOf: invalid timing ${JSON.stringify(row)}`);
 }
@@ -175,6 +199,8 @@ export function rewardDays(
 
 // ---- Windows and cycles (FR-10, FR-19) -------------------------------------------------------
 
+const within = (date: LocalDate, min: LocalDate, max: LocalDate) =>
+  compareDates(date, min) >= 0 && compareDates(date, max) <= 0;
 const earliest = (dates: LocalDate[]) =>
   dates.reduce((a, b) => (compareDates(a, b) <= 0 ? a : b));
 const latest = (dates: LocalDate[]) =>
@@ -198,21 +224,25 @@ function occurrenceIn(
   };
 }
 
-/** The cycle for `year`: its window, ending the day before next year's window starts. */
+/** The cycle for `year`: from 31 days before its birthday to the day before the next one's start. */
 function cycleIn(year: number, b: Birthday, timings: Timing[]): Cycle {
   const occ = occurrenceIn(year, b, timings);
-  const next = occurrenceIn(year + 1, b, timings);
-  return { ...occ, cycleEnd: addDays(next.start, -1) };
+  return {
+    ...occ,
+    cycleStart: addDays(occ.birthday, -CYCLE_LEAD_DAYS),
+    cycleEnd: addDays(birthdayIn(year + 1, b), -CYCLE_LEAD_DAYS - 1),
+  };
 }
 
-/** The year of the cycle holding `date`: the latest one whose window has started. */
-function cycleYear(date: LocalDate, b: Birthday, timings: Timing[]): number {
-  // A window starts at most 31 days before its birthday (FR-1), so it's one of these three.
+/** The year of the cycle holding `date`. Bounds don't depend on enrollments (decision 0008). */
+function cycleYear(date: LocalDate, b: Birthday): number {
   const y = yearOf(date);
-  for (const year of [y + 1, y, y - 1])
-    if (compareDates(occurrenceIn(year, b, timings).start, date) <= 0)
+  // A cycle starts 31 days before its birthday, so it's next year's (late December, early
+  // January birthday), this year's, or last year's.
+  for (const year of [y + 1, y])
+    if (compareDates(addDays(birthdayIn(year, b), -CYCLE_LEAD_DAYS), date) <= 0)
       return year;
-  return y - 2; // unreachable with real data; keeps the function total
+  return y - 1;
 }
 
 export function windowFor(
@@ -220,10 +250,13 @@ export function windowFor(
   enrolledTimings: Timing[],
   today: LocalDate,
 ): BirthdayWindow {
-  const year = cycleYear(today, b, enrolledTimings);
+  const year = cycleYear(today, b);
   const current = cycleIn(year, b, enrolledTimings);
-  const inWindow = compareDates(today, current.end) <= 0;
-  const planning = inWindow ? current : cycleIn(year + 1, b, enrolledTimings);
+  const inWindow = within(today, current.start, current.end);
+  const planning =
+    compareDates(today, current.end) <= 0
+      ? current
+      : cycleIn(year + 1, b, enrolledTimings);
   const nextBirthday =
     compareDates(today, current.birthday) <= 0
       ? current.birthday
@@ -233,7 +266,8 @@ export function windowFor(
     current,
     planning,
     inWindow,
-    dayNumber: compareDates(today, current.birthday),
+    dayNumber: compareDates(today, planning.birthday),
+    nextBirthday,
     daysUntilBirthday: compareDates(nextBirthday, today),
   };
 }
@@ -244,14 +278,11 @@ export function cycleFor(
   b: Birthday,
   enrolledTimings: Timing[],
 ): Cycle & { year: number } {
-  const year = cycleYear(date, b, enrolledTimings);
+  const year = cycleYear(date, b);
   return { ...cycleIn(year, b, enrolledTimings), year };
 }
 
 // ---- Statuses and ranges (FR-11, FR-12, FR-14, FR-17, FR-23) ----------------------------------
-
-const within = (date: LocalDate, min: LocalDate, max: LocalDate) =>
-  compareDates(date, min) >= 0 && compareDates(date, max) <= 0;
 
 /** Uses the planning cycle, so after the window everything is next year's and not open yet. */
 export function rewardStatus(
@@ -260,7 +291,9 @@ export function rewardStatus(
   pickupDates: LocalDate[],
 ): RewardStatus {
   const { planning, today } = w;
-  if (pickupDates.some((p) => within(p, planning.start, planning.cycleEnd)))
+  if (
+    pickupDates.some((p) => within(p, planning.cycleStart, planning.cycleEnd))
+  )
     return "picked_up";
   const { opens, closes } = rewardDays(t, planning.birthday);
   if (compareDates(today, opens) < 0) return "not_open";

@@ -55,7 +55,7 @@ Only what the app **adds** to the Template; Template features are referenced as 
 
 **Tags:** **[v1]** everyone · **[v2-premium]** premium only (granted or paid) · **[v2-payments]** Stripe-only parts, built and tested, off by a flag.
 
-**Terms:** **Day 0** is the birthday (negative days are before it). A reward's **timing** (FR-1, FR-11) says which days it can be used. The user's **window** runs from the earliest day any of their enrolled rewards opens to the last day any closes, and never ends before day 30. A **cycle** runs from one window's start to the next. A **reward** is an enrolled retailer's birthday reward. **Premium** is the entitlement in FR-35.
+**Terms:** **Day 0** is the birthday (negative days are before it). A reward's **timing** (FR-1, FR-11) says which days it can be used. The user's **window** runs from the earliest day any of their enrolled rewards opens to the last day any closes, and never ends before day 30. A **cycle** runs from 31 days before one birthday (the most any reward opens early, FR-1) to the day before the same point next year, so a pickup's cycle never changes when enrollments do (decision 0008). A **reward** is an enrolled retailer's birthday reward. **Premium** is the entitlement in FR-35.
 
 ### 2.1 Success metrics
 Metrics 1–5 are §1's "done when" (all required). Metric 6 is reported, not a gate.

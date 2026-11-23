@@ -310,7 +310,8 @@ function isRealDate(v: string): boolean {
   const [y, mo, d] = [+m[1]!, +m[2]!, +m[3]!];
   const leap = y % 4 === 0 && (y % 100 !== 0 || y % 400 === 0);
   const days = [31, leap ? 29 : 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
-  return mo >= 1 && mo <= 12 && d >= 1 && d <= days[mo - 1]!;
+  // Year 0000 isn't a Postgres date; reject it here so the error has a row number.
+  return y >= 1 && mo >= 1 && mo <= 12 && d >= 1 && d <= days[mo - 1]!;
 }
 
 const KNOWN_CODES = new Set<string>([

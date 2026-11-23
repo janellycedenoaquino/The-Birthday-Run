@@ -271,6 +271,12 @@ describe("parseRetailerCsv: bad rows give their row number (FR-1, FR-46)", () =>
       "date_format",
     ],
     [
+      "year 0000 (not a Postgres date)",
+      { last_checked_on: "0000-01-01" },
+      "last_checked_on",
+      "date_format",
+    ],
+    [
       "future date",
       { last_checked_on: "2026-11-24" },
       "last_checked_on",

@@ -414,11 +414,12 @@ export type RewardStatus = "not_open" | "available" | "expired" | "picked_up";
 export type Occurrence = { birthday: LocalDate; start: LocalDate; end: LocalDate };  // one cycle's window
 export type BirthdayWindow = {
   today: LocalDate;
-  current: Occurrence & { cycleEnd: LocalDate };   // the cycle holding today
-  planning: Occurrence & { cycleEnd: LocalDate };  // current while today <= current.end, else the next one
+  current: Occurrence & { cycleStart: LocalDate; cycleEnd: LocalDate };   // the cycle holding today
+  planning: Occurrence & { cycleStart: LocalDate; cycleEnd: LocalDate };  // current while today <= current.end, else the next one
   inWindow: boolean;                               // current.start <= today <= current.end
-  dayNumber: number;                               // today - current.birthday (negative before it)
-  daysUntilBirthday: number;                       // 0 on the birthday
+  dayNumber: number;                               // today - planning.birthday (negative before it)
+  nextBirthday: LocalDate;                         // the birthday on or after today (FR-49)
+  daysUntilBirthday: number;                       // nextBirthday - today; 0 on the birthday
 };
 
 export function isValidMonthDay(month: number, day: number): boolean;     // Feb 29 valid
@@ -430,7 +431,7 @@ export function rewardDays(t: Timing, occurrence: LocalDate): { opens: LocalDate
 export function windowFor(b: Birthday, enrolledTimings: Timing[], today: LocalDate): BirthdayWindow;
 export function rewardStatus(t: Timing, w: BirthdayWindow, pickupDates: LocalDate[]): RewardStatus;
 export function daysLeft(t: Timing, w: BirthdayWindow): number;          // closes - today + 1; 1 = last day
-export function cycleFor(date: LocalDate, b: Birthday, enrolledTimings: Timing[]): Occurrence & { year: number; cycleEnd: LocalDate };
+export function cycleFor(date: LocalDate, b: Birthday, enrolledTimings: Timing[]): Occurrence & { year: number; cycleStart: LocalDate; cycleEnd: LocalDate };
 export function headerState(w: BirthdayWindow, anyAvailable: boolean): "birthday" | "birth_month" | "window_open" | "other";
 export function pickupDateRange(w: BirthdayWindow): { min: LocalDate; max: LocalDate } | null;  // FR-17: [current.start, today] in window, else null
 export function planRange(w: BirthdayWindow): { min: LocalDate; max: LocalDate };               // FR-23: in window [today, end], else [planning.start, planning.end]
@@ -442,9 +443,9 @@ export function formatDate(d: LocalDate, style: "short" | "long"): string;     /
 Rules inside (the definitions; FR-10/FR-11 are the requirements):
 - `today` and `localTime`: `Intl.DateTimeFormat("en-CA", { timeZone, year, month, day, hour, minute, hourCycle: "h23" }).formatToParts(now)` (MDN `Intl.DateTimeFormat`; `formatToParts` avoids locale string parsing).
 - `rewardDays` for occurrence B: `from_birthday` → [B, B+N−1]; `birth_month` → [first, last day of B's calendar month] (Feb 29 birthdays: February); `around_birthday` → [B−before, B+after]; `month_start` → [first of B's month, that day + N−1] (can run into the next month); `to_month_end` → [B, last day of B's month].
-- An occurrence's window: `start` = min(B, every enrolled reward's `opens`); `end` = max(B+30, every `closes`) (SPEC Terms: never ends before day 30). Its `cycleEnd` = the day before the next occurrence's `start`.
-- `current` = the latest occurrence whose `start` ≤ today (checks the years around today's year). `planning` = `current` if today ≤ `current.end`, else the next occurrence.
-- `rewardStatus` uses `planning`: `picked_up` if a pickup date lies in [`planning.start`, `planning.cycleEnd`]; else `not_open` before `opens`, `expired` after `closes`, `available` between. When `planning` is the next occurrence, nothing is expired (FR-11).
+- An occurrence's window: `start` = min(B, every enrolled reward's `opens`); `end` = max(B+30, every `closes`) (SPEC Terms: never ends before day 30). Its cycle (decision 0008) is fixed: `cycleStart` = B−31, `cycleEnd` = the day before next year's B−31, whatever is enrolled.
+- `current` = the cycle whose [`cycleStart`, `cycleEnd`] holds today; `inWindow` = `current.start` ≤ today ≤ `current.end`. `planning` = `current` if today ≤ `current.end`, else the next occurrence.
+- `rewardStatus` uses `planning`: `picked_up` if a pickup date lies in [`planning.cycleStart`, `planning.cycleEnd`]; else `not_open` before `opens`, `expired` after `closes`, `available` between. When `planning` is the next occurrence, nothing is expired (FR-11).
 - `cycleFor(date)` = the occurrence whose [`start`, `cycleEnd`] holds `date`; `year` = the year of its birthday (S-107's M-251). This is SPEC's cycle definition (FR-19 follows it).
 - `headerState`: `birthday` if today = `current.birthday`; else `birth_month` if `inWindow` and today is in the birth month; else `window_open` if `inWindow` and `anyAvailable`; else `other`.
 

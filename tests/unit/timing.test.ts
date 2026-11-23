@@ -176,6 +176,21 @@ describe("timingOf (FR-11): DB row → Timing", () => {
     expect(timingOf(row("to_month_end", null, null))).toEqual(TO_MONTH_END);
   });
 
+  it.each([
+    ["from_birthday with days_before", "from_birthday", 5, 3],
+    ["from_birthday 0 days", "from_birthday", null, 0],
+    ["from_birthday 32 days", "from_birthday", null, 32],
+    ["birth_month with days", "birth_month", 5, 3],
+    ["to_month_end with days", "to_month_end", null, 1],
+    ["around 0 before", "around_birthday", 0, 3],
+    ["around over 31 in total", "around_birthday", 16, 15],
+    ["month_start with no days", "month_start", null, null],
+  ])("refuses %s (FR-1)", (_, timing_type, days_before, days_after) => {
+    expect(() =>
+      timingOf({ timing_type, days_before, days_after } as never),
+    ).toThrow();
+  });
+
   it("throws on a row the DB check would have refused", () => {
     expect(() =>
       timingOf({
@@ -295,7 +310,8 @@ describe("windowFor (FR-10)", () => {
     });
 
     const w31 = windowFor(JUN15, t, d("2026-07-16"));
-    expect(w31).toMatchObject({ inWindow: false, dayNumber: 31 });
+    // Outside the window the day counts toward the next birthday (SPEC Terms: negative before it).
+    expect(w31).toMatchObject({ inWindow: false, dayNumber: -334 });
     expect(w31.planning.birthday).toBe("2027-06-15");
     expect(w31.daysUntilBirthday).toBe(334);
   });
@@ -308,7 +324,13 @@ describe("windowFor (FR-10)", () => {
 
   it("day −1: out with only from_birthday; in with an early reward or the birth month", () => {
     const out = windowFor(JUN15, [fromBirthday(7)], d("2026-06-14"));
-    expect(out).toMatchObject({ inWindow: false, daysUntilBirthday: 1 });
+    expect(out).toMatchObject({
+      inWindow: false,
+      dayNumber: -1,
+      daysUntilBirthday: 1,
+      nextBirthday: "2026-06-15",
+    });
+    expect(windowFor(JUN15, [], d("2026-06-01")).dayNumber).toBe(-14);
     expect(out.planning.birthday).toBe("2026-06-15");
 
     const early = windowFor(JUN15, [around(7, 3)], d("2026-06-14"));
@@ -369,17 +391,27 @@ describe("cycleFor (FR-19)", () => {
     expect(c).toMatchObject({ year: 2026, birthday: "2026-12-20" });
   });
 
-  it("a cycle ends the day before the next one starts", () => {
+  it("a cycle runs from 31 days before the birthday to the day before the next one (decision 0008)", () => {
     const t = [fromBirthday(7)];
-    expect(cycleFor(d("2027-06-14"), JUN15, t)).toMatchObject({
+    expect(cycleFor(d("2026-06-15"), JUN15, t)).toMatchObject({
       year: 2026,
-      cycleEnd: "2027-06-14",
+      cycleStart: "2026-05-15",
+      cycleEnd: "2027-05-14",
     });
-    expect(cycleFor(d("2027-06-15"), JUN15, t)).toMatchObject({ year: 2027 });
-    // An early reward moves the next start earlier, so the cycle ends earlier too.
-    expect(cycleFor(d("2027-06-08"), JUN15, [around(7, 0)])).toMatchObject({
-      year: 2027,
-    });
+    expect(cycleFor(d("2027-05-14"), JUN15, t)).toMatchObject({ year: 2026 });
+    expect(cycleFor(d("2027-05-15"), JUN15, t)).toMatchObject({ year: 2027 });
+  });
+
+  it("a pickup's cycle doesn't change when enrollments change", () => {
+    // Birthday Jan 1 with a 30-day-early reward: a Dec 5 pickup is in the 2027 cycle,
+    // and stays there after unenrolling (the reviewer's case).
+    const jan1 = { month: 1, day: 1 };
+    expect(cycleFor(d("2026-12-05"), jan1, [around(30, 0)]).year).toBe(2027);
+    expect(cycleFor(d("2026-12-05"), jan1, []).year).toBe(2027);
+    const w = windowFor(jan1, [fromBirthday(31)], d("2027-01-10"));
+    expect(rewardStatus(fromBirthday(31), w, [d("2026-12-05")])).toBe(
+      "picked_up",
+    );
   });
 });
 
@@ -491,6 +523,13 @@ describe("pickupDateRange (FR-17) and planRange (FR-23)", () => {
 });
 
 describe("joinByDate (FR-49)", () => {
+  it("counts back from the next birthday, which the window gives", () => {
+    // Jun 20, after a Jun 15 birthday: next year's join-by date, not this year's.
+    const w = windowFor(JUN15, [fromBirthday(7)], d("2026-06-20"));
+    expect(w.nextBirthday).toBe("2027-06-15");
+    expect(joinByDate(w.nextBirthday, 7)).toBe("2027-06-08");
+  });
+
   it("is N days before the birthday, across New Year too", () => {
     expect(joinByDate(d("2026-06-15"), 7)).toBe("2026-06-08");
     expect(joinByDate(d("2027-01-03"), 7)).toBe("2026-12-27");
