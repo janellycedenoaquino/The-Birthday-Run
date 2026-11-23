@@ -81,6 +81,16 @@ describe("pickupStats (FR-21)", () => {
     expect(sections[0]!.items).toHaveLength(stats.thisCycle);
   });
 
+  it("after the window closes, 'this Birthday Run' is the next one, as in History's top section", () => {
+    const stats = pickupStats({
+      birthday: { month: 6, day: 15 },
+      timings: week,
+      today: d("2026-08-01"),
+      dates: [d("2026-06-15")],
+    });
+    expect(stats).toEqual({ thisCycle: 0, last: "2026-06-15" });
+  });
+
   it("no pickups → 0 and no date (M-128)", () => {
     expect(
       pickupStats({

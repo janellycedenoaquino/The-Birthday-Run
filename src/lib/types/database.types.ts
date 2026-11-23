@@ -101,7 +101,7 @@ isOneToOne: false
 { Args: Record<PropertyKey, never>; Returns: boolean
                            },
 "create_pickup":
-{ Args: { "p_cycle_end": string,"p_cycle_start": string,"p_location_label": string,"p_note": string,"p_picked_up_on": string,"p_retailer_id": string }; Returns: string
+{ Args: { "p_location_label": string,"p_note": string,"p_picked_up_on": string,"p_retailer_id": string }; Returns: string
                            },
 "mark_password_set":
 { Args: Record<PropertyKey, never>; Returns: boolean

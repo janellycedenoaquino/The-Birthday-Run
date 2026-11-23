@@ -707,7 +707,7 @@ revoke all on function public.create_pickup(text, date, text, text, date, date) 
 grant execute on function public.create_pickup(text, date, text, text, date, date) to authenticated;
 ```
 - Every statement filters on `v_uid`, never on input. The `reward_group_items` delete needs F-6's table: this migration runs after F-6's. `not_allowed` maps to API-2 (an `aal1` session never gets this far through the guards).
-- **As built (Phase 2, PR 7):** Phase 2 ships F-5 before F-6, so the migration has no group-items delete yet; F-6's PR adds it with `create or replace function`. The action passes `p_cycle_start: w.planning.cycleStart` (decision 0008's fixed bounds), not the window start, so the one-per-cycle check covers the whole cycle. A date outside the window gets BR-8b (date only); `pickup_out_of_cycle` from the function (a reward that closed between the check and the insert) reads as BR-10.
+- **As built (Phase 2, PR 7):** Phase 2 ships F-5 before F-6, so the migration has no group-items delete yet; F-6's PR adds it with `create or replace function`. The function takes no cycle dates (decision 0011): it works out today and today's cycle from the caller's own profile, so a direct PostgREST call can't choose them. The action also refuses a date before the reward itself opened. A date outside the window gets BR-8b (date only); `pickup_out_of_cycle` from the function (a reward that closed between the check and the insert) reads as BR-10.
 - Registry: `USER_DATA_TABLES` += `pickups` (`user_id`).
 
 ### Operations

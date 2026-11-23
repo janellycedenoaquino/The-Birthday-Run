@@ -44,11 +44,17 @@ export function historySections(input: {
     .sort(([a], [b]) => b - a)
     .map(([year, items]) => ({
       year,
-      items: [...items].sort((x, y) => compareDates(y.date, x.date)),
+      // Newest first; same-day pickups in a stable order.
+      items: [...items].sort(
+        (x, y) => compareDates(y.date, x.date) || x.id.localeCompare(y.id),
+      ),
     }));
 }
 
-/** S-102's stats (FR-21): pickups in the current cycle (same bounds as History) and the latest. */
+/**
+ * S-102's stats (FR-21): pickups in "this Birthday Run" and the latest. "This" is the planning
+ * cycle, as on My Rewards and in History's top section: after the window closes, the next one.
+ */
 export function pickupStats(input: {
   birthday: Birthday;
   timings: Timing[];
@@ -56,7 +62,7 @@ export function pickupStats(input: {
   dates: LocalDate[];
 }): { thisCycle: number; last: LocalDate | null } {
   const w = windowFor(input.birthday, input.timings, input.today);
-  const { cycleStart, cycleEnd } = w.current;
+  const { cycleStart, cycleEnd } = w.planning;
   const thisCycle = input.dates.filter(
     (d) => compareDates(d, cycleStart) >= 0 && compareDates(d, cycleEnd) <= 0,
   ).length;

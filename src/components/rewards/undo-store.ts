@@ -6,14 +6,14 @@ import { useSyncExternalStore } from "react";
 // soon as the server re-renders without it, so the undo row lives here, outside the list.
 export const UNDO_MS = 60_000;
 
-export type Recent = { pickupId: string; retailer: string; until: number };
+export type Recent = { pickupId: string; retailer: string };
 
 let recent: Recent[] = [];
 const listeners = new Set<() => void>();
 const emit = () => listeners.forEach((l) => l());
 
 export function addRecent(pickupId: string, retailer: string) {
-  recent = [...recent, { pickupId, retailer, until: Date.now() + UNDO_MS }];
+  recent = [...recent, { pickupId, retailer }];
   emit();
   setTimeout(() => removeRecent(pickupId), UNDO_MS);
 }

@@ -11,21 +11,23 @@ import {
 import { enrollTotp, totp } from "./totp";
 
 // public.pickups RLS and create_pickup (BUILD F-5 "Tests": FR-17, FR-20, NFR-1, D7). Required for
-// every USER_DATA_TABLES entry (the catalog test checks this file exists).
+// every USER_DATA_TABLES entry (the catalog test checks this file exists). The function takes no
+// cycle dates from the caller (decision 0008): it reads the caller's own birthday and zone. Test
+// users get a birthday of today in UTC, so the dates below are always inside today's cycle.
 const RETAILER = "starbucks";
 const OTHER = "sephora";
-// Cycle bounds as the action passes them (decision 0008); the dates only need to be inside.
-const CYCLE = { p_cycle_start: "2026-05-15", p_cycle_end: "2027-05-14" };
+const ZONE = "UTC";
+const day = (offset: number) =>
+  new Date(Date.now() + offset * 86_400_000).toISOString().slice(0, 10);
 let a: TestUser;
 let b: TestUser;
 
 const pickup = (client: Client, over: Record<string, unknown> = {}) =>
   client.rpc("create_pickup", {
     p_retailer_id: RETAILER,
-    p_picked_up_on: "2026-06-15",
+    p_picked_up_on: day(0),
     p_note: "Venti",
     p_location_label: "Main St",
-    ...CYCLE,
     ...over,
   } as never);
 
@@ -33,34 +35,48 @@ const rowsOf = async (userId: string) =>
   (
     await adminClient()
       .from("pickups")
-      .select("retailer_id, picked_up_on, note")
+      .select("retailer_id, picked_up_on, note, location_label")
       .eq("user_id", userId)
   ).data ?? [];
+
+async function setUp(u: TestUser) {
+  const [, month, date] = day(0).split("-").map(Number);
+  const { error } = await adminClient()
+    .from("profiles")
+    .update({ birth_month: month, birth_day: date, time_zone: ZONE })
+    .eq("id", u.id);
+  if (error) throw new Error(`setup birthday failed: ${error.message}`);
+  const { error: enrollError } = await u.client
+    .from("enrollments")
+    .insert(
+      [RETAILER, OTHER].map((retailer_id) => ({ user_id: u.id, retailer_id })),
+    );
+  if (enrollError)
+    throw new Error(`setup enroll failed: ${enrollError.message}`);
+}
 
 beforeAll(async () => {
   a = await createUser("pickups-a");
   b = await createUser("pickups-b");
-  for (const u of [a, b]) {
-    const { error } = await u.client.from("enrollments").insert(
-      [RETAILER, OTHER].map((retailer_id) => ({
-        user_id: u.id,
-        retailer_id,
-      })),
-    );
-    if (error) throw new Error(`setup enroll failed: ${error.message}`);
-  }
+  await setUp(a);
+  await setUp(b);
 });
 afterAll(() => deleteUsers(a, b)); // cascades enrollments and pickups
 
-describe("create_pickup (FR-17, D7)", () => {
-  it("A picks up once; a second in the same cycle → pickup_exists", async () => {
+describe("create_pickup (FR-17, D7, decision 0008)", () => {
+  it("A picks up once; a second in the same cycle, any date → pickup_exists", async () => {
     const first = await pickup(a.client);
     expect(first.error).toBeNull();
     expect(typeof first.data).toBe("string");
-    const second = await pickup(a.client, { p_picked_up_on: "2026-06-16" });
+    const second = await pickup(a.client, { p_picked_up_on: day(-1) });
     expect(second.error?.message).toBe("pickup_exists");
     expect(await rowsOf(a.id)).toEqual([
-      { retailer_id: RETAILER, picked_up_on: "2026-06-15", note: "Venti" },
+      {
+        retailer_id: RETAILER,
+        picked_up_on: day(0),
+        note: "Venti",
+        location_label: "Main St",
+      },
     ]);
   });
 
@@ -76,12 +92,23 @@ describe("create_pickup (FR-17, D7)", () => {
     ).toHaveLength(1);
   });
 
-  it("a date outside the cycle → pickup_out_of_cycle", async () => {
+  it.each([
+    ["tomorrow (the future)", 1],
+    ["years ahead", 1500],
+    ["before today's cycle began (31 days before the birthday)", -40],
+  ])("a date %s → pickup_out_of_cycle", async (_, offset) => {
     const r = await pickup(a.client, {
       p_retailer_id: OTHER,
-      p_picked_up_on: "2027-06-01",
+      p_picked_up_on: day(offset),
     });
     expect(r.error?.message).toBe("pickup_out_of_cycle");
+  });
+
+  it("blank note and place are stored as nothing", async () => {
+    const r = await pickup(b.client, { p_note: "", p_location_label: "   " });
+    expect(r.error).toBeNull();
+    const row = (await rowsOf(b.id)).find((x) => x.retailer_id === RETAILER);
+    expect(row).toMatchObject({ note: null, location_label: null });
   });
 
   it("not enrolled → not_enrolled", async () => {
@@ -125,7 +152,7 @@ describe("public.pickups: own rows only (FR-20, NFR-1)", () => {
     expect(ok.data).toEqual([{ note: "Grande", location_label: "Airport" }]);
     const date = await a.client
       .from("pickups")
-      .update({ picked_up_on: "2026-06-20" } as never)
+      .update({ picked_up_on: day(-1) } as never)
       .eq("user_id", a.id);
     expect(date.error?.code).toBe("42501");
   });
@@ -134,15 +161,18 @@ describe("public.pickups: own rows only (FR-20, NFR-1)", () => {
     const { error } = await a.client.from("pickups").insert({
       user_id: a.id,
       retailer_id: OTHER,
-      picked_up_on: "2026-06-15",
+      picked_up_on: day(0),
     } as never);
     expect(error?.code).toBe("42501");
   });
 
-  it("the note limit is enforced by the database too (FR-17: 500)", async () => {
+  it.each([
+    ["a 501-character note (FR-17: 500)", { note: "x".repeat(501) }],
+    ["a blank place written directly", { location_label: "  " }],
+  ])("the database refuses %s", async (_, values) => {
     const { error } = await a.client
       .from("pickups")
-      .update({ note: "x".repeat(501) })
+      .update(values)
       .eq("user_id", a.id);
     expect(error?.code).toBe("23514");
   });
@@ -163,9 +193,7 @@ describe("create_pickup and MFA (D8)", () => {
 
   it("an MFA user's aal1 session → not_allowed; after the code it works", async () => {
     m = await createUser("pickups-mfa");
-    await m.client
-      .from("enrollments")
-      .insert({ user_id: m.id, retailer_id: RETAILER });
+    await setUp(m);
     const factor = await enrollTotp(m.client);
 
     const pending = await signIn(m.email); // aal1 with a verified factor

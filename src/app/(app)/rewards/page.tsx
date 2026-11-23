@@ -8,7 +8,9 @@ import { RetailerLogo } from "@/components/retailers/retailer-logo";
 import { Button } from "@/components/ui/button";
 import {
   formatDate,
+  compareDates,
   pickupDateRange,
+  rewardDays,
   timingOf,
   today,
   windowFor,
@@ -181,7 +183,14 @@ export default async function RewardsPage({
                 <RewardCard
                   key={item.id}
                   item={item}
-                  range={range!}
+                  range={{
+                    // Not before this reward itself opened (FR-17; createPickup checks again).
+                    min: latest(
+                      range!.min,
+                      rewardDays(timingOf(item), w.planning.birthday).opens,
+                    ),
+                    max: range!.max,
+                  }}
                   joinBy={
                     item.signup_lead_days && w.dayNumber < 0
                       ? joinByLine({
@@ -214,6 +223,9 @@ export default async function RewardsPage({
     </div>
   );
 }
+
+const latest = (a: LocalDate, b: LocalDate) =>
+  compareDates(a, b) >= 0 ? a : b;
 
 /** FR-15 / FR-16: a message with the way forward (Plan's link arrives with Phase 3). */
 function Notice({ text }: { text: string }) {

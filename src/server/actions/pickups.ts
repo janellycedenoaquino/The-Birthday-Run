@@ -7,6 +7,7 @@ import {
   compareDates,
   formatDate,
   pickupDateRange,
+  rewardDays,
   rewardStatus,
   timingOf,
   today,
@@ -35,8 +36,9 @@ const TIMING_COLUMNS = "id, retired_at, timing_type, days_before, days_after";
 const SQL_ERRORS: Record<string, string> = {
   pickup_exists: "BR-9",
   not_enrolled: "BR-22",
-  // The date was checked against the window just before; this only fires if the reward closed
-  // in between, so it reads as "not open".
+  not_onboarded: "BR-1",
+  // The date was checked just before with the same rules; this only fires on a race (e.g. the
+  // day changed in between), so it reads as "not open".
   pickup_out_of_cycle: "BR-10",
   not_allowed: "API-2",
 };
@@ -99,8 +101,14 @@ export async function createPickup(
     if (status !== "available") return { ok: false, error: "BR-10" };
 
     // FR-17: today by default; an earlier day of this window, never the future.
-    const range = pickupDateRange(w);
-    if (!range) return { ok: false, error: "BR-10" };
+    const window = pickupDateRange(w);
+    if (!window) return { ok: false, error: "BR-10" };
+    // Not before this reward itself opened (the window starts with the earliest of all of them).
+    const opens = rewardDays(timingOf(row), w.planning.birthday).opens;
+    const range = {
+      min: compareDates(opens, window.min) > 0 ? opens : window.min,
+      max: window.max,
+    };
     const date = (pickedUpOn as LocalDate | undefined) ?? w.today;
     if (compareDates(date, range.min) < 0 || compareDates(date, range.max) > 0)
       return {
@@ -120,11 +128,11 @@ export async function createPickup(
       {
         p_retailer_id: retailerId,
         p_picked_up_on: date,
-        p_note: note ?? null,
-        p_location_label: locationLabel ?? null,
-        p_cycle_start: w.planning.cycleStart,
-        p_cycle_end: w.planning.cycleEnd,
-      } as never,
+        // Optional text: null when not given (Postgres params are nullable; the generated type
+        // doesn't say so).
+        p_note: (note ?? null) as string,
+        p_location_label: (locationLabel ?? null) as string,
+      },
     );
     if (rpcError) {
       const id = SQL_ERRORS[rpcError.message];

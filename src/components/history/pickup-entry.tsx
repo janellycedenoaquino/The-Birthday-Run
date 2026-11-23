@@ -8,7 +8,6 @@ import { toast } from "sonner";
 import { useSuccessToast } from "@/components/settings/use-success-toast";
 import {
   AlertDialog,
-  AlertDialogAction,
   AlertDialogCancel,
   AlertDialogContent,
   AlertDialogDescription,
@@ -87,11 +86,11 @@ export function PickupActions({
           >
             <AlertDialogFooter>
               <AlertDialogCancel autoFocus>Cancel</AlertDialogCancel>
-              <AlertDialogAction asChild>
-                <Button type="submit" variant="destructive">
-                  Delete
-                </Button>
-              </AlertDialogAction>
+              {/* A plain submit, not AlertDialogAction: the dialog stays open until the result,
+                  so an error (BR-11, M-5) shows here; it closes on success (onDone). */}
+              <Button type="submit" variant="destructive">
+                Delete
+              </Button>
             </AlertDialogFooter>
           </DeleteForm>
         </AlertDialogContent>

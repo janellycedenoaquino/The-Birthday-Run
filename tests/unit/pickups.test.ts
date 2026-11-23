@@ -87,18 +87,22 @@ beforeEach(() => {
 });
 
 describe("createPickup (FR-17)", () => {
-  it("defaults to today and passes the fixed cycle bounds (decision 0008)", async () => {
+  it("defaults to today; no cycle dates are sent (the database works them out)", async () => {
     expect(await createPickup(null, form({}))).toEqual({
       ok: true,
       message: "M-254",
       data: { pickupId: "pickup-1" },
     });
+    expect(Object.keys(state.rpcArgs!).sort()).toEqual([
+      "p_location_label",
+      "p_note",
+      "p_picked_up_on",
+      "p_retailer_id",
+    ]);
     expect(state.rpcArgs).toMatchObject({
       p_retailer_id: "starbucks",
       p_picked_up_on: "2026-06-18",
       p_note: null,
-      p_cycle_start: "2026-05-15",
-      p_cycle_end: "2027-05-14",
     });
   });
 
@@ -113,6 +117,20 @@ describe("createPickup (FR-17)", () => {
       fieldErrors: { pickedUpOn: ["Choose a date between Jun 15 and Jun 18."] },
     });
     expect(state.rpcArgs).toBeNull();
+  });
+
+  it("not before this reward opened, even if another program opened earlier", async () => {
+    // A birth-month program opens Jun 1; the 7-day one only on the birthday (Jun 15).
+    state.enrolled = [
+      week,
+      { ...week, id: "month", timing_type: "birth_month", days_after: null },
+    ];
+    const r = await createPickup(null, form({ pickedUpOn: "2026-06-02" }));
+    expect(r).toEqual({
+      ok: false,
+      error: "API-4",
+      fieldErrors: { pickedUpOn: ["Choose a date between Jun 15 and Jun 18."] },
+    });
   });
 
   it("an earlier day of the window is fine", async () => {

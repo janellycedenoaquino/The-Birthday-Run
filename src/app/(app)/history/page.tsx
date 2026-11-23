@@ -1,7 +1,8 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { redirect } from "next/navigation";
 import { z } from "zod";
-import { DeleteForm, PickupActions } from "@/components/history/pickup-entry";
+import { PickupActions } from "@/components/history/pickup-entry";
 import { Button } from "@/components/ui/button";
 import { formatDate, today, type LocalDate } from "@/lib/birthday/timing";
 import { msg } from "@/lib/messages";
@@ -20,6 +21,13 @@ export const metadata: Metadata = {
 const searchSchema = z.object({
   confirm: z.uuid().optional().catch(undefined),
 });
+
+/** The no-JS confirm block's action: delete (deletePickup checks everything), then a clean URL. */
+async function confirmDelete(formData: FormData) {
+  "use server";
+  await deletePickup(null, formData);
+  redirect("/history");
+}
 
 export default async function HistoryPage({
   searchParams,
@@ -66,16 +74,17 @@ export default async function HistoryPage({
             {msg("M-185")}
           </h2>
           <p>{msg("M-186")}</p>
-          <DeleteForm pickupId={confirming.id} deletePickup={deletePickup}>
-            <div className="flex gap-2">
-              <Button asChild variant="outline">
-                <Link href="/history">Cancel</Link>
-              </Button>
-              <Button type="submit" variant="destructive">
-                Delete
-              </Button>
-            </div>
-          </DeleteForm>
+          {/* A plain form posting a server action, so it works without JS (FR-20). */}
+          <form action={confirmDelete} className="flex gap-2">
+            <input type="hidden" name="pickupId" value={confirming.id} />
+            <input type="hidden" name="intent" value="delete" />
+            <Button asChild variant="outline">
+              <Link href="/history">Cancel</Link>
+            </Button>
+            <Button type="submit" variant="destructive">
+              Delete
+            </Button>
+          </form>
         </section>
       ) : null}
       {sections.length === 0 ? (
