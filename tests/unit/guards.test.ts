@@ -16,9 +16,10 @@ const state = {
   user: null as FakeUser | null,
   userError: null as unknown,
   claims: null as Record<string, unknown> | null,
-  profile: { password_set_at: "2026-09-29T00:00:00Z" } as {
-    password_set_at: string | null;
-  } | null,
+  profile: { password_set_at: "2026-09-29T00:00:00Z" } as Record<
+    string,
+    unknown
+  > | null,
   profileError: null as unknown,
   pathname: "/settings",
 };
@@ -61,9 +62,13 @@ vi.mock("next/navigation", () => ({
       throw error;
   },
 }));
-vi.mock("@/server/errors", () => ({ logError: vi.fn() }));
+vi.mock("@/server/errors", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("@/server/errors")>()),
+  logError: vi.fn(),
+}));
 
 const guards = await import("@/server/auth/guards");
+const { requireOnboarded } = await import("@/server/auth/app-guards");
 const { runAction } = await import("@/server/run-action");
 const {
   GuardError,
@@ -324,5 +329,79 @@ describe("refuse mode (actions) and runAction", () => {
     expect(vi.mocked(logError)).toHaveBeenCalledWith(expect.any(Error), {
       op: "test.op",
     });
+  });
+});
+
+// The app's `onboarded` level (BUILD §0.2, F-2: FR-6; decision 0009).
+describe("requireOnboarded (FR-6)", () => {
+  const onboarded = {
+    password_set_at: "2026-09-29T00:00:00Z",
+    birth_month: 2,
+    birth_day: 29,
+    time_zone: "America/New_York",
+    onboarded_at: null,
+    display_name: "Sam",
+    reminders_enabled: true,
+  };
+
+  it("returns the profile when birthday and time zone are saved", async () => {
+    state.profile = onboarded;
+    const { profile } = await requireOnboarded();
+    expect(profile).toEqual({
+      birthday: { month: 2, day: 29 },
+      timeZone: "America/New_York",
+      onboardedAt: null,
+      displayName: "Sam",
+      remindersEnabled: true,
+    });
+  });
+
+  it.each([
+    ["no birthday", { birth_month: null, birth_day: null }],
+    ["no time zone", { time_zone: null }],
+  ])("%s: a page goes to /onboarding, with no next", async (_, over) => {
+    state.profile = { ...onboarded, ...over };
+    expect(await redirectOf(requireOnboarded())).toBe("/onboarding");
+  });
+
+  it("keeps an arrival notice, and only a known one", async () => {
+    state.profile = { ...onboarded, birth_month: null, birth_day: null };
+    state.pathname = "/dashboard?notice=password_set";
+    expect(await redirectOf(requireOnboarded())).toBe(
+      "/onboarding?notice=password_set",
+    );
+    state.pathname = "/dashboard?notice=https://evil.example";
+    expect(await redirectOf(requireOnboarded())).toBe("/onboarding");
+  });
+
+  it("an action is refused with BR-1", async () => {
+    state.profile = { ...onboarded, birth_month: null, birth_day: null };
+    const result = await runAction("test", async () => {
+      await requireOnboarded();
+      return { ok: true };
+    });
+    expect(result).toEqual({ ok: false, error: "BR-1" });
+  });
+
+  it("fails closed when the profile can't be read", async () => {
+    state.profile = onboarded;
+    // requireUser's own read passes; the second read (requireOnboarded's) fails.
+    let reads = 0;
+    const original = fakeClient.from;
+    fakeClient.from = () => ({
+      select: () => ({
+        eq: () => ({
+          maybeSingle: async () =>
+            ++reads === 1
+              ? { data: state.profile, error: null }
+              : { data: null, error: new Error("db down") },
+        }),
+      }),
+    });
+    try {
+      await expect(requireOnboarded()).rejects.toThrow(/could not read/);
+    } finally {
+      fakeClient.from = original;
+    }
   });
 });

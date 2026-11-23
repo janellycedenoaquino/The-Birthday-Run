@@ -3,6 +3,7 @@ import Link from "next/link";
 import type { ReactNode } from "react";
 import { z } from "zod";
 import { SupportLinkText } from "@/components/layout/support-link-text";
+import { BirthdayCard } from "@/components/profile/birthday-card";
 import { DeleteAccountForm } from "@/components/settings/delete-account-form";
 import { PasswordForm } from "@/components/settings/password-form";
 import { ProfileForm } from "@/components/settings/profile-form";
@@ -16,6 +17,7 @@ import {
   deleteAccount,
   updateDisplayName,
 } from "@/server/actions/account";
+import { updateBirthday, updateTimeZone } from "@/server/actions/profile";
 import {
   confirmMfaEnrollment,
   disableMfa,
@@ -74,7 +76,7 @@ async function loadSettings() {
   const { supabase, user, claims } = await requireUser();
   const { data: profile, error } = await supabase
     .from("profiles")
-    .select("display_name, password_set_at")
+    .select("display_name, password_set_at, birth_month, birth_day, time_zone")
     .eq("id", user.id)
     .maybeSingle();
   if (error || !profile)
@@ -106,6 +108,7 @@ export default async function SettingsPage({
   const hasPassword = Boolean(profile.password_set_at);
   const sections = [
     { id: "profile", title: "Profile" },
+    { id: "birthday", title: "Birthday" },
     ...(hasPassword ? [{ id: "password", title: "Password" }] : []),
     { id: "two-step", title: "Two-step sign-in" },
     { id: "your-data", title: "Your data" },
@@ -144,6 +147,16 @@ export default async function SettingsPage({
           <ProfileForm
             updateDisplayName={updateDisplayName}
             displayName={profile.display_name}
+          />
+        </Card>
+        <Card id="birthday" title="Birthday">
+          <BirthdayCard
+            updateBirthday={updateBirthday}
+            updateTimeZone={updateTimeZone}
+            month={profile.birth_month}
+            day={profile.birth_day}
+            timeZone={profile.time_zone}
+            zones={["UTC", ...Intl.supportedValuesOf("timeZone")]}
           />
         </Card>
         {hasPassword && (

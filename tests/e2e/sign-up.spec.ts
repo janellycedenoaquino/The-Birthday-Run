@@ -1,3 +1,4 @@
+import { completeOnboarding } from "./support";
 import { expect, test, type Page } from "@playwright/test";
 
 // The sign-up journey in a real browser (BUILD F-6 "Tests": FR-1, FR-2, NFR-12, NFR-13): the built
@@ -64,7 +65,7 @@ async function submitSignUp(page: Page, email: string) {
   ).toBeVisible();
 }
 
-test("sign up → confirm by email → set password → dashboard, then sign out (FR-1, FR-2)", async ({
+test("sign up → confirm by email → set password → onboarding → dashboard, then sign out (FR-1, FR-2, FR-6)", async ({
   page,
 }) => {
   const violations = await watchCsp(page);
@@ -84,8 +85,7 @@ test("sign up → confirm by email → set password → dashboard, then sign out
 
   await page.getByLabel("Password", { exact: true }).fill(PASSWORD);
   await page.getByRole("button", { name: "Save password" }).click();
-  await expect(page).toHaveURL(/\/dashboard$/); // the notice leaves the URL once shown
-  await expect(page.getByText("You're all set.")).toBeVisible();
+  await completeOnboarding(page); // no birthday yet: onboarding first (FR-6)
   await expect(page.getByRole("heading", { name: "Welcome" })).toBeVisible();
   // C-1 always shows the signed-in email (D24.9).
   await expect(page.getByRole("button", { name: email })).toBeVisible();

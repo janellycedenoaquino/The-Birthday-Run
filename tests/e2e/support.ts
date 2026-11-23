@@ -107,3 +107,16 @@ export async function watchCsp(page: Page): Promise<string[]> {
   });
   return found;
 }
+
+/**
+ * After S-9's "Save password", a brand-new user lands on onboarding with the M-27 notice carried
+ * along (decision 0009), then S-101 step 1: Jun 15, the detected zone, the dashboard (FR-6).
+ */
+export async function completeOnboarding(page: Page) {
+  await expect(page).toHaveURL(/\/onboarding$/);
+  await expect(page.getByText("You're all set.")).toBeVisible();
+  await page.getByLabel("Month").selectOption("6");
+  await page.getByLabel("Day").selectOption("15");
+  await page.getByRole("button", { name: "Continue" }).click();
+  await expect(page).toHaveURL(/\/dashboard$/);
+}

@@ -5,6 +5,7 @@ import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { cache } from "react";
 import { safeRedirectPath } from "@/lib/security/safe-redirect";
+import { noticeOf, withNotice } from "@/server/errors";
 import { createClient } from "@/server/supabase/server";
 
 // The server-side access checks (BUILD F-2 "Guards", §0.2; D2, D8, D9, D10, D24.1; CLAUDE.md
@@ -13,7 +14,11 @@ import { createClient } from "@/server/supabase/server";
 // server's user record. Pages run in redirect mode; actions run in refuse mode via runAction.
 
 export type GuardFailure =
-  "signed_out" | "mfa_required" | "password_required" | "reauth_required";
+  | "signed_out"
+  | "mfa_required"
+  | "password_required"
+  | "reauth_required"
+  | "not_onboarded"; // the app's onboarded level (app-guards.ts, decision 0009)
 
 export class GuardError extends Error {
   constructor(readonly code: GuardFailure) {
@@ -69,13 +74,22 @@ const PAGE_TARGETS: Record<GuardFailure, string> = {
   mfa_required: "/auth/mfa",
   password_required: "/auth/set-password",
   reauth_required: "/auth/reauthenticate",
+  not_onboarded: "/onboarding",
 };
 
 /** Throws GuardError in refuse mode; otherwise redirects the page per §0.2. */
-async function fail(code: GuardFailure): Promise<never> {
+export async function fail(code: GuardFailure): Promise<never> {
   if (refuseMode.getStore()) throw new GuardError(code);
   // Back to where the user was, after the step: the proxy's x-pathname, checked like any `next`.
   const here = (await headers()).get("x-pathname");
+  // Onboarding is a destination, not a step to come back from (BUILD F-2: no `next`). An
+  // arrival notice (e.g. "You're all set." after setting a password) comes along (decision 0009).
+  if (code === "not_onboarded") {
+    const notice = noticeOf(here);
+    redirect(
+      notice ? withNotice(PAGE_TARGETS[code], notice) : PAGE_TARGETS[code],
+    );
+  }
   const next = safeRedirectPath(here, "/dashboard");
   redirect(`${PAGE_TARGETS[code]}?next=${encodeURIComponent(next)}`);
 }

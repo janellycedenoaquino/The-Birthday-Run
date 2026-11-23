@@ -57,8 +57,15 @@ export async function signIn(
   return client;
 }
 
-/** A confirmed user with a password, signed in, with `mark_password_set` done. */
-export async function createUser(label: string): Promise<TestUser> {
+/**
+ * A confirmed user with a password, signed in, with `mark_password_set` done. By default also
+ * onboarded (a birthday and time zone, FR-6), so pages past the `onboarded` guard open; pass
+ * `{ onboarded: false }` for a brand-new user who'd land on /onboarding.
+ */
+export async function createUser(
+  label: string,
+  { onboarded = true }: { onboarded?: boolean } = {},
+): Promise<TestUser> {
   const email = uniqueEmail(label);
   const { data, error } = await adminClient().auth.admin.createUser({
     email,
@@ -70,6 +77,16 @@ export async function createUser(label: string): Promise<TestUser> {
   const { error: markError } = await client.rpc("mark_password_set");
   if (markError)
     throw new Error(`mark_password_set failed: ${markError.message}`);
+  if (onboarded) {
+    const { error: birthdayError } = await adminClient()
+      .from("profiles")
+      .update({ birth_month: 6, birth_day: 15, time_zone: "America/New_York" })
+      .eq("id", data.user.id);
+    if (birthdayError)
+      throw new Error(
+        `onboarding the test user failed: ${birthdayError.message}`,
+      );
+  }
   return { id: data.user.id, email, client };
 }
 

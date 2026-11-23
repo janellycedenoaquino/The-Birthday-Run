@@ -25,14 +25,14 @@ export type Database = {
           Tables: {
             "profiles": {
                   Row: {
-                    "created_at": string,"display_name": string | null,"id": string,"password_set_at": string | null,"updated_at": string,"welcome_email_sent_at": string | null
+                    "birth_day": number | null,"birth_month": number | null,"created_at": string,"display_name": string | null,"id": string,"onboarded_at": string | null,"password_set_at": string | null,"reminders_enabled": boolean,"time_zone": string | null,"updated_at": string,"welcome_email_sent_at": string | null
                   }
                   ComputedFields: never
                   Insert: {
-                    "created_at"?: string,"display_name"?: string | null,"id": string,"password_set_at"?: string | null,"updated_at"?: string,"welcome_email_sent_at"?: string | null
+                    "birth_day"?: number | null,"birth_month"?: number | null,"created_at"?: string,"display_name"?: string | null,"id": string,"onboarded_at"?: string | null,"password_set_at"?: string | null,"reminders_enabled"?: boolean,"time_zone"?: string | null,"updated_at"?: string,"welcome_email_sent_at"?: string | null
                   }
                   Update: {
-                    "created_at"?: string,"display_name"?: string | null,"id"?: string,"password_set_at"?: string | null,"updated_at"?: string,"welcome_email_sent_at"?: string | null
+                    "birth_day"?: number | null,"birth_month"?: number | null,"created_at"?: string,"display_name"?: string | null,"id"?: string,"onboarded_at"?: string | null,"password_set_at"?: string | null,"reminders_enabled"?: boolean,"time_zone"?: string | null,"updated_at"?: string,"welcome_email_sent_at"?: string | null
                   }
                   Relationships: [
                     

@@ -5,10 +5,24 @@ import { M, msg } from "@/lib/messages";
 // Texts are copied from SPEC §3.4.
 
 describe("message catalogue", () => {
-  it("has every ID in SPEC §3.4 (M-1–M-41, API-1–API-7)", () => {
+  it("has every Template ID (M-1–M-41, API-1–API-7) and the app's IDs built so far", () => {
+    // App IDs are added with the screen that shows them (BUILD §0.3).
+    const app = [
+      "M-105",
+      "M-106",
+      "M-107",
+      "M-108",
+      "M-256",
+      "M-257",
+      "M-278",
+      "BR-1",
+      "BR-18",
+      "BR-19",
+    ];
     const expected = [
       ...Array.from({ length: 41 }, (_, i) => `M-${i + 1}`),
       ...Array.from({ length: 7 }, (_, i) => `API-${i + 1}`),
+      ...app,
     ];
     expect(Object.keys(M).sort()).toEqual(expected.sort());
   });
