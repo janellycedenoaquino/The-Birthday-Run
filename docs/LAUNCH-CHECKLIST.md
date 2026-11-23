@@ -21,7 +21,7 @@ Two launches (ROADMAP): **v1** after phase 4 and **v2 sign-off** after phase 7 (
 - [ ] Privacy policy lists the Template's service providers and says deleted data can stay in backups up to the backup retention (Template list)
 - [ ] Supabase auth audit log after deletion decided and stated (Template decisions/0017)
 - [ ] Lost-authenticator rule in the support notes (Template list)
-- [ ] `GOOGLE_CLIENT_SECRET` and `TURNSTILE_SECRET_KEY` not on Vercel; previews behind Vercel Authentication; `dependabot/*` previews skipped
+- [ ] `GOOGLE_CLIENT_SECRET` and `TURNSTILE_SECRET_KEY` not on Vercel; only `main` deploys (`vercel.json` `git.deploymentEnabled`; CI builds and tests every PR instead), and previews stay behind Vercel Authentication if ever turned on
 - [ ] `Permissions-Policy` sends `geolocation=(self)` and nothing broader (decisions/0002)
 
 ## v1: Operations
