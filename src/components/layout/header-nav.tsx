@@ -29,6 +29,16 @@ export function HeaderNav({ account }: { account: Account | null }) {
           </Link>
         </Button>
       )}
+      {account && path !== "/onboarding" && (
+        <Button asChild variant="ghost" size="lg">
+          <Link
+            href="/rewards"
+            aria-current={path.startsWith("/rewards") ? "page" : undefined}
+          >
+            {msg("M-101b")}
+          </Link>
+        </Button>
+      )}
       {account ? (
         <AccountMenu {...account} />
       ) : (

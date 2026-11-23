@@ -125,3 +125,14 @@ export async function completeOnboarding(page: Page) {
   await page.getByRole("button", { name: "Skip for now" }).click();
   await expect(page).toHaveURL(/\/dashboard$/);
 }
+
+/**
+ * Per-spec client IP for the local e2e run: the limiter keys sign-ins on the first
+ * `x-forwarded-for` value (BUILD §0.4), so each spec file gets its own documentation-range address
+ * (RFC 5737) and its own budget, instead of the whole suite sharing one. Use as
+ * `test.use(ownIp(n))` with a number unique to the file. In production Vercel overwrites the
+ * header, so this changes nothing there, and the real per-IP limit still applies in each spec.
+ */
+export const ownIp = (n: number) => ({
+  extraHTTPHeaders: { "x-forwarded-for": `198.51.100.${n}` },
+});

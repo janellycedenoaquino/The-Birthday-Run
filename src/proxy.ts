@@ -15,6 +15,7 @@ import { buildCsp, newNonce } from "@/server/security/csp";
 const PROTECTED_PREFIXES = [
   "/dashboard",
   "/onboarding",
+  "/rewards",
   "/settings",
   "/auth/set-password",
   "/auth/reauthenticate",

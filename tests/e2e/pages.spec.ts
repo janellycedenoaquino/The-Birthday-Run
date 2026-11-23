@@ -1,6 +1,10 @@
 import AxeBuilder from "@axe-core/playwright";
 import { expect, test } from "@playwright/test";
+import { ownIp } from "./support";
 import { appConfig } from "../../src/config/app";
+
+// Its own client IP, so sign-ins don't share one per-IP budget (support.ts ownIp).
+test.use(ownIp(15));
 
 // The public pages (BUILD F-3 "Tests": FR-17, FR-20, FR-23, FR-24, FR-25, NFR-13, NFR-23): each
 // renders with 0 CSP violations, no serious axe issue, and no sideways scroll at 360 px.

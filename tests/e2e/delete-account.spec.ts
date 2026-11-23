@@ -1,5 +1,9 @@
 import { existsSync } from "node:fs";
 import { expect, test } from "@playwright/test";
+import { ownIp } from "./support";
+
+// Its own client IP, so sign-ins don't share one per-IP budget (support.ts ownIp).
+test.use(ownIp(10));
 
 // Delete account in a real browser (BUILD F-11 "Tests": FR-16, D12; phase 4 "done when": after
 // deletion the user can't sign in and their rows are gone).

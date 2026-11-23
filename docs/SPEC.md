@@ -425,7 +425,7 @@ flowchart TD
 Template M-, API-, E- texts apply unchanged. Placeholders in `{braces}` are filled as text. Plurals: one message per form where shown (`{days}` = 1 uses the singular ID). Dates: "Oct 6" style in the user's time zone; times "10:00 AM".
 
 **Navigation and onboarding**
-- M-101 (C-101): "Dashboard" · "Discover" · "My Rewards" · "Plan" · "History"
+- M-101 (C-101): "Dashboard" · "Discover" · "My Rewards" (M-101b) · "Plan" · "History"
 - M-102 (S-1): "Browse rewards"
 - M-103 / M-104 (C-102 toggle): "Add" / "Added"
 - M-105 (S-101 h1): "When's your birthday?"
@@ -444,12 +444,12 @@ Template M-, API-, E- texts apply unchanged. Placeholders in `{braces}` are fill
 - M-115: "Mark picked up"
 - M-116: "{retailer} picked up."
 - M-117 (note or label over FR-17's limit): "Use {limit} characters or fewer."
-- M-120: "Last day" · M-121: "1 day left" · M-122: "{days} days left"
+- M-120: "Last day" · M-121: "1 day left" (unused: days left count today, so one day is the last day) · M-122: "{days} days left"
 - M-123: "Ends soon" · M-124: "Coming up" · M-125: "Plenty of time"
 - M-126 (S-102): "{count} picked up this Birthday Run" · M-127: "Last pickup: {date}" · M-128: "No pickups yet this Birthday Run."
 - M-129a–d (S-102 cards): "Find birthday rewards and add your programs." · "See what's open now and how long it lasts." · "Group pickups into runs." · "Everything you've picked up."
-- M-201 (header, birthday): "Happy birthday, {name}" / "Happy birthday"
-- M-202 (birth month): "Happy birth month, {name}" / "Happy birth month"
+- M-201 (header, birthday): "Happy birthday, {name}" / M-201b "Happy birthday"
+- M-202 (birth month): "Happy birth month, {name}" / M-202b "Happy birth month"
 - M-203 (later window day, rewards open): "Your birthday's passed, but your rewards haven't."
 - M-204 (otherwise): "Your birthday rewards"
 - M-205: "{days} days until your birthday" · M-206: "1 day until your birthday" (before day 0 only)

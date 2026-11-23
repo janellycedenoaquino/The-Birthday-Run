@@ -1,9 +1,10 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { msg } from "@/lib/messages";
 import { requireOnboarded } from "@/server/auth/app-guards";
 
-// S-12 Dashboard (SPEC §3.3, FR-19, NFR-24): still the Template placeholder until S-102 (Phase 2),
-// but already at the app's `onboarded` level (FR-6).
+// S-102 Dashboard (SPEC §3.3, BUILD F-4: FR-21), replacing the Template S-12 body. `onboarded`
+// level (FR-6). Display name is always rendered as text.
 // display_name (maybe Google's, D12) is always rendered as text.
 export const metadata: Metadata = {
   title: "Dashboard",
@@ -20,9 +21,29 @@ export default async function DashboardPage() {
       <h1 className="text-2xl font-semibold">
         {name ? `Welcome, ${name}` : "Welcome"}
       </h1>
+      {/* FR-21: pickups this cycle and the last one. F-5 (next PR) fills these from pickups. */}
       <div className="mt-6 rounded-lg border border-border/70 p-6">
-        <p>This is your dashboard. Your app&apos;s main screen goes here.</p>
+        <p>{msg("M-128")}</p>
       </div>
+      {/* Plan (Phase 3) and History (F-5) get their cards with their pages. */}
+      <ul className="mt-6 grid gap-4 sm:grid-cols-2">
+        {[
+          { href: "/discover", title: msg("M-101"), text: msg("M-129a") },
+          { href: "/rewards", title: msg("M-101b"), text: msg("M-129b") },
+        ].map((card) => (
+          <li key={card.href}>
+            <Link
+              href={card.href}
+              className="block h-full rounded-lg border border-border/70 p-6 hover:bg-muted"
+            >
+              <span className="block font-semibold">{card.title}</span>
+              <span className="mt-1 block text-sm text-muted-foreground">
+                {card.text}
+              </span>
+            </Link>
+          </li>
+        ))}
+      </ul>
       {!name && (
         <p className="mt-4 text-sm">
           <Link

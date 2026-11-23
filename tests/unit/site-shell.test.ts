@@ -87,6 +87,7 @@ describe("C-1 site header, signed in", () => {
     expect(links(html)).toEqual([
       ["/dashboard", NAME],
       ["/discover", "Discover"],
+      ["/rewards", "My Rewards"],
     ]);
     expect(html).toMatch(/<button[^>]*>.*someone@example\.com.*<\/button>/);
     expect(html).not.toContain(">Sign in<");

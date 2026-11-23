@@ -1,0 +1,91 @@
+// S-105 My Rewards, worked out from plain data (BUILD F-4: FR-12–FR-16). Pure: the page loads the
+// rows and passes "today"; every date rule comes from the timing module (NFR-5).
+import {
+  daysLeft,
+  headerState,
+  rewardStatus,
+  timingOf,
+  windowFor,
+  type Birthday,
+  type BirthdayWindow,
+  type LocalDate,
+} from "@/lib/birthday/timing";
+import { fold } from "@/lib/retailers/filter";
+
+export type EnrolledRetailer = {
+  id: string;
+  name: string;
+  reward_description: string;
+  logo_file: string | null;
+  timing_type: string;
+  days_before: number | null;
+  days_after: number | null;
+  signup_lead_days: number | null;
+};
+
+export type RewardItem = EnrolledRetailer & { daysLeft: number };
+
+export type MyRewards = {
+  window: BirthdayWindow;
+  header: ReturnType<typeof headerState>;
+  /** Exactly one of FR-16 (none), FR-15 (outside), the list, or M-212 (done). */
+  view: "none" | "outside" | "list" | "done";
+  items: RewardItem[]; // this page's slice, after the filters
+  matched: number; // after the filters (M-178 `{shown}`)
+  available: number; // before the filters (M-178 `{total}`)
+  hasMore: boolean;
+};
+
+/** S-105's list size per "Show more" step (BUILD F-4: a build constant). */
+export const REWARDS_PAGE_SIZE = 20;
+
+export function myRewards(input: {
+  birthday: Birthday;
+  today: LocalDate;
+  enrolled: EnrolledRetailer[];
+  pickups: { retailerId: string; date: LocalDate }[];
+  filters: { q?: string; within?: 1 | 7 | 14; page?: number };
+}): MyRewards {
+  const { birthday, today, enrolled, pickups, filters } = input;
+  const timings = enrolled.map(timingOf);
+  const w = windowFor(birthday, timings, today);
+
+  const open = enrolled
+    .map((r, i) => {
+      const own = pickups
+        .filter((p) => p.retailerId === r.id)
+        .map((p) => p.date);
+      return { r, t: timings[i]!, status: rewardStatus(timings[i]!, w, own) };
+    })
+    .filter((x) => x.status === "available")
+    .map(({ r, t }) => ({ ...r, daysLeft: daysLeft(t, w) }))
+    .sort((a, b) => a.daysLeft - b.daysLeft || a.name.localeCompare(b.name));
+
+  const q = filters.q ? fold(filters.q) : "";
+  const matching = open.filter(
+    (x) =>
+      (!q || fold(x.name).includes(q)) &&
+      (!filters.within || x.daysLeft <= filters.within),
+  );
+  const page = Math.max(1, filters.page ?? 1);
+  const items = matching.slice(0, page * REWARDS_PAGE_SIZE);
+
+  const view =
+    enrolled.length === 0
+      ? "none"
+      : !w.inWindow
+        ? "outside"
+        : open.length === 0
+          ? "done"
+          : "list";
+
+  return {
+    window: w,
+    header: headerState(w, open.length > 0),
+    view,
+    items: view === "list" ? items : [],
+    matched: matching.length,
+    available: open.length,
+    hasMore: view === "list" && matching.length > items.length,
+  };
+}
