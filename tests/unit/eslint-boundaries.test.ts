@@ -57,3 +57,29 @@ describe("import boundaries (BUILD §0.1)", () => {
     );
   });
 });
+
+// Decision 0007: civil dates only through the timing module.
+describe("Date parsing outside the timing module", () => {
+  it.each([
+    'export const a = new Date("2026-06-15");\n',
+    "export const a = (s: string) => new Date(s);\n",
+    'export const a = Date.parse("2026-06-15");\n',
+  ])("blocks %s", async (code) => {
+    expect(await ruleIds(code, "src/components/rewards/card.tsx")).toContain(
+      "no-restricted-syntax",
+    );
+  });
+
+  it("allows now, Date.now() and the timing module itself", async () => {
+    const code = "export const a = new Date();\nexport const b = Date.now();\n";
+    expect(
+      await ruleIds(code, "src/components/rewards/card.tsx"),
+    ).not.toContain("no-restricted-syntax");
+    expect(
+      await ruleIds(
+        "export const a = new Date(0);\n",
+        "src/lib/birthday/timing.ts",
+      ),
+    ).not.toContain("no-restricted-syntax");
+  });
+});
