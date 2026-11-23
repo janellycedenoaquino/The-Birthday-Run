@@ -36,6 +36,8 @@ const row = (id: string, isPopular: boolean, retired: boolean) => ({
 });
 
 beforeAll(async () => {
+  // Leftovers from a crashed run would fail the insert below.
+  await db`delete from public.retailers where id like ${PREFIX + "%"}`;
   const { data } = await publicClient().rpc("retailer_counts").single();
   before = data!;
   await db`insert into public.retailers ${db([
@@ -65,11 +67,14 @@ describe("public.retailers (D3, FR-2)", () => {
     expect(seededIds(data)).toEqual([ids.popular]);
   });
 
-  it("anon gets 0 rows for a non-popular id", async () => {
+  it.each([
+    ["non-popular", ids.hidden],
+    ["retired popular", ids.retiredPopular],
+  ])("anon gets 0 rows for a %s id", async (_, id) => {
     const { data } = await publicClient()
       .from("retailers")
       .select("id")
-      .eq("id", ids.hidden);
+      .eq("id", id);
     expect(data).toEqual([]);
   });
 
@@ -107,5 +112,68 @@ describe("public.retailers (D3, FR-2)", () => {
       popular: before.popular + 1,
       total: before.total + 2,
     });
+  });
+
+  it("only the owner has write privileges: anon, authenticated and service_role can only SELECT", async () => {
+    const grants = await db<{ grantee: string; privilege: string }[]>`
+      select grantee, privilege_type as privilege
+      from information_schema.role_table_grants
+      where table_schema = 'public' and table_name = 'retailers'
+        and grantee in ('PUBLIC', 'anon', 'authenticated', 'service_role')
+      order by 1, 2`;
+    expect(grants).toEqual([
+      { grantee: "anon", privilege: "SELECT" },
+      { grantee: "authenticated", privilege: "SELECT" },
+      { grantee: "service_role", privilege: "SELECT" },
+    ]);
+  });
+
+  it("PUBLIC can't execute retailer_counts()", async () => {
+    const [r] = await db<{ ok: boolean }[]>`
+      select exists (
+        select 1 from pg_proc p, aclexplode(coalesce(p.proacl, acldefault('f', p.proowner))) a
+        where p.oid = 'public.retailer_counts()'::regprocedure
+          and a.grantee = 0 and a.privilege_type = 'EXECUTE'
+      ) as ok`;
+    expect(r?.ok).toBe(false);
+  });
+});
+
+// The table's own CHECKs are the backstop behind the CSV checker (FR-1, FR-11): bad rows written
+// as the owner must still fail. Each case runs in a rolled-back savepoint.
+describe("public.retailers CHECK constraints (FR-1, FR-11)", () => {
+  const bad = (cells: Record<string, unknown>) => ({
+    ...row(`${PREFIX}bad`, false, false),
+    ...cells,
+  });
+  it.each<[string, Record<string, unknown>]>([
+    ["from_birthday with NULL days_after", { timing_type: "from_birthday" }],
+    ["from_birthday 0 days", { timing_type: "from_birthday", days_after: 0 }],
+    ["from_birthday 32 days", { timing_type: "from_birthday", days_after: 32 }],
+    ["around_birthday with NULL days", { timing_type: "around_birthday" }],
+    [
+      "around_birthday over 31",
+      { timing_type: "around_birthday", days_before: 16, days_after: 15 },
+    ],
+    ["birth_month with days", { days_after: 7 }],
+    ["listed with no codes", { states_scope: "listed" }],
+    [
+      "listed with a NULL code",
+      { states_scope: "listed", state_codes: [null] },
+    ],
+    ["all with codes", { state_codes: ["NY"] }],
+    ["lower-case code", { states_scope: "listed", state_codes: ["ny"] }],
+    ["blank description", { description: "  " }],
+    ["blank reward", { reward_description: "" }],
+    ["name with outer spaces", { name: " padded " }],
+    ["bare https:// source", { source_url: "https://" }],
+    ["http: website", { website_url: "http://example.com" }],
+    ["bad id", { id: "Not A Slug" }],
+  ])("rejects %s", async (_, cells) => {
+    await expect(
+      db.begin(async (tx) => {
+        await tx`insert into public.retailers ${tx(bad(cells))}`;
+      }),
+    ).rejects.toMatchObject({ code: "23514" });
   });
 });

@@ -173,11 +173,14 @@ export function readCsv(
 
 // ---- Row schema ------------------------------------------------------------------------------
 
+/** https:// plus a host, same as the migration's URL checks. */
+const HTTPS_URL = /^https:\/\/[^/\s]+/;
+
 const text = z.string().transform((v) => v.trim());
 const required = text.pipe(z.string().min(1, "required"));
 const optional = text.transform((v) => (v === "" ? null : v));
 const httpsUrl = optional.refine(
-  (v) => v === null || v.startsWith("https://"),
+  (v) => v === null || HTTPS_URL.test(v),
   "url_scheme",
 );
 const yesNo = text
@@ -256,7 +259,7 @@ export const retailerCsvRowSchema = z
     last_checked_on: required.pipe(
       z.string().refine(isRealDate, "date_format"),
     ),
-    source_url: required.pipe(z.string().startsWith("https://", "url_scheme")),
+    source_url: required.pipe(z.string().regex(HTTPS_URL, "url_scheme")),
   } satisfies Record<CsvColumn, z.ZodType>)
   .strict()
   .superRefine((r, ctx) => {

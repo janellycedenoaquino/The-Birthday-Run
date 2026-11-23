@@ -194,6 +194,12 @@ describe("parseRetailerCsv: bad rows give their row number (FR-1, FR-46)", () =>
     ],
     ["missing source", { source_url: "" }, "source_url", "required"],
     [
+      "bare https:// source",
+      { source_url: "https://" },
+      "source_url",
+      "url_scheme",
+    ],
+    [
       "bad date format",
       { last_checked_on: "11/01/2026" },
       "last_checked_on",
