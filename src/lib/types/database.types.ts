@@ -37,6 +37,20 @@ export type Database = {
                   Relationships: [
                     
                   ]
+                },"retailers": {
+                  Row: {
+                    "category": Database["public"]['Enums']["retailer_category"],"created_at": string,"days_after": number | null,"days_before": number | null,"description": string,"id": string,"is_popular": boolean,"last_checked_on": string,"logo_file": string | null,"membership_requirement": string | null,"name": string,"other_requirement": string | null,"purchase_requirement": string | null,"requires_purchase": boolean,"retired_at": string | null,"reward_description": string,"reward_type": Database["public"]['Enums']["reward_type"],"source_url": string,"state_codes": (string)[],"states_scope": Database["public"]['Enums']["states_scope"],"store_finder_url": string | null,"timing_type": Database["public"]['Enums']["timing_type"],"updated_at": string,"website_url": string | null
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "category": Database["public"]['Enums']["retailer_category"],"created_at"?: string,"days_after"?: number | null,"days_before"?: number | null,"description": string,"id": string,"is_popular"?: boolean,"last_checked_on": string,"logo_file"?: string | null,"membership_requirement"?: string | null,"name": string,"other_requirement"?: string | null,"purchase_requirement"?: string | null,"requires_purchase": boolean,"retired_at"?: string | null,"reward_description": string,"reward_type": Database["public"]['Enums']["reward_type"],"source_url": string,"state_codes"?: (string)[],"states_scope": Database["public"]['Enums']["states_scope"],"store_finder_url"?: string | null,"timing_type": Database["public"]['Enums']["timing_type"],"updated_at"?: string,"website_url"?: string | null
+                  }
+                  Update: {
+                    "category"?: Database["public"]['Enums']["retailer_category"],"created_at"?: string,"days_after"?: number | null,"days_before"?: number | null,"description"?: string,"id"?: string,"is_popular"?: boolean,"last_checked_on"?: string,"logo_file"?: string | null,"membership_requirement"?: string | null,"name"?: string,"other_requirement"?: string | null,"purchase_requirement"?: string | null,"requires_purchase"?: boolean,"retired_at"?: string | null,"reward_description"?: string,"reward_type"?: Database["public"]['Enums']["reward_type"],"source_url"?: string,"state_codes"?: (string)[],"states_scope"?: Database["public"]['Enums']["states_scope"],"store_finder_url"?: string | null,"timing_type"?: Database["public"]['Enums']["timing_type"],"updated_at"?: string,"website_url"?: string | null
+                  }
+                  Relationships: [
+                    
+                  ]
                 }
           }
           Views: {
@@ -54,10 +68,15 @@ export type Database = {
                            },
 "release_welcome_email":
 { Args: { "p_user_id": string }; Returns: undefined
+                           },
+"retailer_counts":
+{ Args: Record<PropertyKey, never>; Returns: {
+              "popular": number,"total": number
+            }[]
                            }
           }
           Enums: {
-            [_ in never]: never
+            "retailer_category": "food_drink"|"entertainment"|"retail"|"beauty","reward_type": "free_item"|"discount"|"bogo"|"points"|"free_with_purchase","states_scope": "all"|"listed"|"unknown","timing_type": "from_birthday"|"birth_month"|"around_birthday"
           }
           CompositeTypes: {
             [_ in never]: never
@@ -177,7 +196,7 @@ export const Constants = {
           }
         },"public": {
           Enums: {
-            
+            "retailer_category": ["food_drink", "entertainment", "retail", "beauty"],"reward_type": ["free_item", "discount", "bogo", "points", "free_with_purchase"],"states_scope": ["all", "listed", "unknown"],"timing_type": ["from_birthday", "birth_month", "around_birthday"]
           }
         }
 } as const

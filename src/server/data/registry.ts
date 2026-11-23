@@ -18,4 +18,5 @@ export const NON_USER_DATA_TABLES = [
     table: "rate_limits",
     reason: "hashed keys, 24 h retention",
   },
+  { schema: "public", table: "retailers", reason: "CSV catalogue (D2)" },
 ] as const satisfies readonly NonUserDataTable[];

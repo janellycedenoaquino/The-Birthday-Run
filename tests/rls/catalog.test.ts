@@ -57,12 +57,15 @@ describe("every app table (NFR-1, NFR-2)", () => {
     );
   });
 
-  it("gives anon no table privileges", async () => {
+  it("gives anon no table privileges except SELECT on the catalogue (D3)", async () => {
     const grants = await db<{ table: string; privilege: string }[]>`
       select table_schema || '.' || table_name as table, privilege_type as privilege
       from information_schema.role_table_grants
-      where grantee = 'anon' and table_schema <> all(${MANAGED})`;
-    expect(grants).toEqual([]);
+      where grantee = 'anon' and table_schema <> all(${MANAGED})
+      order by 1, 2`;
+    expect(grants).toEqual([
+      { table: "public.retailers", privilege: "SELECT" },
+    ]);
   });
 });
 
@@ -114,6 +117,13 @@ describe("functions (D3, D24.11, rule 6)", () => {
     ["anon", "public.mark_password_set()"],
   ])("%s can't execute %s", async (role, fn) => {
     expect(await can(role, fn)).toBe(false);
+  });
+
+  it.each([
+    ["anon", "public.retailer_counts()"],
+    ["authenticated", "public.retailer_counts()"],
+  ])("%s can execute %s (D3)", async (role, fn) => {
+    expect(await can(role, fn)).toBe(true);
   });
 
   it("every security definer function in an app schema sets search_path = ''", async () => {
