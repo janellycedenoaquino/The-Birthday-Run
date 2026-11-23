@@ -21,10 +21,10 @@ export const sentryOptions = {
     queues: false,
   },
   // No tracesSampleRate at all: even 0 switches span recording on (Sentry checks `!= null`).
-  // Errors only (D15), no Replay integration. Sentry 11 warns in the console that
-  // beforeSendTransaction is ignored with streamed spans, but it still runs on any transaction event
-  // that does get sent, so it stays. Turning tracing on means adding a `beforeSendSpan` scrubber
-  // first (decisions/0018).
+  // Errors only (D15), no Replay integration.
+  // "static" so beforeSendTransaction is honoured instead of skipped by streamed spans (Sentry 11's
+  // default), and so Sentry stops logging that warning on every request (decisions/0005).
+  traceLifecycle: "static",
   beforeSend: scrubEvent,
   beforeSendTransaction: scrubEvent,
   beforeBreadcrumb: scrubBreadcrumb,
