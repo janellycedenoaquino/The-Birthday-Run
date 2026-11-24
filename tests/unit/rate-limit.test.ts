@@ -54,6 +54,9 @@ describe("LIMITS (the §0.4 table)", () => {
     ["removeFromGroup", { user: [300, 3600] }],
     ["reorderGroupItems", { user: [300, 3600] }],
     ["deleteGroup", { user: [300, 3600] }],
+    ["findStops", { user: [60, 3600] }],
+    ["getGroupRoute", { user: [60, 3600] }],
+    ["lookupZip", { user: [60, 3600] }],
     ["authConfirm", { ip: [30, 600] }],
   ] as const)("%s", (action, expected) => {
     expect(LIMITS[action]).toEqual(expected);
@@ -92,6 +95,9 @@ describe("LIMITS (the §0.4 table)", () => {
         "removeFromGroup",
         "reorderGroupItems",
         "deleteGroup",
+        "findStops",
+        "getGroupRoute",
+        "lookupZip",
         "authConfirm",
         "authCallback",
       ].sort(),

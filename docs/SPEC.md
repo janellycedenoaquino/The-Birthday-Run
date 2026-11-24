@@ -498,7 +498,7 @@ Template M-, API-, E- texts apply unchanged. Placeholders in `{braces}` are fill
 - M-155: "Starting from {place}" · M-156: "your location" · M-157: "Change"
 - M-160: "Start" · M-161: "Map of {count} stops. The same stops are listed below."
 - M-162: "The map couldn't load. Your stops and directions below still work."
-- M-163: "{distance} mi straight-line from the previous stop" (stop 1: "from your start")
+- M-163: "{distance} mi straight-line from the previous stop" · M-163b (stop 1): "{distance} mi straight-line from your start"
 - M-164: "No map pin" · M-165: "No store found nearby. Find a store"
 - M-167: "Open in Google Maps" · M-168: "Leg {n} of {total}: open in Google Maps"
 - M-169: "Finding stores near you…"
