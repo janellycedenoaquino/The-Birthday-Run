@@ -48,6 +48,11 @@ Why these colours: research on colour and emotion finds that brightness and satu
 - **Page:** big centred headline with the tilted block, the brand count, no category filter when signed out (the signed-in filters stay as SPEC S-103 says), glow background only. Missing logos show initials (FR-2).
 - **Getting there:** the landing card has "Get started" (sign up) and "Browse rewards" (Discover); "Sign in" sits top right on every public page. "Get started" and "Sign in" open the same card on its two tabs.
 
+**Discover signed in, and brand details (S-103, S-104):**
+- **Cards:** the same logo cards plus a "+" button on every card (the add toggle, C-102) and a pink "Added" ribbon on the brands the user is in. Search and colour category chips appear only when signed in.
+- **Details open as a pop-up card** over Discover (a bottom sheet on phones), in stacked sections: logo, name, description and category; "Your birthday gift" (full reward and its type explained); "Add to My Rewards" and "Visit website" (new tab); When (the general rule plus "Your dates"); a "Join early" warning when the brand has a lead time (FR-49); What you need (purchase, membership, other); the checked date, the source and "Something wrong? Report it" (C-107).
+- **Build note:** each brand keeps its own URL (`/discover/[retailerId]`). Clicking a card on Discover opens it as the pop-up (an intercepted route, so the URL changes and Back closes it); opening the URL directly, or refreshing, shows the full page, which is what search engines and shared links get. Focus moves into the pop-up, Escape and the close button return focus to the card.
+
 **Retailer page (S-104), timing split:**
 - **Public:** the general rule (for example "30 days from your birthday"). That fact is what people search for, so it stays readable (decision 0017).
 - **Behind sign-up:** "Sign up to see your exact dates." Signed in, the page shows the user's own dates and days left (for example "Jan 3 – Feb 2 · 12 days left"). Only an account knows the birthday, so this is the honest reason to sign up.
@@ -61,6 +66,7 @@ Why these colours: research on colour and emotion finds that brightness and satu
 - **Game inside the card** (between the text and the buttons): fits a laptop, but on a phone it pushes "Get started" off the first screen. Phone layouts tried: tap-to-play link, buttons first, compact (no subtext); the pull-up tab won and is used on the laptop too.
 - **Rolling waves, still background:** flowing glow at slow speed picked.
 - **Discover:** tilting cards (pick 4), flip cards, colour-band cards, shelves by category, a list, category chips or tabs, a compact header with search, a sliding logo band. Also four ways to reach Discover from the landing page: a third button, a text link, a "Discover" link by the name, and the pick.
+- **Brand details as a side drawer or a full page only; a gift-ticket or two-column details layout; a green check or green outline for "added"; the add button only inside the details.**
 - **Timing on the cards,** and **hiding the timing behind sign-up:** dropped. Cards stay clean, and hiding the fact would cost search traffic.
 - **Sign in / sign up:** 3D tunnel, two-row marquee and glow-only backgrounds; the card with the reminder at its side or under it; a brand count by category or a sample checklist as the reminder; a link at the bottom to switch (the Template's way); and pick 8's "your birthday run" preview checklist after Continue. The owner kept the confetti from that preview but not the checklist.
 
