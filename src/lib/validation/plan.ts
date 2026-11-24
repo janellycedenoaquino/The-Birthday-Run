@@ -46,3 +46,16 @@ export const reorderSchema = z
   })
   .strict();
 export const deleteGroupSchema = z.object({ groupId }).strict();
+export const duplicateGroupSchema = deleteGroupSchema;
+
+/**
+ * FR-28's copy names: "<name> (Copy)", then "(Copy 2)" … "(Copy 20)". The base is cut (by code
+ * points, like the DB) so every name fits A-19's limit.
+ */
+export function copyNames(name: string, tries = 20): string[] {
+  return Array.from({ length: tries }, (_, i) => {
+    const suffix = i === 0 ? " (Copy)" : ` (Copy ${i + 1})`;
+    const base = [...name].slice(0, GROUP_NAME_MAX - [...suffix].length);
+    return base.join("").trimEnd() + suffix;
+  });
+}

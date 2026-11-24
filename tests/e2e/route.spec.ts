@@ -7,7 +7,7 @@ import { ownIp, passwordSignIn, watchCsp } from "./support";
 // The map and route in a real browser (BUILD F-10 "Tests": D11, NFR-7, FR-30, NFR-3, NFR-6,
 // FR-33, metric 2). Store and ZIP rows are this spec's own fixtures (the local DB has no import),
 // removed afterwards.
-const { birthdayTodayWith, createUser, dayFromToday, PASSWORD, sql } =
+const { birthdayTodayWith, createUser, groupWith, PASSWORD, sql } =
   await import("../rls/helpers");
 
 test.use(ownIp(23));
@@ -192,35 +192,8 @@ test("group route keeps the group's order; free users get C-104 (FR-33, metric 2
 }) => {
   test.setTimeout(90_000);
   const user = await setup(page, "e2e-route-group", true);
-  const { data: group, error } = await user.client
-    .from("reward_groups")
-    .insert({
-      user_id: user.id,
-      name: "Route run",
-      pickup_date: dayFromToday(0),
-      pickup_time: "23:30",
-    })
-    .select("id")
-    .single();
-  if (error) throw new Error(error.message);
   // The farther store first: the group's order wins over the shorter one.
-  const { error: iError } = await user.client
-    .from("reward_group_items")
-    .insert([
-      {
-        group_id: group.id,
-        user_id: user.id,
-        retailer_id: NEAR[1]!,
-        position: 1,
-      },
-      {
-        group_id: group.id,
-        user_id: user.id,
-        retailer_id: NEAR[0]!,
-        position: 2,
-      },
-    ]);
-  if (iError) throw new Error(iError.message);
+  await groupWith(user, "Route run", [NEAR[1]!, NEAR[0]!]);
   await page.goto("/plan");
   const card = page
     .getByRole("listitem")

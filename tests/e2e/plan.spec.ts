@@ -180,3 +180,61 @@ test("Plan: groups, keyboard reorder, edits, the limit, and pickups (FR-22–FR-
     page.getByRole("heading", { name: "Plan C", level: 3 }),
   ).toHaveCount(0);
 });
+
+test("Duplicate: premium gets (Copy) then (Copy 2) in the same order; free gets no control (FR-28, metric 2)", async ({
+  page,
+  browser,
+}) => {
+  test.setTimeout(90_000);
+  const { setPremium } = await import("../../scripts/grant-premium");
+  const { birthdayTodayWith, groupWith } = await import("../rls/helpers");
+  const db = sql();
+  try {
+    const ids = ["16-handles", "altard-state"];
+    const make = async (label: string, premium: boolean) => {
+      const user = await createUser(label);
+      await birthdayTodayWith(user, ids);
+      if (premium) await setPremium(db, user.email, "grant");
+      await groupWith(user, "Dup run", [ids[1]!, ids[0]!]);
+      return user;
+    };
+
+    const user = await make("e2e-dup", true);
+    await passwordSignIn(page, user.email, PASSWORD);
+    await expect(page).toHaveURL(/\/dashboard$/);
+    await page.goto("/plan");
+    const card = (name: string) =>
+      page
+        .getByRole("listitem")
+        .filter({ has: page.getByRole("heading", { name, exact: true }) });
+    await card("Dup run")
+      .getByRole("button", { name: "Duplicate Dup run" })
+      .click();
+    await expect(card("Dup run (Copy)")).toBeVisible();
+    await card("Dup run")
+      .getByRole("button", { name: "Duplicate Dup run" })
+      .click();
+    await expect(card("Dup run (Copy 2)")).toBeVisible();
+    // Same rewards, same order.
+    const rows = card("Dup run (Copy)").locator("ol > li");
+    await expect(rows).toHaveCount(2);
+    await expect(rows.first()).toContainText("Altar'd State");
+
+    // Free: no Duplicate control at all.
+    const ctx = await browser.newContext(ownIp(21));
+    const free = await ctx.newPage();
+    const freeUser = await make("e2e-dup-free", false);
+    await passwordSignIn(free, freeUser.email, PASSWORD);
+    await expect(free).toHaveURL(/\/dashboard$/);
+    await free.goto("/plan");
+    await expect(
+      free.getByRole("heading", { name: "Dup run", exact: true }),
+    ).toBeVisible();
+    await expect(free.getByRole("button", { name: /^Duplicate/ })).toHaveCount(
+      0,
+    );
+    await ctx.close();
+  } finally {
+    await db.end();
+  }
+});

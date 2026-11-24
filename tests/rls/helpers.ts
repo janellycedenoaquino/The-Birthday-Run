@@ -162,3 +162,35 @@ export async function birthdayTodayWith(user: TestUser, retailerIds: string[]) {
   if (enrollError)
     throw new Error(`setup enroll failed: ${enrollError.message}`);
 }
+
+/** A group for `user` picked up today (UTC) at 23:30, holding `retailerIds` in that order. */
+export async function groupWith(
+  user: TestUser,
+  name: string,
+  retailerIds: string[],
+): Promise<string> {
+  const { data: group, error } = await user.client
+    .from("reward_groups")
+    .insert({
+      user_id: user.id,
+      name,
+      pickup_date: dayFromToday(0),
+      pickup_time: "23:30",
+    })
+    .select("id")
+    .single();
+  if (error) throw new Error(`setup group failed: ${error.message}`);
+  const { error: itemsError } = await user.client
+    .from("reward_group_items")
+    .insert(
+      retailerIds.map((retailer_id, i) => ({
+        group_id: group.id,
+        user_id: user.id,
+        retailer_id,
+        position: i + 1,
+      })),
+    );
+  if (itemsError)
+    throw new Error(`setup group items failed: ${itemsError.message}`);
+  return group.id;
+}
