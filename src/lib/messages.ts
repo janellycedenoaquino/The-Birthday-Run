@@ -104,6 +104,7 @@ export const M = {
   "M-189b": "Membership: {text}",
   "M-189c": "Also: {text}",
   "M-277": "Join by {date} to get this one.",
+  "M-281": "Opens {date}",
   "M-277b":
     "{brand} needs members to join {days} days before the birthday, so it may not come this year.",
   "M-101b": "My Rewards",

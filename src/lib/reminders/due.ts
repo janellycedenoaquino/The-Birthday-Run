@@ -22,7 +22,7 @@ export type ReminderReward = {
   days_before: number | null;
   days_after: number | null;
   /** FR-49: days before the birthday a member must have joined; null when none. */
-  signup_lead_days?: number | null;
+  signup_lead_days: number | null;
 };
 
 export type ReminderItem = {
@@ -31,10 +31,12 @@ export type ReminderItem = {
   description: string;
   lastDay: LocalDate;
   daysLeft: number;
-  /** The first day it can be picked up. */
-  opens: LocalDate;
-  /** FR-49's join-by date, when the brand has a sign-up lead time. */
+  /** The first day it can be picked up; null when it's already open. */
+  opens: LocalDate | null;
+  /** FR-49's join-by date, when the brand has a lead time and it hasn't passed. */
   joinBy: LocalDate | null;
+  /** The lead time in days when its join-by date has already passed (M-277b). */
+  lateLeadDays: number | null;
 };
 
 export type DueReminder = {
@@ -90,8 +92,9 @@ export function remindersDue(input: {
         description: r.reward_description,
         lastDay: rewardDays(t, w.planning.birthday).closes,
         daysLeft: daysLeft(t, w),
-        opens,
-        joinBy: lead > 0 ? joinBy : null,
+        opens: compareDates(today, opens) < 0 ? opens : null,
+        joinBy: lead > 0 && compareDates(today, joinBy) <= 0 ? joinBy : null,
+        lateLeadDays: lead > 0 && compareDates(today, joinBy) > 0 ? lead : null,
       },
     };
   });
@@ -112,7 +115,8 @@ export function remindersDue(input: {
       items: sortByLastDay(ending),
     });
 
-  // Plan ahead (E-101): 1–7 days before the birthday, once per cycle; every reward still to get.
+  // Plan ahead (E-101): from planAheadStart() until the day before the birthday, once per cycle;
+  // every reward still to get.
   const cycleStart = w.planning.cycleStart;
   const bday = w.planning.birthday;
   const todo = rows.filter(

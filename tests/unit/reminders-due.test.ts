@@ -17,6 +17,7 @@ const reward = (
   timing_type,
   days_before: null,
   days_after,
+  signup_lead_days: null,
 });
 const base: Omit<Parameters<typeof remindersDue>[0], "now"> = {
   birthday: { month: 6, day: 15 },
@@ -57,6 +58,22 @@ describe("plan ahead (E-101, from the earliest open or join-by day)", () => {
       opens: "2026-06-15",
       joinBy: "2026-06-08",
     });
+  });
+
+  it("a lead over 30 days still starts no earlier than 32 days before (60-day lead → May 14)", () => {
+    const rewards = [{ ...reward("long"), signup_lead_days: 60 }];
+    expect(kinds("2026-05-13", { rewards })).toEqual([]);
+    const { due } = remindersDue({ ...base, rewards, now: at("2026-05-14") });
+    expect(due[0]!.items[0]).toMatchObject({
+      joinBy: null,
+      lateLeadDays: 60,
+    });
+  });
+
+  it("an already-open reward has no opens date (birth month, sent Jun 5)", () => {
+    const rewards = [reward("month", "birth_month", null)];
+    const { due } = remindersDue({ ...base, rewards, now: at("2026-06-05") });
+    expect(due[0]!.items[0]).toMatchObject({ opens: null, joinBy: null });
   });
 
   it("never on or after the birthday", () => {

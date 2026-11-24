@@ -15,6 +15,7 @@ describe("message catalogue", () => {
       "M-256",
       "M-257",
       "M-278",
+      "M-281",
       "BR-1",
       "BR-18",
       "BR-19",

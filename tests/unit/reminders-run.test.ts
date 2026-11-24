@@ -54,6 +54,7 @@ function fakeAdmin(
             timing_type: "from_birthday",
             days_before: null,
             days_after: 7,
+            signup_lead_days: null,
           })),
           error: null,
         };
