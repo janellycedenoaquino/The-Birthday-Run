@@ -41,6 +41,15 @@ Contrast (WCAG 2.x formula): navy on cream 13.3:1, on the pink glow 10.4:1, on s
 
 Why these colours: research on colour and emotion finds that brightness and saturation change the mood more than the hue does (Valdez & Mehrabian 1994; Wilms & Oberfeld 2018), so pastels set a soft base and two stronger colours (bubblegum, sky blue) carry the accents. A button converts by standing out from the page, not by a particular hue, so the button colour is used for nothing else.
 
+**Discover (S-103):**
+- **Cards:** logo-only cards in a grid. Hovering or focusing a card shows the brand and the reward (and "Needs a purchase" when true). Phones have no hover, so touch screens always show them under the logo. No timing line and no category tags on the cards: the brand and the gift are what catch the eye.
+- **Page:** big centred headline with the tilted block, the brand count, no category filter when signed out (the signed-in filters stay as SPEC S-103 says), glow background only. Missing logos show initials (FR-2).
+- **Getting there:** the landing card has "Get started" (sign up) and "Browse rewards" (Discover); "Sign in" sits top right on every public page. "Get started" and "Sign in" open the same card on its two tabs.
+
+**Retailer page (S-104), timing split:**
+- **Public:** the general rule (for example "30 days from your birthday"). That fact is what people search for, so it stays readable (decision 0017).
+- **Behind sign-up:** "Sign up to see your exact dates." Signed in, the page shows the user's own dates and days left (for example "Jan 3 – Feb 2 · 12 days left"). Only an account knows the birthday, so this is the honest reason to sign up.
+
 ## Alternatives
 - **Tilted sliding wall of retailer cards:** liked, but the tunnel won.
 - **Two-row logo marquee, floating drift:** shown, not picked.
@@ -49,6 +58,8 @@ Why these colours: research on colour and emotion finds that brightness and satu
 - **Game or three steps under the hero:** the owner prefers nothing under the hero.
 - **Game inside the card** (between the text and the buttons): fits a laptop, but on a phone it pushes "Get started" off the first screen. Phone layouts tried: tap-to-play link, buttons first, compact (no subtext); the pull-up tab won and is used on the laptop too.
 - **Rolling waves, still background:** flowing glow at slow speed picked.
+- **Discover:** tilting cards (pick 4), flip cards, colour-band cards, shelves by category, a list, category chips or tabs, a compact header with search, a sliding logo band. Also four ways to reach Discover from the landing page: a third button, a text link, a "Discover" link by the name, and the pick.
+- **Timing on the cards,** and **hiding the timing behind sign-up:** dropped. Cards stay clean, and hiding the fact would cost search traffic.
 - **Sign in / sign up:** 3D tunnel, two-row marquee and glow-only backgrounds; the card with the reminder at its side or under it; a brand count by category or a sample checklist as the reminder; a link at the bottom to switch (the Template's way); and pick 8's "your birthday run" preview checklist after Continue. The owner kept the confetti from that preview but not the checklist.
 
 ## Consequences
