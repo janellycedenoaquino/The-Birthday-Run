@@ -272,6 +272,7 @@ export async function getGroupRoute(
         ? await supabase
             .from("retailers")
             .select("id, name, store_finder_url, website_url")
+            .is("retired_at", null) // as findStops: retired brands drop out
             .in("id", order)
         : { data: [], error: null };
       if (rError)

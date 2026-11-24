@@ -1311,7 +1311,7 @@ type RouteResult = {
 #### Map `components/map/route-map.tsx` (`"use client"`, loaded with `next/dynamic({ ssr: false })` only for premium)
 - On mount: `const maplibregl = await import('maplibre-gl')`; `maplibregl.setWorkerUrl(new URL(maplibreWorkerPath(maplibregl.getVersion()), location.origin).href)` before `new maplibregl.Map({ container, style: MAP_STYLE_URL, attributionControl: { compact: false } })`. A same-origin URL makes MapLibre 6.12 start `new Worker(url, { type: 'module' })` directly; only cross-origin URLs go through a `blob:` (package source `workerFactory`, 2026-10-06), so `worker-src 'self'` holds (D11). CSS: `maplibre-gl/dist/maplibre-gl.css`.
 - Numbered `Marker`s built with DOM and `textContent` (never HTML strings), start marker M-160, `fitBounds` with padding. `map.on('error')` for style/tile failures → M-162 overlay; the list and links are unaffected (NFR-7).
-- `scripts/copy-maplibre-worker.mjs` (`predev` and `prebuild`, §0.1): copies `node_modules/maplibre-gl/dist/maplibre-gl-worker.mjs` to `public/vendor/maplibre/<version>/` (gitignored); fails if it's missing or empty. Since 6.19 the worker is standalone (decision 0013).
+- `scripts/copy-maplibre-worker.mjs` (`predev` and `prebuild`, §0.1): copies `node_modules/maplibre-gl/dist/maplibre-gl-worker.mjs` to `public/vendor/maplibre/<version>/` (gitignored); fails if it is missing, empty or imports another chunk; removes old version folders. Since 6.19 the worker is standalone (decision 0013).
 
 ### Flow
 **`findStops`** (S-105 route section; FR-32 default = the 10 most urgent available rewards, picked on the client)
