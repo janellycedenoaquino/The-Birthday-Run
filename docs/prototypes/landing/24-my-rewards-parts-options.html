@@ -1,0 +1,298 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>PROTOTYPE · TBR My Rewards parts</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<script src="retailers-detail.js"></script>
+<style>
+/* Throwaway prototype: the rest of My Rewards (S-105): picked-up flow, filters, report, route, special states. Locked look: decision 0016/0018. */
+:root{--bg:#FFFCF7;--ink:#1F2A5C;--muted:#4C557D;--hl:#FF9EC4;--btn:#8EC5FF;--hover:#8FE3B0;--line:color-mix(in srgb,var(--ink) 16%,transparent)}
+*{box-sizing:border-box;margin:0}
+body{font-family:"Plus Jakarta Sans",system-ui,sans-serif;background:var(--bg);color:var(--ink);min-height:100vh;overflow-x:hidden}
+.glow{position:fixed;inset:0;z-index:-1;overflow:hidden}
+.blob{position:absolute;width:70vw;height:70vw;border-radius:50%;filter:blur(40px)}
+.blob.p{background:radial-gradient(circle,#FFD6E5 0%,transparent 65%);left:-25vw;top:-30vw}
+.blob.b{background:radial-gradient(circle,#D6EBFF 0%,transparent 65%);right:-25vw;top:-25vw}
+.blob.g{background:radial-gradient(circle,#D3F5E1 0%,transparent 65%);left:15vw;bottom:-45vw}
+a{color:inherit}
+.hl{background:var(--hl);padding:0 .14em;border-radius:6px;display:inline-block;transform:rotate(-2deg)}
+.btn{font-family:inherit;font-weight:800;font-size:15px;line-height:1;padding:12px 16px;border-radius:12px;border:0;cursor:pointer;background:var(--btn);color:var(--ink);box-shadow:0 0 0 1.5px var(--ink);text-decoration:none;display:inline-flex;gap:6px;align-items:center;justify-content:center}
+.btn:hover{box-shadow:3px 3px 0 var(--ink),0 0 0 1.5px var(--ink)}
+.btn.sm{font-size:13px;padding:9px 12px}.btn.ghost{background:#fff}
+.lnk{font-family:inherit;font-weight:700;font-size:14px;background:none;border:0;color:var(--ink);cursor:pointer;text-decoration:underline;text-decoration-color:var(--hl);text-decoration-thickness:3px;text-underline-offset:4px}
+.top{display:flex;align-items:center;gap:14px;padding:16px 24px}
+.logo{font-weight:800;font-size:18px;letter-spacing:-.02em;background:rgba(255,252,247,.7);padding:8px 12px;border-radius:12px}
+.top nav{display:flex;gap:4px;margin-left:8px}
+.top nav a{font-weight:700;font-size:15px;text-decoration:none;padding:9px 12px;border-radius:10px}
+.top nav a[aria-current]{background:#fff;box-shadow:0 0 0 1.5px var(--ink)}
+.me{margin-left:auto;width:40px;height:40px;border-radius:50%;background:#FFD6E5;display:grid;place-items:center;font-weight:800;box-shadow:0 0 0 1.5px var(--ink)}
+.tabbar{display:none}
+main{max-width:1100px;margin:0 auto;padding:8px 24px 160px}
+.card0{border-radius:28px;padding:24px 28px;background:rgba(255,252,247,.62);backdrop-filter:blur(14px);box-shadow:0 0 0 1.5px color-mix(in srgb,var(--ink) 12%,transparent)}
+.card0 h1{font-size:36px;font-weight:800;letter-spacing:-.035em}
+.card0 p{color:var(--muted);margin-top:8px;font-size:17px}
+.stats2{display:flex;gap:14px;margin-top:16px}
+.st2{display:flex;align-items:center;gap:16px;border-radius:22px;padding:14px 20px;background:rgba(255,255,255,.85);box-shadow:0 0 0 1.5px var(--line);flex:1}
+.ringp{width:84px;height:84px;position:relative;flex:none}.ringp svg{width:100%;height:100%;transform:rotate(-90deg)}
+.ringp b{position:absolute;inset:0;display:grid;place-items:center;font-size:20px;font-weight:800}
+.bigN{font-size:56px;font-weight:800;letter-spacing:-.05em;line-height:.9}
+.st2 p{font-weight:800;font-size:17px}.st2 p span{display:block;font-size:14px;font-weight:600;color:var(--muted);margin-top:4px}
+.sec{margin-top:24px}
+.sec h2{font-size:24px;font-weight:800;letter-spacing:-.02em;display:flex;align-items:center;gap:10px}
+.sec h2 small{font-size:15px;color:var(--muted);font-weight:700}
+.rows{display:grid;gap:10px;margin-top:12px}
+.rw{position:relative;display:grid;grid-template-columns:76px 1fr auto auto auto;gap:14px;align-items:center;background:rgba(255,255,255,.88);border-radius:16px;padding:10px 14px;box-shadow:0 0 0 1.5px var(--line);transition:all .3s}
+.rw .lg{height:44px;display:grid;place-items:center}.rw img{max-width:70px;max-height:40px;object-fit:contain}
+.rw .nm{font-size:13px;font-weight:700;color:var(--muted)}.rw .gf{font-weight:800;font-size:16px;line-height:1.25}
+.rw .tm{font-size:12.5px;color:var(--muted);margin-top:2px}
+.rw .rep{grid-column:2/-1;font-size:13px}
+.badge{display:flex;align-items:center;gap:6px;font-size:13px;font-weight:800;padding:6px 10px;border-radius:10px;white-space:nowrap}
+.badge svg{width:15px;height:15px}.badge i{font-style:normal;font-weight:600;color:var(--muted)}
+.b-urgent{background:#FFDCDC;box-shadow:inset 0 0 0 1.5px #D64545}.b-soon{background:#FFE3D3;box-shadow:inset 0 0 0 1.5px #E07A3F}.b-relax{background:#D3F5E1;box-shadow:inset 0 0 0 1.5px #2E9E6A}.b-later{background:#EEF1FA;box-shadow:inset 0 0 0 1.5px var(--line)}
+/* more menu */
+.dots{width:36px;height:36px;border-radius:10px;border:0;background:#fff;box-shadow:0 0 0 1.5px var(--line);cursor:pointer;font-size:18px;font-weight:800;color:var(--ink)}
+.mmenu{position:absolute;right:12px;top:56px;z-index:20;background:#fff;border-radius:14px;padding:6px;box-shadow:0 0 0 1.5px var(--ink),0 16px 30px -12px rgba(0,0,0,.3);min-width:190px}
+.mmenu button{display:block;width:100%;text-align:left;font-family:inherit;font-weight:700;font-size:14px;padding:10px;border:0;background:none;border-radius:9px;cursor:pointer;color:var(--ink)}
+.mmenu button:hover{background:#FFD6E5}.mmenu button[disabled]{color:var(--muted);cursor:default;background:none}
+/* undo */
+.rw.done{grid-template-columns:76px 1fr auto;background:rgba(211,245,225,.85);box-shadow:0 0 0 1.5px var(--hover)}
+.rw.done .gf{font-size:15px}
+.undoT{font-size:12px;color:var(--muted);margin-left:8px}
+.stamp{position:absolute;right:120px;top:50%;transform:translateY(-50%) rotate(-8deg);font-weight:800;font-size:15px;letter-spacing:.08em;text-transform:uppercase;color:#2E9E6A;border:2.5px solid #2E9E6A;border-radius:10px;padding:4px 10px;animation:stamp .35s cubic-bezier(.2,1.4,.5,1)}
+@keyframes stamp{from{transform:translateY(-50%) rotate(-8deg) scale(2.2);opacity:0}}
+.toastbar{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);z-index:45;background:var(--ink);color:#fff;border-radius:14px;padding:12px 16px;display:flex;gap:14px;align-items:center;font-weight:700;box-shadow:0 16px 40px -12px rgba(0,0,0,.4)}
+.toastbar{flex-wrap:wrap;justify-content:center}.toastbar button{font-family:inherit;font-weight:800;background:var(--hl);color:var(--ink);border:0;border-radius:9px;padding:8px 12px;cursor:pointer}
+.toastbar .t{font-weight:600;color:#cfd5ee;font-size:13px}
+/* filters */
+.flt{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-top:12px}
+.flt input{font-family:inherit;font-size:15px;padding:11px 14px;border-radius:12px;border:0;width:260px;background:#fff;color:var(--ink);box-shadow:inset 0 0 0 1.5px var(--line)}
+.flt select{font-family:inherit;font-size:15px;font-weight:600;padding:11px 12px;border-radius:12px;border:0;background:#fff;color:var(--ink);box-shadow:inset 0 0 0 1.5px var(--line)}
+.flt label{font-size:14px;font-weight:700;display:flex;gap:8px;align-items:center}
+.chips{display:flex;gap:6px}
+.chips button{font-family:inherit;font-weight:700;font-size:13.5px;padding:9px 12px;border-radius:10px;border:0;cursor:pointer;background:#fff;color:var(--ink);box-shadow:inset 0 0 0 1.5px var(--line)}
+.chips button.on{background:var(--hl);box-shadow:inset 0 0 0 1.5px var(--ink),2px 2px 0 var(--ink)}
+.cnt{font-size:14px;color:var(--muted);margin-left:auto}
+.fbtn{display:none}
+.more{margin-top:14px;text-align:center}
+/* dialog */
+.ov{position:fixed;inset:0;z-index:40;background:rgba(31,42,92,.28);display:grid;place-items:center;padding:16px}
+.dlg{width:min(480px,100%);background:var(--bg);border-radius:24px;padding:24px;box-shadow:0 0 0 1.5px var(--ink),0 30px 80px -20px rgba(0,0,0,.35)}
+.dlg h2{font-size:22px;font-weight:800;letter-spacing:-.02em}
+.dlg .dh{display:flex;gap:12px;align-items:center;margin-bottom:14px}.dlg .dh img{max-width:60px;max-height:34px;object-fit:contain;background:#fff;border-radius:8px;padding:4px}
+.dlg label{display:block;font-weight:700;font-size:14px;margin:12px 0 6px}
+.dlg input[type=date],.dlg input[type=text]{width:100%;font-family:inherit;font-size:16px;padding:11px 12px;border-radius:12px;border:0;background:#fff;color:var(--ink);box-shadow:inset 0 0 0 1.5px var(--line)}
+.dlg .help{font-size:12.5px;color:var(--muted);margin-top:4px}
+.dlg .acts{display:flex;justify-content:flex-end;gap:10px;margin-top:20px}
+.dlg .rad{display:grid;gap:8px;margin-top:12px}
+.dlg .rad label{display:flex;gap:10px;align-items:center;margin:0;padding:11px 12px;border-radius:12px;background:#fff;box-shadow:inset 0 0 0 1.5px var(--line);cursor:pointer;font-weight:600}
+.dlg .rad label:has(input:checked){box-shadow:inset 0 0 0 2px var(--ink);background:#FFE8F0}
+.dlg p.t{color:var(--muted);margin-top:4px;line-height:1.45}
+.err{color:#B02A2A;font-size:13px;font-weight:700;margin-top:8px}
+/* route */
+.route{margin-top:28px}
+.up{margin-top:12px;border-radius:22px;padding:22px;background:rgba(255,252,247,.75);box-shadow:inset 0 0 0 2px var(--hl);position:relative;overflow:hidden}
+.up h3{font-size:19px;font-weight:800}.up p{color:var(--muted);margin-top:6px}
+.up.preview{padding:0;display:grid;grid-template-columns:1.2fr 1fr}
+.up.preview .mp{filter:blur(3px) saturate(.9);opacity:.85;min-height:200px}
+.up.preview .tx{padding:22px;display:flex;flex-direction:column;justify-content:center}
+.pr{display:grid;grid-template-columns:1.3fr 1fr;gap:16px;margin-top:12px}
+.mapbox{border-radius:22px;overflow:hidden;box-shadow:0 0 0 1.5px var(--ink);background:#EAF4FF;min-height:300px}
+.mapbox svg{width:100%;height:100%;display:block}
+.stops{display:grid;gap:8px;align-content:start}
+.loc{display:flex;gap:8px;align-items:center;flex-wrap:wrap;font-size:14px;margin-bottom:6px}
+.loc b{background:#fff;padding:6px 10px;border-radius:9px;box-shadow:inset 0 0 0 1.5px var(--line)}
+.stop{display:grid;grid-template-columns:32px 1fr;gap:10px;align-items:center;background:#fff;border-radius:14px;padding:10px 12px;box-shadow:0 0 0 1.5px var(--line)}
+.stop i{width:30px;height:30px;border-radius:50%;background:var(--hl);display:grid;place-items:center;font-style:normal;font-weight:800;box-shadow:0 0 0 1.5px var(--ink)}
+.stop b{display:block}.stop span{font-size:12.5px;color:var(--muted)}
+/* special states */
+.state{margin-top:22px;border-radius:24px;padding:30px;text-align:center;background:rgba(255,252,247,.75);box-shadow:inset 0 0 0 2px var(--hl)}
+.state h2{font-size:30px;font-weight:800;letter-spacing:-.02em}
+.state p{color:var(--muted);margin:10px auto 18px;max-width:540px;line-height:1.5}
+.state .acts{display:flex;gap:10px;justify-content:center;flex-wrap:wrap}
+.cal{display:inline-flex;flex-direction:column;align-items:center;border-radius:16px;overflow:hidden;box-shadow:0 0 0 1.5px var(--ink);margin-bottom:14px;background:#fff}
+.cal span{background:var(--hl);width:100%;font-weight:800;font-size:13px;padding:4px 18px;text-transform:uppercase;letter-spacing:.1em}
+.cal b{font-size:40px;font-weight:800;padding:2px 18px 6px}
+canvas#conf{position:fixed;inset:0;z-index:60;pointer-events:none}
+/* panel */
+.panel{position:fixed;left:16px;bottom:16px;z-index:50;background:#111;color:#ddd;border-radius:16px;padding:12px 14px;font:500 12px/1.2 system-ui,sans-serif;box-shadow:0 20px 50px -10px rgba(0,0,0,.5);max-width:calc(100vw - 32px);width:600px}
+.panel.min .rws{display:none}
+.panel .tp{display:flex;justify-content:space-between;align-items:center}.panel .tp b{color:#fff;font-size:13px}
+.panel button{font:inherit;background:#222;color:#ddd;border:0;border-radius:8px;padding:6px 9px;cursor:pointer}
+.panel button.on{background:#fff;color:#111;font-weight:700}
+.prow{display:grid;grid-template-columns:118px 1fr;gap:8px;align-items:center;margin-top:8px}.prow>span{color:#999}.prow div{display:flex;flex-wrap:wrap;gap:4px}
+.now{margin-top:10px;color:#aaa;line-height:1.5}.now b{color:#fff}
+.ptag{position:fixed;top:10px;left:50%;transform:translateX(-50%);z-index:60;font:700 10px system-ui;letter-spacing:.15em;background:#111;color:#fff;padding:5px 8px;border-radius:6px}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
+@media (max-width:700px){
+  .top nav{display:none}.ptag{top:auto;bottom:130px}
+  .tabbar{display:grid;grid-template-columns:repeat(4,1fr);position:fixed;left:0;right:0;bottom:0;z-index:25;background:rgba(255,252,247,.94);backdrop-filter:blur(14px);border-top:1.5px solid var(--line);padding:8px 4px}
+  .tabbar a{display:flex;flex-direction:column;align-items:center;gap:3px;text-decoration:none;font-size:10.5px;font-weight:700;color:var(--muted)}
+  .tabbar i{width:42px;height:30px;border-radius:10px;display:grid;place-items:center}.tabbar svg{width:20px;height:20px}
+  .tabbar a[aria-current]{color:var(--ink)}.tabbar a[aria-current] i{background:var(--hl);box-shadow:0 0 0 1.5px var(--ink)}
+  main{padding:4px 14px 150px}.stats2{flex-direction:column}.card0 h1{font-size:28px}
+  .rw{grid-template-columns:56px 1fr auto;gap:6px 10px}.rw .badge,.rw .act{grid-column:2;justify-self:start}.rw .mm{grid-column:3;grid-row:1}.rw img{max-width:52px}
+  .rw.done{grid-template-columns:56px 1fr}.rw.done .act{grid-column:2}.stamp{right:12px;top:16px;transform:rotate(-8deg)}
+  .flt input{width:100%}.cnt{margin-left:0}
+  body.fl-hidden .fbtn{display:inline-flex}
+  .pr,.up.preview{grid-template-columns:1fr}.mapbox{min-height:220px}.panel{bottom:76px}.toastbar{bottom:84px;width:calc(100% - 28px)}}
+body.fl-hidden .flt .fx{display:none}body.fl-hidden.fopen .flt .fx{display:flex}
+body.fl-hidden .fbtn{display:inline-flex}
+</style>
+</head>
+<body>
+<div class="ptag">PROTOTYPE · MY REWARDS PARTS</div>
+<div class="glow" aria-hidden="true"><div class="blob p"></div><div class="blob b"></div><div class="blob g"></div></div>
+<header class="top"><span class="logo">The Birthday Run</span>
+  <nav><a href="#">Discover</a><a href="#" aria-current="page">My Rewards</a><a href="#">Plan</a><a href="#">History</a></nav><div class="me">J</div></header>
+<main id="main"></main>
+<nav class="tabbar" id="tabbar" aria-label="Main"></nav>
+<div id="layer"></div>
+<canvas id="conf"></canvas>
+
+<div class="panel" id="panel">
+  <div class="tp"><b>My Rewards options (prototype only)</b><button id="min">Hide</button></div>
+  <div class="rws">
+    <div class="prow"><span>1 "Picked up"</span><div data-k="pk"><button data-v="dialog">Pop-up with date + note</button><button data-v="quick">One tap + undo bar</button><button data-v="stamp">One tap + "Claimed" stamp</button></div></div>
+    <div class="prow"><span>2 Filters</span><div data-k="fl"><button data-v="bar">Search + menu</button><button data-v="chips">Search + chips</button><button data-v="hidden">Behind a Filter button</button></div></div>
+    <div class="prow"><span>3 Report</span><div data-k="rp"><button data-v="dots">⋯ menu on each card</button><button data-v="link">Small link under the card</button></div></div>
+    <div class="prow"><span>4 Route</span><div data-k="rt"><button data-v="plain">Free: plain upgrade card</button><button data-v="preview">Free: blurred map preview</button><button data-v="premium">Premium: map + stops</button></div></div>
+    <div class="prow"><span>5 Page state</span><div data-k="sd"><button data-v="normal">During the run</button><button data-v="outside">Not birthday season</button><button data-v="done">All picked up</button></div></div>
+    <div class="now" id="now"></div>
+  </div>
+</div>
+
+<script>
+const LOGO_DIR="../../../public/retailers/";
+const ALL=window.RETAILERS;
+const esc=t=>String(t??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const MINE=["panera-bread","olive-garden","cheesecake-factory","red-lobster","chipotle","alamo-drafthouse","sephora","starbucks","ulta-beauty","chick-fil-a","bath-and-body-works","dunkin"].map(id=>ALL.find(r=>r.id===id)).filter(Boolean);
+const W={pk:{dialog:"pop-up with date + note",quick:"one tap + undo bar",stamp:"one tap + stamp"},fl:{bar:"search + menu",chips:"search + chips",hidden:"filter button"},rp:{dots:"⋯ menu",link:"small link"},rt:{plain:"plain upgrade card",preview:"blurred map preview",premium:"premium map"},sd:{normal:"during the run",outside:"not birthday season",done:"all picked up"}};
+const st={pk:"dialog",fl:"bar",rp:"dots",rt:"preview",sd:"normal",q:"",within:"",page:1};
+new URLSearchParams(location.search).forEach((v,k)=>{if(W[k]&&W[k][v])st[k]=v});
+const TODAY=new Date(2026,11,9),BD=new Date(2026,11,6),day=86400000;
+const picked=new Map([["starbucks","Dec 6"],["sephora","Dec 7"]]);const undoing=new Map();const reported=new Set();
+const fmt=d=>d.toLocaleDateString("en-US",{month:"short",day:"numeric"});
+const add=(d,n)=>new Date(d.getFullYear(),d.getMonth(),d.getDate()+n);
+function win(r){const w=r.w;if(w[0]==="m")return[new Date(2026,11,1),new Date(2026,11,31)];if(w[0]==="ms")return[new Date(2026,11,1),add(new Date(2026,11,1),w[1]-1)];if(w[0]==="me")return[BD,new Date(2026,11,31)];return[add(BD,w[0]),add(BD,w[1])]}
+const IC={alert:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v6M12 16.5v.5"/></svg>',clock:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>',check:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="m8 12 3 3 5-6"/></svg>',cal:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><rect x="4" y="5" width="16" height="15" rx="2"/><path d="M4 10h16M9 3v4M15 3v4"/></svg>'};
+function status(r){const[s,e]=win(r);const left=Math.round((e-TODAY)/day)+1,until=Math.round((s-TODAY)/day);
+  if(until>0)return{open:false,sort:1000+until,left:999,html:`<span class="badge b-later">${IC.cal}Starts ${fmt(s)}</span>`};
+  if(left<=0)return{open:false,gone:true};
+  const txt=left===1?"Last day":`${left} days left`;
+  const [cls,ic,word]=left<4?["b-urgent",IC.alert,"Ends soon"]:left<=10?["b-soon",IC.clock,"Coming up"]:["b-relax",IC.check,"Plenty of time"];
+  return{open:true,sort:left,left,start:s,html:`<span class="badge ${cls}">${ic}${txt} <i>· ${word}</i></span>`}}
+const lgo=r=>r.l?`<img src="${LOGO_DIR+esc(r.l)}" alt="${esc(r.n)} logo">`:`<span style="font-weight:800">${esc(r.n[0])}</span>`;
+
+function header(open,total){const n=picked.size,C=2*Math.PI*62;
+  return `<section class="card0"><h1>Happy birth month, <span class="hl">Jay</span></h1><p>${n} picked up this Birthday Run · Last pickup: ${[...picked.values()].pop()||"none yet"}</p></section>
+  <div class="stats2"><div class="st2"><div class="ringp"><svg viewBox="0 0 150 150"><circle cx="75" cy="75" r="62" fill="none" stroke="#FFE8F0" stroke-width="18"/><circle cx="75" cy="75" r="62" fill="none" stroke="#FF9EC4" stroke-width="18" stroke-linecap="round" stroke-dasharray="${C*n/total} ${C}"/></svg><b>${n}/${total}</b></div><p>Picked up<span>${total-n} still to get this run</span></p></div>
+  <div class="st2"><span class="bigN">${open}</span><p>open now<span>Day 4 of your Birthday Run</span></p></div></div>`}
+
+function filters(shown,total){const within=`<label>Ends within <select id="within"><option value="">Any time</option><option value="1" ${st.within==="1"?"selected":""}>Within 1 day</option><option value="7" ${st.within==="7"?"selected":""}>Within 7 days</option><option value="14" ${st.within==="14"?"selected":""}>Within 14 days</option></select></label>`;
+  const chips=`<div class="chips" role="group" aria-label="Ends within">${[["","Any time"],["1","1 day"],["7","7 days"],["14","14 days"]].map(([v,t])=>`<button data-w="${v}" class="${st.within===v?"on":""}" aria-pressed="${st.within===v}">${t}</button>`).join("")}</div>`;
+  return `<div class="flt"><button class="btn sm ghost fbtn" id="fbtn">Filter${st.within||st.q?" ·  on":""}</button><div class="fx" style="display:flex;gap:10px;flex-wrap:wrap;align-items:center"><input id="q" type="search" placeholder="Search rewards" aria-label="Search rewards" value="${esc(st.q)}">${st.fl==="chips"?chips:within}</div><span class="cnt">Showing ${shown} of ${total}</span></div>`}
+
+function row({r,s}){
+  if(undoing.has(r.id)){const left=undoing.get(r.id).left;return `<div class="rw done"><div class="lg">${lgo(r)}</div><div><p class="gf">${esc(r.n)} picked up.</p><p class="tm">Moves to History in <b>${left}s</b></p></div><div class="act"><button class="btn sm ghost" data-undo="${esc(r.id)}">Undo</button></div>${st.pk==="stamp"?'<span class="stamp">Claimed!</span>':""}</div>`}
+  const rep=reported.has(r.id);
+  const more=st.rp==="dots"?`<div class="mm"><button class="dots" data-mm="${esc(r.id)}" aria-label="More for ${esc(r.n)}" aria-haspopup="menu">⋯</button></div>`:"";
+  const link=st.rp==="link"?`<p class="rep">${rep?'<span style="color:var(--muted)">Reported, thanks</span>':`<button class="lnk" style="font-size:13px" data-rep="${esc(r.id)}">Report a problem</button>`}</p>`:"";
+  return `<div class="rw" id="row-${esc(r.id)}"><div class="lg">${lgo(r)}</div><div><p class="nm">${esc(r.n)}</p><p class="gf">${esc(r.r)}</p><p class="tm">${esc(r.t)}</p></div>${s.html}<div class="act">${s.open?`<button class="btn sm ghost" data-pick="${esc(r.id)}">Mark picked up</button>`:""}</div>${more}${link}</div>`}
+
+function routeSec(){const stops=MINE.filter(r=>status(r).open&&!picked.has(r.id)).slice(0,4);
+  const mapSvg=`<svg viewBox="0 0 600 320" preserveAspectRatio="xMidYMid slice" aria-hidden="true"><rect width="600" height="320" fill="#EAF4FF"/><path d="M0 80 600 120M0 220 600 190M140 0 180 320M420 0 380 320M0 300 600 260" stroke="#fff" stroke-width="14"/><path d="M0 80 600 120M0 220 600 190M140 0 180 320M420 0 380 320" stroke="#D6EBFF" stroke-width="3"/><rect x="230" y="140" width="120" height="70" rx="12" fill="#D3F5E1"/><path d="M90 250 C170 210 200 150 260 120 S400 90 470 170 S520 260 540 230" fill="none" stroke="#1F2A5C" stroke-width="4" stroke-dasharray="8 7"/><circle cx="90" cy="250" r="13" fill="#1F2A5C"/><text x="90" y="255" text-anchor="middle" font-size="12" font-weight="800" fill="#fff">S</text>${[[260,120],[470,170],[540,230],[330,100]].slice(0,stops.length).map(([x,y],i)=>`<circle cx="${x}" cy="${y}" r="15" fill="#FF9EC4" stroke="#1F2A5C" stroke-width="2"/><text x="${x}" y="${y+5}" text-anchor="middle" font-size="14" font-weight="800" fill="#1F2A5C">${i+1}</text>`).join("")}</svg>`;
+  if(st.rt==="premium")return `<section class="sec route"><h2>Route</h2><div class="pr"><div class="mapbox" role="img" aria-label="Map of ${stops.length} stops. The same stops are listed below.">${mapSvg}</div><div class="stops"><div class="loc">Starting from <b>ZIP 10027</b><button class="lnk" style="font-size:13px">Change</button></div>${stops.map((r,i)=>`<div class="stop"><i>${i+1}</i><div><b>${esc(r.n)}</b><span>${(1.2+i*.8).toFixed(1)} mi straight-line from the previous stop</span></div></div>`).join("")}<a class="btn" href="#">Open in Google Maps ↗</a></div></div></section>`;
+  if(st.rt==="preview")return `<section class="sec route"><h2>Route</h2><div class="up preview"><div class="mp">${mapSvg}</div><div class="tx"><h3>The map and route is part of Premium</h3><p>Premium is coming soon. Everything else in the app stays free.</p></div></div></section>`;
+  return `<section class="sec route"><h2>Route</h2><div class="up"><h3>The map and route is part of Premium</h3><p>Premium is coming soon. Everything else in the app stays free.</p></div></section>`}
+
+function render(){const M=document.getElementById("main");
+  if(st.sd==="outside"){M.innerHTML=`<section class="card0"><h1>Your birthday <span class="hl">rewards</span></h1><p>No pickups yet this Birthday Run.</p></section>
+    <div class="state"><div class="cal"><span>Nov</span><b>22</b></div><h2>Your next run starts <span class="hl">Nov 22</span></h2><p>Your rewards open on Nov 22, 2027. Add programs or plan your run now.</p><div class="acts"><a class="btn" href="#">Browse Discover</a><a class="btn ghost" href="#">Start planning</a></div></div>`;return}
+  const all=MINE.map(r=>({r,s:status(r)})).filter(x=>!x.s.gone);const total=MINE.filter(r=>!status(r).gone||picked.has(r.id)).length;
+  if(st.sd==="done"){all.forEach(x=>{if(!picked.has(x.r.id))picked.set(x.r.id,"Dec 9")});}
+  const tot2=MINE.filter(r=>!status(r).gone||picked.has(r.id)).length;
+  const open=all.filter(x=>x.s.open&&(!picked.has(x.r.id)||undoing.has(x.r.id)));
+  const later=all.filter(x=>!x.s.open&&!picked.has(x.r.id));
+  const q=st.q.toLowerCase();const match=x=>(!q||x.r.n.toLowerCase().includes(q))&&(!st.within||undoing.has(x.r.id)||x.s.left<=+st.within);
+  const fo=open.filter(match).sort((a,b)=>a.s.sort-b.s.sort),fl=later.filter(match);
+  const per=6,shownOpen=fo.slice(0,per*st.page);
+  let body;
+  if(!open.length&&!later.length)body=`<div class="state"><h2>All done, <span class="hl">nice work!</span></h2><p>Nothing left to pick up right now. Nice work. Everything you claimed is in History.</p><div class="acts"><a class="btn" href="#">See my History</a><a class="btn ghost" href="#">Add more programs</a></div></div>`;
+  else body=filters(fo.length+fl.length,open.length+later.length)+
+    `<section class="sec"><h2>Open now <small>${fo.length}</small></h2><div class="rows">${shownOpen.map(row).join("")||'<p style="color:var(--muted);padding:10px 2px">Nothing open matches. <button class="lnk" id="clr">Clear filters</button></p>'}</div>${fo.length>shownOpen.length?`<div class="more"><button class="btn ghost" id="more">Show more (${fo.length-shownOpen.length})</button></div>`:""}</section>`+
+    (fl.length?`<section class="sec"><h2>Starting later <small>${fl.length}</small></h2><div class="rows">${fl.map(row).join("")}</div></section>`:"")+routeSec();
+  M.innerHTML=header(open.length,tot2)+body;
+  if(st.sd==="done"&&!render.conf){render.conf=1;confetti()}
+  wire()}
+
+function wire(){const M=document.getElementById("main");
+  const q=document.getElementById("q");if(q)q.oninput=e=>{st.q=e.target.value;st.page=1;render();const n=document.getElementById("q");n.focus();n.setSelectionRange(n.value.length,n.value.length)};
+  const w=document.getElementById("within");if(w)w.onchange=e=>{st.within=e.target.value;render()};
+  M.querySelectorAll("[data-w]").forEach(b=>b.onclick=()=>{st.within=b.dataset.w;render()});
+  const fb=document.getElementById("fbtn");if(fb)fb.onclick=()=>document.body.classList.toggle("fopen");
+  const mo=document.getElementById("more");if(mo)mo.onclick=()=>{st.page++;render()};
+  const cl=document.getElementById("clr");if(cl)cl.onclick=()=>{st.q="";st.within="";render()};
+  M.querySelectorAll("[data-pick]").forEach(b=>b.onclick=()=>{const id=b.dataset.pick;st.pk==="dialog"?pickDialog(id):markPicked(id,"Dec 9")});
+  M.querySelectorAll("[data-undo]").forEach(b=>b.onclick=()=>undo(b.dataset.undo));
+  M.querySelectorAll("[data-rep]").forEach(b=>b.onclick=()=>reportDialog(b.dataset.rep));
+  M.querySelectorAll("[data-mm]").forEach(b=>b.onclick=e=>{e.stopPropagation();closeMenus();const id=b.dataset.mm;const row=b.closest(".rw");
+    row.insertAdjacentHTML("beforeend",`<div class="mmenu" role="menu"><button role="menuitem" ${reported.has(id)?"disabled":""} data-rep2="${esc(id)}">${reported.has(id)?"Reported, thanks":"Report a problem"}</button><button role="menuitem">See brand details</button></div>`);
+    const it=row.querySelector("[data-rep2]");if(it&&!reported.has(id))it.onclick=()=>{closeMenus();reportDialog(id)}})}
+function closeMenus(){document.querySelectorAll(".mmenu").forEach(m=>m.remove())}
+addEventListener("click",closeMenus);
+
+let timer=null;
+function markPicked(id,date){picked.set(id,date);undoing.set(id,{left:60});render();
+  if(st.pk==="quick"){toast(id)}
+  clearInterval(timer);timer=setInterval(()=>{let any=false;undoing.forEach((v,k)=>{v.left--;if(v.left<=0)undoing.delete(k);else any=true});
+    render();const t=document.getElementById("toast");if(t){const u=[...undoing.values()][0];if(u)t.querySelector(".t").textContent=`Undo for ${u.left}s`;else t.remove()}if(!any)clearInterval(timer)},1000)}
+function undo(id){picked.delete(id);undoing.delete(id);const t=document.getElementById("toast");if(t)t.remove();render();msgToast("Pickup undone.")}
+function toast(id){const r=MINE.find(x=>x.id===id);const L=document.getElementById("layer");L.innerHTML=`<div class="toastbar" id="toast" role="status">${esc(r.n)} picked up <span class="t">Undo for 60s</span><button id="tu">Undo</button><button id="tn" style="background:#fff">Add a note</button></div>`;
+  document.getElementById("tu").onclick=()=>undo(id);document.getElementById("tn").onclick=()=>pickDialog(id,true)}
+function msgToast(t){const L=document.getElementById("layer");L.innerHTML=`<div class="toastbar" role="status">${t}</div>`;setTimeout(()=>{if(L.textContent.includes(t))L.innerHTML=""},2500)}
+
+let lastFocus=null;
+function openDlg(html){lastFocus=document.activeElement;const L=document.getElementById("layer");L.innerHTML=`<div class="ov" id="ov"><div class="dlg" role="dialog" aria-modal="true" aria-labelledby="dt">${html}</div></div>`;
+  document.getElementById("ov").onclick=e=>{if(e.target.id==="ov")closeDlg()};L.querySelector("input,button").focus()}
+function closeDlg(){document.getElementById("layer").innerHTML="";if(lastFocus&&lastFocus.isConnected)lastFocus.focus()}
+addEventListener("keydown",e=>{if(e.key==="Escape"&&document.getElementById("ov"))closeDlg()});
+function pickDialog(id,noteOnly){const r=MINE.find(x=>x.id===id);const s=status(r);const min=(s.start||TODAY).toISOString().slice(0,10);
+  openDlg(`<div class="dh">${lgo(r)}<h2 id="dt">${noteOnly?"Add a note":"Mark "+esc(r.n)+" picked up"}</h2></div>
+  ${noteOnly?"":`<label for="pd">Date</label><input type="date" id="pd" value="2026-12-09" min="${min}" max="2026-12-09">`}
+  <label for="pn">Note (optional)</label><input type="text" id="pn" maxlength="200" placeholder="e.g. got the caramel one">
+  <label for="pw">Where (optional)</label><input type="text" id="pw" maxlength="80"><p class="help">For example, the store or neighbourhood.</p>
+  <div class="acts"><button class="btn ghost" id="pc">Cancel</button><button class="btn" id="ps">${noteOnly?"Save note":"Mark picked up"}</button></div>`);
+  document.getElementById("pc").onclick=closeDlg;
+  document.getElementById("ps").onclick=()=>{closeDlg();if(noteOnly){msgToast("Note saved.");return}const d=document.getElementById("pd");markPicked(id,"Dec "+(d?+d.value.slice(8):9))}}
+function reportDialog(id){const r=MINE.find(x=>x.id===id);
+  openDlg(`<h2 id="dt">Report a problem with ${esc(r.n)}</h2><p class="t">Tell us what's wrong and we'll check the brand's page.</p>
+  <div class="rad" role="radiogroup" aria-label="What's wrong">${["It's expired or no longer offered","The reward is different","The timing is wrong","The store closed"].map((t,i)=>`<label><input type="radio" name="rr" value="${i}">${t}</label>`).join("")}</div>
+  <p class="err" id="re" hidden>Choose what's wrong.</p>
+  <div class="acts"><button class="btn ghost" id="rc">Cancel</button><button class="btn" id="rs">Send report</button></div>`);
+  document.getElementById("rc").onclick=closeDlg;
+  document.getElementById("rs").onclick=()=>{if(!document.querySelector("input[name=rr]:checked")){document.getElementById("re").hidden=false;return}reported.add(id);closeDlg();render();msgToast("Thanks. We'll check it.")}}
+
+function confetti(){const c=document.getElementById("conf"),x=c.getContext("2d");c.width=innerWidth;c.height=innerHeight;
+  const ps=Array.from({length:120},()=>({x:innerWidth/2+(Math.random()-.5)*200,y:innerHeight*.4,vx:(Math.random()-.5)*14,vy:-Math.random()*14-4,r:Math.random()*6.28,vr:(Math.random()-.5)*.3,c:["#FF9EC4","#8EC5FF","#8FE3B0","#FFD6E5","#D6EBFF"][Math.floor(Math.random()*5)],w:6+Math.random()*6}));
+  let t=0;(function f(){t++;x.clearRect(0,0,c.width,c.height);ps.forEach(p=>{p.vy+=.35;p.x+=p.vx;p.y+=p.vy;p.r+=p.vr;x.save();x.translate(p.x,p.y);x.rotate(p.r);x.fillStyle=p.c;x.fillRect(-p.w/2,-p.w/4,p.w,p.w/2);x.restore()});if(t<110)requestAnimationFrame(f);else x.clearRect(0,0,c.width,c.height)})()}
+
+const ICN={d:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="m15.5 8.5-2 5-5 2 2-5z"/></svg>',r:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="8" width="18" height="13" rx="2"/><path d="M12 8v13M3 12h18M12 8c-2-4-6-4-6-1s4 1 6 1c2 0 6 2 6-1s-4-3-6 1"/></svg>',p:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="6" cy="18" r="2.5"/><circle cx="18" cy="6" r="2.5"/><path d="M8.5 18H15a3 3 0 0 0 0-6H9a3 3 0 0 1 0-6h6.5"/></svg>',h:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5M12 7v5l3 2"/></svg>'};
+document.getElementById("tabbar").innerHTML=[["d","Discover"],["r","My Rewards",1],["p","Plan"],["h","History"]].map(([k,t,c])=>`<a href="#" ${c?'aria-current="page"':""}><i>${ICN[k]}</i>${t}</a>`).join("");
+
+function apply(changed){document.body.className=`fl-${st.fl}`;
+  if(changed==="sd"&&st.sd!=="done"){picked.clear();picked.set("starbucks","Dec 6");picked.set("sephora","Dec 7");render.conf=0}
+  document.querySelectorAll(".panel [data-k]").forEach(g=>g.querySelectorAll("button").forEach(b=>b.classList.toggle("on",b.dataset.v===st[g.dataset.k])));
+  document.getElementById("now").innerHTML=`Showing: <b>${W.pk[st.pk]}</b> · ${W.fl[st.fl]} · report as ${W.rp[st.rp]} · route: ${W.rt[st.rt]} · ${W.sd[st.sd]}. Try "Mark picked up".`;
+  render();const q=new URLSearchParams();for(const k in W)q.set(k,st[k]);history.replaceState(null,"","?"+q)}
+document.querySelectorAll(".panel [data-k]").forEach(g=>g.onclick=e=>{const b=e.target.closest("button");if(!b)return;st[g.dataset.k]=b.dataset.v;apply(g.dataset.k)});
+document.getElementById("min").onclick=e=>{const p=document.getElementById("panel");p.classList.toggle("min");e.target.textContent=p.classList.contains("min")?"Show":"Hide"};
+if(innerWidth<700){document.getElementById("panel").classList.add("min");document.getElementById("min").textContent="Show"}
+const demo=new URLSearchParams(location.search).get("demo");
+apply();
+if(demo==="dialog")pickDialog("panera-bread");if(demo==="undo")markPicked("panera-bread","Dec 9");if(demo==="report")reportDialog("olive-garden");
+</script>
+</body>
+</html>
