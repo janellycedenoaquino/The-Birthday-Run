@@ -15,8 +15,8 @@ revoke all on function private.is_premium(uuid) from public, anon, authenticated
 create table public.reward_groups (
   id          uuid primary key default gen_random_uuid(),
   user_id     uuid not null references auth.users (id) on delete cascade,
-  name        text not null check (char_length(name) between 1 and 80 and name !~ '[[:cntrl:]]'
-                                   and name = btrim(name)),   -- A-19
+  name        text not null check (char_length(name) between 1 and 80 and name !~ '[[:cntrl:]\u200b-\u200f\u2028\u2029\u2060\ufeff]'
+                                   and name = btrim(name, E' \t\u00a0')),   -- A-19; no invisible characters
   pickup_date date not null,
   pickup_time time not null,
   created_at  timestamptz not null default now(),
@@ -74,6 +74,25 @@ create policy reward_group_items_mfa_required on public.reward_group_items
 create trigger reward_groups_set_updated_at before update on public.reward_groups
   for each row execute function public.set_updated_at();
 
+-- Today's cycle for a user, from their own birthday and zone (decision 0008, as create_pickup):
+-- 31 days before the birthday to the day before the next cycle starts. Null when not onboarded.
+create function private.current_cycle(p_user_id uuid, out cycle_start date, out cycle_end date)
+language plpgsql stable security definer set search_path = '' as $$
+declare v_month int; v_day int; v_zone text; v_today date; v_year int;
+begin
+  select birth_month, birth_day, time_zone into v_month, v_day, v_zone
+    from public.profiles where id = p_user_id;
+  if v_month is null or v_zone is null then return; end if;
+  v_today := (now() at time zone v_zone)::date;
+  v_year := extract(year from v_today)::int + 1;
+  while private.birthday_in(v_year, v_month, v_day) - 31 > v_today loop
+    v_year := v_year - 1;
+  end loop;
+  cycle_start := private.birthday_in(v_year, v_month, v_day) - 31;
+  cycle_end := private.birthday_in(v_year + 1, v_month, v_day) - 32;
+end $$;
+revoke all on function private.current_cycle(uuid) from public, anon, authenticated;
+
 -- D6: counted under the owner's profile lock; updates and deletes never check (FR-40). BEFORE
 -- triggers run before RLS's WITH CHECK, so each first refuses a row for someone else: otherwise a
 -- user could lock another user's profile and learn from the error whether they're at the limit.
@@ -84,24 +103,47 @@ begin
     raise exception using errcode = '42501', message = 'not_allowed';
   end if;
   perform 1 from public.profiles where id = new.user_id for update;
+  -- FR-24 counts this birthday year's groups and later ones (pickup on or after today's cycle
+  -- start); past years' groups stay for reference and don't block planning (owner, 2026-11-23).
   if not private.is_premium(new.user_id)
-     and (select count(*) from public.reward_groups where user_id = new.user_id) >= 3 then   -- FR-24
+     and (select count(*) from public.reward_groups
+          where user_id = new.user_id
+            and pickup_date >= coalesce((select c.cycle_start from private.current_cycle(new.user_id) c),
+                                        '-infinity'::date)) >= 3 then
     raise exception using errcode = 'P0001', message = 'plan_group_limit', detail = '3';
   end if;
   return new;
 end $$;
 create function private.enforce_item_limit() returns trigger
 language plpgsql security definer set search_path = '' as $$
-declare v_limit int;
+declare v_limit int; v_start date; v_end date;
 begin
   if (select auth.uid()) is not null and new.user_id is distinct from (select auth.uid()) then
     raise exception using errcode = '42501', message = 'not_allowed';
   end if;
   perform 1 from public.profiles where id = new.user_id for update;
+  -- The group must be the caller's own before anything about it is counted or said.
+  if not exists (select 1 from public.reward_groups where id = new.group_id and user_id = new.user_id) then
+    raise exception using errcode = 'P0001', message = 'group_not_found';
+  end if;
+  -- FR-26 at the database too, for direct writes: a listed retailer, not picked up this cycle.
+  if not exists (select 1 from public.retailers where id = new.retailer_id and retired_at is null) then
+    raise exception using errcode = 'P0001', message = 'retailer_retired';
+  end if;
+  select c.cycle_start, c.cycle_end into v_start, v_end from private.current_cycle(new.user_id) c;
+  if v_start is not null and exists (
+       select 1 from public.pickups where user_id = new.user_id and retailer_id = new.retailer_id
+       and picked_up_on between v_start and v_end) then
+    raise exception using errcode = 'P0001', message = 'pickup_exists';
+  end if;
   v_limit := case when private.is_premium(new.user_id) then 10 else 5 end;                  -- FR-25
   if (select count(*) from public.reward_group_items where group_id = new.group_id) >= v_limit then
     raise exception using errcode = 'P0001', message = 'plan_item_limit', detail = v_limit::text;
   end if;
+  -- Positions are given here, under the lock, so two adds at once can't share one; reorder
+  -- rewrites them afterwards.
+  new.position := coalesce((select max(position) from public.reward_group_items
+                            where group_id = new.group_id), 0) + 1;
   return new;
 end $$;
 revoke all on function private.enforce_group_limit(), private.enforce_item_limit() from public, anon, authenticated;
@@ -110,24 +152,28 @@ create trigger reward_groups_limit before insert on public.reward_groups
 create trigger reward_group_items_limit before insert on public.reward_group_items
   for each row execute function private.enforce_item_limit();
 
--- FR-27: one statement rewrites the order; refuses a stale list (BR-17). Invoker: RLS applies.
-create function public.reorder_group_items(p_group_id uuid, p_item_ids uuid[])
+-- FR-27: one statement rewrites the order. The caller sends the order they saw (p_expected); if
+-- the saved order differs (another tab moved, added or removed something), it's refused (BR-17).
+-- Invoker: RLS applies, so another user's group is simply not found.
+create function public.reorder_group_items(p_group_id uuid, p_expected uuid[], p_item_ids uuid[])
 returns void language plpgsql volatile security invoker set search_path = '' as $$
 begin
   if not exists (select 1 from public.reward_groups where id = p_group_id) then
     raise exception using errcode = 'P0001', message = 'group_not_found';
   end if;
   perform 1 from public.reward_groups where id = p_group_id for update;
-  if (select coalesce(array_agg(id order by id), '{}') from public.reward_group_items where group_id = p_group_id)
-     is distinct from (select coalesce(array_agg(x order by x), '{}') from unnest(p_item_ids) as x) then
+  if (select coalesce(array_agg(id order by position, id), '{}') from public.reward_group_items
+      where group_id = p_group_id) is distinct from coalesce(p_expected, '{}')
+     or (select coalesce(array_agg(x order by x), '{}') from unnest(p_expected) as x)
+        is distinct from (select coalesce(array_agg(x order by x), '{}') from unnest(p_item_ids) as x) then
     raise exception using errcode = 'P0001', message = 'stale_group_order';
   end if;
   update public.reward_group_items i set position = t.ord
     from unnest(p_item_ids) with ordinality as t(id, ord)
    where i.id = t.id and i.group_id = p_group_id;
 end $$;
-revoke all on function public.reorder_group_items(uuid, uuid[]) from public, anon, authenticated;
-grant execute on function public.reorder_group_items(uuid, uuid[]) to authenticated;
+revoke all on function public.reorder_group_items(uuid, uuid[], uuid[]) from public, anon, authenticated;
+grant execute on function public.reorder_group_items(uuid, uuid[], uuid[]) to authenticated;
 
 -- F-5 waited for this table: a pickup removes the reward from every group (FR-26).
 create or replace function public.create_pickup(p_retailer_id text, p_picked_up_on date, p_note text,

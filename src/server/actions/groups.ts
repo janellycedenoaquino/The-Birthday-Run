@@ -79,13 +79,20 @@ function mapPgError(error: Pg): Refusal | null {
   if (error.message === "stale_group_order")
     return { ok: false, error: "BR-17" };
   if (error.message === "group_not_found") return { ok: false, error: "BR-11" };
+  if (error.message === "retailer_retired") return { ok: false, error: "BR-3" };
+  if (error.message === "pickup_exists") return { ok: false, error: "BR-10" };
   if (
     error.code === "23505" &&
     error.message?.includes("reward_groups_user_name_key")
   )
     return { ok: false, error: "API-4", fieldErrors: { name: [msg("BR-6")] } };
   if (error.code === "23505") return { ok: false, error: "BR-7" };
-  if (error.code === "23503") return { ok: false, error: "BR-22" };
+  // The group's FK (deleted meanwhile) vs the enrollment's FK (not one of their programs).
+  if (error.code === "23503")
+    return {
+      ok: false,
+      error: error.message?.includes("reward_groups") ? "BR-11" : "BR-22",
+    };
   return null;
 }
 
@@ -128,11 +135,30 @@ async function openPlan(
   op: "createGroup" | "updateGroup",
   pickupDate: string,
   pickupTime: string,
+  groupId?: string,
 ) {
   const { supabase, user, profile } = await requireOnboarded();
   const limit = await rateLimit(op, { userId: user.id });
   if (!limit.ok) return { ok: false as const, refusal: limit };
   const ctx = await loadPlanContext(supabase, profile);
+  // FR-27: renaming alone is always allowed; the pickup rules apply only when it changes.
+  if (groupId) {
+    const { data: saved } = await supabase
+      .from("reward_groups")
+      .select("pickup_date, pickup_time")
+      .eq("id", groupId)
+      .maybeSingle();
+    if (!saved)
+      return {
+        ok: false as const,
+        refusal: { ok: false, error: "BR-11" } as Refusal,
+      };
+    if (
+      saved.pickup_date === pickupDate &&
+      saved.pickup_time.slice(0, 5) === pickupTime
+    )
+      return { ok: true as const, supabase, user, ctx };
+  }
   const problem = pickupProblem(
     ctx.window,
     pickupDate as LocalDate,
@@ -185,7 +211,14 @@ export async function createGroup(
         );
       if (itemsError) {
         // No orphan and no partial add: the new group goes too.
-        await supabase.from("reward_groups").delete().eq("id", group.id);
+        const { error: undoError } = await supabase
+          .from("reward_groups")
+          .delete()
+          .eq("id", group.id);
+        if (undoError)
+          throw new Error("createGroup: could not undo the new group", {
+            cause: undoError,
+          });
         const mapped = mapPgError(itemsError);
         if (mapped) return mapped;
         throw new Error("createGroup items failed", { cause: itemsError });
@@ -250,7 +283,12 @@ export async function updateGroup(
   const { groupId, name, pickupDate, pickupTime } = input.data;
 
   return runAction("updateGroup", async () => {
-    const checked = await openPlan("updateGroup", pickupDate, pickupTime);
+    const checked = await openPlan(
+      "updateGroup",
+      pickupDate,
+      pickupTime,
+      groupId,
+    );
     if (!checked.ok) return checked.refusal;
     const { supabase, ctx } = checked;
     const { data, error } = await supabase
@@ -267,7 +305,7 @@ export async function updateGroup(
     return {
       ok: true,
       message: warning(
-        ctx.rows.filter((r) => ids.includes(r.id)),
+        ctx.all.filter((r) => ids.includes(r.id)),
         pickupDate,
       ),
     };
@@ -301,7 +339,7 @@ export async function reorderGroupItems(
   _prev: ActionResult | null,
   formData: FormData,
 ): Promise<ActionResult> {
-  const input = parse(reorderSchema, formData, ["itemIds"]);
+  const input = parse(reorderSchema, formData, ["expected", "itemIds"]);
   if (!input.ok) return input.result;
   return runAction("reorderGroupItems", async () => {
     const { supabase, user } = await requireOnboarded();
@@ -309,6 +347,7 @@ export async function reorderGroupItems(
     if (!limit.ok) return limit;
     const { error } = await supabase.rpc("reorder_group_items", {
       p_group_id: input.data.groupId,
+      p_expected: input.data.expected,
       p_item_ids: input.data.itemIds,
     });
     const refused = mapPgError(error);

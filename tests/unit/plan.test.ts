@@ -26,6 +26,17 @@ const r = (
 });
 
 describe("plannable (FR-22)", () => {
+  it("keeps expired ones in `all` (a group can still hold them), not in the list", () => {
+    const { rows, all } = plannable({
+      birthday: JUN15,
+      today: d("2026-06-17"),
+      enrolled: [r("one", 1), r("week")],
+      pickups: [],
+    });
+    expect(rows.map((x) => x.id)).toEqual(["week"]);
+    expect(all.map((x) => x.id)).toEqual(["one", "week"]);
+  });
+
   it("in the window: expired hidden, picked up shown but marked, days left for open ones", () => {
     const { rows, window } = plannable({
       birthday: JUN15,
@@ -137,6 +148,20 @@ describe("defaultPickup (FR-23)", () => {
       time: "12:00",
     });
   });
+  it("the window's last day after 23:00: the last minute of today, never the past", () => {
+    // Birthday Jun 15, only a 1-day reward: the window ends Jul 15 (day 30).
+    const last = plannable({
+      birthday: JUN15,
+      today: d("2026-07-15"),
+      enrolled: [r("one", 1)],
+      pickups: [],
+    }).window;
+    expect(defaultPickup(last, "23:15")).toEqual({
+      date: "2026-07-15",
+      time: "23:59",
+    });
+  });
+
   it("outside the window: noon on the next window's first day", () => {
     const out = plannable({
       birthday: JUN15,

@@ -37,26 +37,27 @@ export function plannable(input: {
   today: LocalDate;
   enrolled: PlanRetailer[];
   pickups: { retailerId: string; date: LocalDate }[];
-}): { window: BirthdayWindow; rows: PlanRow[] } {
+}): { window: BirthdayWindow; rows: PlanRow[]; all: PlanRow[] } {
   const timings = input.enrolled.map(timingOf);
   const w = windowFor(input.birthday, timings, input.today);
-  const rows: PlanRow[] = [];
-  input.enrolled.forEach((r, i) => {
+  // `all` keeps expired ones too: a group can still hold them (names, M-227); `rows` is the list.
+  const all: (PlanRow & { expired: boolean })[] = input.enrolled.map((r, i) => {
     const t = timings[i]!;
     const own = input.pickups
       .filter((p) => p.retailerId === r.id)
       .map((p) => p.date);
     const status = rewardStatus(t, w, own);
-    if (status === "expired") return;
-    rows.push({
+    return {
       ...r,
+      expired: status === "expired",
       pickedUp: status === "picked_up",
       daysLeft: w.inWindow && status === "available" ? daysLeft(t, w) : null,
       closes: rewardDays(t, w.planning.birthday).closes,
-    });
+    };
   });
-  rows.sort((a, b) => a.name.localeCompare(b.name));
-  return { window: w, rows };
+  all.sort((a, b) => a.name.localeCompare(b.name));
+  const rows = all.filter((r) => !r.expired);
+  return { window: w, rows, all };
 }
 
 /**
@@ -109,8 +110,8 @@ export function defaultPickup(
   if (next <= 23)
     return { date: range.min, time: `${String(next).padStart(2, "0")}:00` };
   const tomorrow = addDays(w.today, 1);
-  return {
-    date: compareDates(tomorrow, range.max) <= 0 ? tomorrow : range.max,
-    time: "12:00",
-  };
+  // The window's last day, after 23:00: the last minute of today is the only time left.
+  if (compareDates(tomorrow, range.max) > 0)
+    return { date: w.today, time: "23:59" };
+  return { date: tomorrow, time: "12:00" };
 }

@@ -35,7 +35,7 @@ export async function loadPlanContext(
     .gte("picked_up_on", cycleStart);
   if (pError)
     throw new Error("plan: could not read pickups", { cause: pError });
-  const { window, rows } = plannable({
+  const { window, rows, all } = plannable({
     birthday: profile.birthday,
     today,
     enrolled,
@@ -44,5 +44,11 @@ export async function loadPlanContext(
       date: p.picked_up_on as LocalDate,
     })),
   });
-  return { window, rows, today, nowTime: localTime(profile.timeZone, now) };
+  return {
+    window,
+    rows,
+    all,
+    today,
+    nowTime: localTime(profile.timeZone, now),
+  };
 }

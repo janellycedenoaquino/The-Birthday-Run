@@ -13,7 +13,11 @@ const groupName = z
   .trim()
   .refine((s) => [...s].length >= 1, msg("M-35"))
   .refine((s) => [...s].length <= GROUP_NAME_MAX, msg("M-36"))
-  .refine((s) => !/\p{Cc}/u.test(s), msg("M-242"));
+  // Control characters and invisible ones (zero-width, line/paragraph separators), as the DB.
+  .refine(
+    (s) => !/[\p{Cc}\u200b-\u200f\u2028\u2029\u2060\ufeff]/u.test(s),
+    msg("M-242"),
+  );
 
 export const groupFields = {
   name: groupName,
@@ -33,9 +37,11 @@ export const updateGroupSchema = z.object({ groupId, ...groupFields }).strict();
 export const removeFromGroupSchema = z
   .object({ groupId, itemId: z.uuid() })
   .strict();
+/** `expected`: the order the user saw, so a change from another tab is refused (BR-17). */
 export const reorderSchema = z
   .object({
     groupId,
+    expected: z.array(z.uuid()).min(1).max(GROUP_ITEMS_MAX),
     itemIds: z.array(z.uuid()).min(1).max(GROUP_ITEMS_MAX),
   })
   .strict();

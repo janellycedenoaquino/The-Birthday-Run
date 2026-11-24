@@ -21,7 +21,7 @@ import { CSS } from "@dnd-kit/utilities";
 import { GripVertical } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { startTransition, useActionState, useEffect, useState } from "react";
+import { startTransition, useActionState, useState } from "react";
 import { toast } from "sonner";
 import { ConfirmCancel, ConfirmDialog, EditDialog } from "@/components/dialogs";
 import { Button } from "@/components/ui/button";
@@ -94,6 +94,7 @@ export function GroupCard({
     setOrder(next);
     const fd = new FormData();
     fd.set("groupId", group.id);
+    for (const item of previous) fd.append("expected", item.id);
     for (const item of next) fd.append("itemIds", item.id);
     startTransition(async () => {
       const result = await actions.reorderGroupItems(null, fd);
@@ -165,6 +166,7 @@ export function GroupCard({
                   key={item.id}
                   item={item}
                   groupId={group.id}
+                  current={order}
                   up={index > 0 ? arrayMove(order, index, index - 1) : null}
                   down={
                     index < order.length - 1
@@ -185,12 +187,14 @@ export function GroupCard({
 function SortableRow({
   item,
   groupId,
+  current,
   up,
   down,
   actions,
 }: {
   item: GroupItem;
   groupId: string;
+  current: GroupItem[];
   up: GroupItem[] | null;
   down: GroupItem[] | null;
   actions: { removeFromGroup: Action; reorderGroupItems: Action };
@@ -222,6 +226,7 @@ function SortableRow({
       <span className="min-w-0 flex-1">{item.name}</span>
       <MoveForm
         groupId={groupId}
+        current={current}
         order={up}
         label={`Move ${item.name} up`}
         text="Up"
@@ -229,6 +234,7 @@ function SortableRow({
       />
       <MoveForm
         groupId={groupId}
+        current={current}
         order={down}
         label={`Move ${item.name} down`}
         text="Down"
@@ -247,12 +253,14 @@ function SortableRow({
 /** The no-JS reorder: a form posting the whole list in its new order. */
 function MoveForm({
   groupId,
+  current,
   order,
   label,
   text,
   action,
 }: {
   groupId: string;
+  current: GroupItem[];
   order: GroupItem[] | null;
   label: string;
   text: string;
@@ -263,6 +271,7 @@ function MoveForm({
     <SmallForm
       action={action}
       fields={{ groupId }}
+      expected={current.map((i) => i.id)}
       list={order.map((i) => i.id)}
       label={label}
       text={text}
@@ -273,22 +282,25 @@ function MoveForm({
 function SmallForm({
   action: run,
   fields,
+  expected = [],
   list = [],
   label,
   text,
 }: {
   action: Action;
   fields: Record<string, string>;
+  expected?: string[];
   list?: string[];
   label: string;
   text: string;
 }) {
+  // Errors show next to the button (also without JS, where a toast never runs).
   const [state, action, pending] = useActionState(run, null);
-  useEffect(() => {
-    if (state && !state.ok) toast.error(msg(state.error as MessageId));
-  }, [state]);
   return (
-    <form action={action}>
+    <form action={action} className="flex items-center gap-1">
+      {expected.map((id) => (
+        <input key={`e-${id}`} type="hidden" name="expected" value={id} />
+      ))}
       {Object.entries(fields).map(([k, v]) => (
         <input key={k} type="hidden" name={k} value={v} />
       ))}
@@ -304,6 +316,11 @@ function SmallForm({
       >
         {text}
       </Button>
+      {state && !state.ok ? (
+        <span role="alert" className="text-xs text-destructive">
+          {msg(state.error as MessageId)}
+        </span>
+      ) : null}
     </form>
   );
 }

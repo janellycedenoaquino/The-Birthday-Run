@@ -53,7 +53,8 @@ export default async function PlanPage({ searchParams }: PageProps<"/plan">) {
     .order("name");
   if (error) throw new Error("S-106: could not read groups", { cause: error });
 
-  const names = new Map(ctx.rows.map((r) => [r.id, r.name]));
+  // From every enrolled reward, expired ones too: a group can still hold them.
+  const names = new Map(ctx.all.map((r) => [r.id, r.name]));
   const range = planRange(ctx.window);
   const start = defaultPickup(ctx.window, ctx.nowTime);
   const rows: PlanListRow[] = ctx.rows.map((r) => ({
@@ -83,8 +84,12 @@ export default async function PlanPage({ searchParams }: PageProps<"/plan">) {
       })),
   }));
   // FR-40: more than the free plan allows (after premium ends; nobody is premium yet).
+  // FR-24 counts only this birthday year's groups (from today's cycle start), as the trigger does.
+  const thisYear = groups.filter(
+    (g) => g.pickup_date >= ctx.window.current.cycleStart,
+  );
   const overLimit =
-    groups.length > FREE_GROUPS ||
+    thisYear.length > FREE_GROUPS ||
     groups.some((g) => g.reward_group_items.length > FREE_ITEMS);
   const confirmGroup = confirming
     ? groups.find((g) => g.id === confirming)

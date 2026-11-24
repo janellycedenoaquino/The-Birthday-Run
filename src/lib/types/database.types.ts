@@ -153,7 +153,7 @@ isOneToOne: false
 { Args: { "p_user_id": string }; Returns: undefined
                            },
 "reorder_group_items":
-{ Args: { "p_group_id": string,"p_item_ids": (string)[] }; Returns: undefined
+{ Args: { "p_expected": (string)[],"p_group_id": string,"p_item_ids": (string)[] }; Returns: undefined
                            },
 "retailer_counts":
 { Args: Record<PropertyKey, never>; Returns: {

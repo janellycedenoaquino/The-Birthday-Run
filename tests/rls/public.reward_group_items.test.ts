@@ -93,14 +93,15 @@ describe("items and the limit (FR-25, FR-26, D6)", () => {
     expect((await add(a, planB, ["sugarfish"], 3)).error?.code).toBe("23503");
   });
 
-  it("A can't put an item into B's group (the composite FK)", async () => {
+  it("A can't put an item into B's group, and learns nothing about it (no leak)", async () => {
     const r = await a.client.from("reward_group_items").insert({
       group_id: bGroup,
       user_id: a.id,
       retailer_id: IDS[0]!,
       position: 1,
     });
-    expect(r.error).not.toBeNull();
+    // The same answer as for a group that doesn't exist, whatever B's group holds.
+    expect(r.error?.message).toBe("group_not_found");
     expect(await itemsOf(bGroup)).toEqual([]);
   });
 
@@ -123,31 +124,69 @@ describe("items and the limit (FR-25, FR-26, D6)", () => {
 });
 
 describe("reorder_group_items (FR-27)", () => {
-  it("rewrites the order in one call; a stale list → stale_group_order", async () => {
-    const items = await itemsOf(planA);
-    const reversed = [...items].reverse().map((i) => i.id);
-    expect(
-      (
-        await a.client.rpc("reorder_group_items", {
-          p_group_id: planA,
-          p_item_ids: reversed,
-        })
-      ).error,
-    ).toBeNull();
-    expect((await itemsOf(planA)).map((i) => i.id)).toEqual(reversed);
-    const stale = await a.client.rpc("reorder_group_items", {
+  it("rewrites the order when the caller saw the saved one", async () => {
+    const items = (await itemsOf(planA)).map((i) => i.id);
+    const reversed = [...items].reverse();
+    const r = await a.client.rpc("reorder_group_items", {
       p_group_id: planA,
-      p_item_ids: reversed.slice(1),
+      p_expected: items,
+      p_item_ids: reversed,
     });
-    expect(stale.error?.message).toBe("stale_group_order");
+    expect(r.error).toBeNull();
+    expect((await itemsOf(planA)).map((i) => i.id)).toEqual(reversed);
+  });
+
+  it("another tab's older view is refused, even with the same items (BR-17)", async () => {
+    // Tab B saved the reversed order above; tab A still shows the one before it.
+    const now = (await itemsOf(planA)).map((i) => i.id);
+    const tabA = [...now].reverse();
+    const r = await a.client.rpc("reorder_group_items", {
+      p_group_id: planA,
+      p_expected: tabA,
+      p_item_ids: tabA,
+    });
+    expect(r.error?.message).toBe("stale_group_order");
+    expect((await itemsOf(planA)).map((i) => i.id)).toEqual(now);
+  });
+
+  it("a list with an item missing is refused too", async () => {
+    const now = (await itemsOf(planA)).map((i) => i.id);
+    const r = await a.client.rpc("reorder_group_items", {
+      p_group_id: planA,
+      p_expected: now,
+      p_item_ids: now.slice(1),
+    });
+    expect(r.error?.message).toBe("stale_group_order");
   });
 
   it("B can't reorder A's group: it's not found for B", async () => {
     const r = await b.client.rpc("reorder_group_items", {
       p_group_id: planA,
+      p_expected: [],
       p_item_ids: [],
     });
     expect(r.error?.message).toBe("group_not_found");
+  });
+});
+
+describe("the database checks direct writes too (FR-26)", () => {
+  it("positions come from the database, so two adds at once never share one", async () => {
+    const g = await newGroup(a, "Positions");
+    await Promise.all([add(a, g, [IDS[2]!], 1), add(a, g, [IDS[3]!], 1)]);
+    const positions = (await itemsOf(g)).map((i) => i.position).sort();
+    expect(positions).toEqual([1, 2]);
+  });
+
+  it("a retired retailer can't be added, even while still enrolled", async () => {
+    const db = (await import("./helpers")).sql();
+    try {
+      await db`update public.retailers set retired_at = now() where id = ${IDS[6]!}`;
+      const r = await add(a, planB, [IDS[6]!], 9);
+      expect(r.error?.message).toBe("retailer_retired");
+    } finally {
+      await db`update public.retailers set retired_at = null where id = ${IDS[6]!}`;
+      await db.end();
+    }
   });
 });
 
