@@ -60,6 +60,7 @@ The rest of this README is the Template's: what the foundations include, local s
 ### Operations
 - **Error monitoring** with Sentry (free Developer plan: 5,000 errors/month, 1 user, 30-day history ([pricing](https://sentry.io/pricing/))). Alerts go to email; no personal data or secrets in error reports.
 - **Backups:** Supabase's free plan has **no automatic backups** ([Supabase docs](https://supabase.com/docs/guides/platform/backups)), so the template includes a backup script (`supabase db dump`, including accounts) that runs daily in each app's GitHub Actions, **encrypted with age** to a key only you hold, kept **30 days**, plus a tested restore.
+- **Store and ZIP data (F-9):** `npm run import:zips` and `npm run import:stores` (local by default; `--target=production` with `SUPABASE_DB_URL` in your shell). `import:stores -- --dry-run` fetches and prints the coverage report without writing. Re-run monthly: a source that returns nothing keeps the last good rows.
 - **Premium by hand (FR-36):** `npm run grant-premium -- grant <email>` or `-- revoke <email>` (local). For production, put `SUPABASE_DB_URL` in your shell first and add `--target=production`. It prints `granted`, `already granted`, `revoked` or `no active grant` and the account id; it never touches a subscription.
 - **Rollback:** how to roll back a bad deploy on Vercel, and the rule that database migrations only move forward (a fix is a new migration).
 - A generic **launch checklist** (`docs/LAUNCH_CHECKLIST.md`) that every app tailors before real users arrive.

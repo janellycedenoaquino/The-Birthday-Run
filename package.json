@@ -27,7 +27,9 @@
     "check:supabase-env": "node --env-file-if-exists=supabase/.env --env-file-if-exists=supabase/.env.local --env-file-if-exists=.env --env-file-if-exists=.env.local scripts/check-supabase-env.ts",
     "import:retailers": "node scripts/import-retailers.ts",
     "check:duplicates": "jscpd . --baseline-from-ref origin/main --fail-on-new-clones",
-    "grant-premium": "node scripts/grant-premium.ts"
+    "grant-premium": "node scripts/grant-premium.ts",
+    "import:stores": "node scripts/import-stores.ts",
+    "import:zips": "node scripts/import-zips.ts"
   },
   "dependencies": {
     "@dnd-kit/core": "6.3.1",
@@ -54,6 +56,7 @@
   },
   "devDependencies": {
     "@axe-core/playwright": "^4.14.0",
+    "@duckdb/node-api": "1.5.6-r.1",
     "@playwright/test": "^1.65.1",
     "@tailwindcss/postcss": "^4.3.5",
     "@types/node": "^24",
