@@ -1,0 +1,76 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>PROTOTYPE · TBR dark mode options</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<script src="retailers-detail.js"></script>
+<style>
+/* Throwaway prototype: does TBR get a dark mode, and which one? Same screens in light (locked) and two dark palettes. */
+*{box-sizing:border-box;margin:0}
+body{font-family:"Plus Jakarta Sans",system-ui,sans-serif;background:#2b2b33;color:#eee}
+h1.pg{font-size:16px;margin:16px 24px 4px}p.pg{margin:0 24px;color:#aaa;font-size:14px;max-width:1100px;line-height:1.5}
+.cols{display:grid;grid-template-columns:repeat(3,1fr);gap:18px;padding:18px 24px 40px}
+.col h2{font-size:15px;margin-bottom:4px}.col p{font-size:12.5px;color:#aaa;margin-bottom:10px;min-height:34px}
+/* theme tokens */
+.t-berry{--bg:#2A1422;--g1:rgba(255,158,196,.42);--g2:rgba(214,235,255,.16);--g3:rgba(211,245,225,.14);--card:#3A2132;--glass:rgba(58,33,50,.66);--ink:#FFFCF7;--muted:#F2D9E4;--line:rgba(255,214,229,.22);--hl:#FF9EC4;--hlink:#1F2A5C;--btn:#8EC5FF;--btnink:#1F2A5C;--hover:#8FE3B0;--logo:#fff;--urg:rgba(255,120,120,.20);--urgl:#FF8A8A;--soon:rgba(255,170,120,.20);--soonl:#FFB38A;--ok:rgba(143,227,176,.18);--okl:#8FE3B0}
+.t-ocean{--bg:#0F2433;--g1:rgba(255,158,196,.18);--g2:rgba(142,197,255,.40);--g3:rgba(143,227,176,.18);--card:#183447;--glass:rgba(24,52,71,.66);--ink:#FFFCF7;--muted:#CFE3F2;--line:rgba(214,235,255,.22);--hl:#FF9EC4;--hlink:#1F2A5C;--btn:#8EC5FF;--btnink:#1F2A5C;--hover:#8FE3B0;--logo:#fff;--urg:rgba(255,120,120,.20);--urgl:#FF8A8A;--soon:rgba(255,170,120,.20);--soonl:#FFB38A;--ok:rgba(143,227,176,.18);--okl:#8FE3B0}
+.t-forest{--bg:#10261D;--g1:rgba(255,158,196,.18);--g2:rgba(142,197,255,.14);--g3:rgba(143,227,176,.36);--card:#1A372B;--glass:rgba(26,55,43,.66);--ink:#FFFCF7;--muted:#CDEBDD;--line:rgba(211,245,225,.22);--hl:#FF9EC4;--hlink:#1F2A5C;--btn:#8EC5FF;--btnink:#1F2A5C;--hover:#8FE3B0;--logo:#fff;--urg:rgba(255,120,120,.20);--urgl:#FF8A8A;--soon:rgba(255,170,120,.20);--soonl:#FFB38A;--ok:rgba(143,227,176,.18);--okl:#8FE3B0}
+.t-cocoa{--bg:#231A18;--g1:rgba(255,158,196,.26);--g2:rgba(214,235,255,.16);--g3:rgba(211,245,225,.16);--card:#33272A;--glass:rgba(51,39,42,.66);--ink:#FFFCF7;--muted:#E8D9D2;--line:rgba(255,252,247,.18);--hl:#FF9EC4;--hlink:#1F2A5C;--btn:#8EC5FF;--btnink:#1F2A5C;--hover:#8FE3B0;--logo:#fff;--urg:rgba(255,120,120,.20);--urgl:#FF8A8A;--soon:rgba(255,170,120,.20);--soonl:#FFB38A;--ok:rgba(143,227,176,.18);--okl:#8FE3B0}
+.t-mix{--bg:#1B1D2A;--g1:rgba(255,158,196,.34);--g2:rgba(142,197,255,.30);--g3:rgba(143,227,176,.26);--card:#262A3B;--glass:rgba(38,42,59,.62);--ink:#FFFCF7;--muted:#D7DAEC;--line:rgba(255,252,247,.18);--hl:#FF9EC4;--hlink:#1F2A5C;--btn:#8EC5FF;--btnink:#1F2A5C;--hover:#8FE3B0;--logo:#fff;--urg:rgba(255,120,120,.20);--urgl:#FF8A8A;--soon:rgba(255,170,120,.20);--soonl:#FFB38A;--ok:rgba(143,227,176,.18);--okl:#8FE3B0}
+.t-lilac{--bg:#1E1A2E;--g1:rgba(255,158,196,.28);--g2:rgba(195,177,255,.32);--g3:rgba(143,227,176,.18);--card:#2B2541;--glass:rgba(43,37,65,.66);--ink:#FFFCF7;--muted:#DCD3F0;--line:rgba(230,222,255,.22);--hl:#FF9EC4;--hlink:#1F2A5C;--btn:#8EC5FF;--btnink:#1F2A5C;--hover:#8FE3B0;--logo:#fff;--urg:rgba(255,120,120,.20);--urgl:#FF8A8A;--soon:rgba(255,170,120,.20);--soonl:#FFB38A;--ok:rgba(143,227,176,.18);--okl:#8FE3B0}
+.scr .glass{box-shadow:0 0 0 1.5px var(--line),inset 0 1px 0 rgba(255,255,255,.06)}
+
+.t-light{--bg:#FFFCF7;--g1:#FFD6E5;--g2:#D6EBFF;--g3:#D3F5E1;--card:rgba(255,255,255,.88);--glass:rgba(255,252,247,.62);--ink:#1F2A5C;--muted:#4C557D;--line:rgba(31,42,92,.16);--hl:#FF9EC4;--hlink:#1F2A5C;--btn:#8EC5FF;--btnink:#1F2A5C;--hover:#8FE3B0;--logo:#fff;--urg:#FFDCDC;--urgl:#D64545;--soon:#FFE3D3;--soonl:#E07A3F;--ok:#D3F5E1;--okl:#2E9E6A}
+.t-mid{--bg:#141A33;--g1:rgba(255,158,196,.22);--g2:rgba(142,197,255,.20);--g3:rgba(143,227,176,.16);--card:#1E2647;--glass:rgba(30,38,71,.72);--ink:#F6F1FF;--muted:#B9BFDD;--line:rgba(246,241,255,.16);--hl:#FF9EC4;--hlink:#1F2A5C;--btn:#8EC5FF;--btnink:#1F2A5C;--hover:#8FE3B0;--logo:#fff;--urg:rgba(255,120,120,.18);--urgl:#FF8A8A;--soon:rgba(255,170,120,.18);--soonl:#FFB38A;--ok:rgba(143,227,176,.16);--okl:#8FE3B0}
+.t-plum{--bg:#1F1530;--g1:rgba(255,158,196,.26);--g2:rgba(195,177,255,.20);--g3:rgba(143,227,176,.14);--card:#2C2042;--glass:rgba(44,32,66,.72);--ink:#FFF4FA;--muted:#D2C3E0;--line:rgba(255,244,250,.16);--hl:#FF9EC4;--hlink:#1F2A5C;--btn:#8EC5FF;--btnink:#1F2A5C;--hover:#8FE3B0;--logo:#fff;--urg:rgba(255,120,120,.18);--urgl:#FF8A8A;--soon:rgba(255,170,120,.18);--soonl:#FFB38A;--ok:rgba(143,227,176,.16);--okl:#8FE3B0}
+.scr{position:relative;border-radius:16px;overflow:hidden;background:var(--bg);color:var(--ink);box-shadow:0 0 0 6px #111;margin-bottom:16px;isolation:isolate;padding:14px}
+.scr:before{content:"";position:absolute;inset:0;z-index:-1;background:radial-gradient(60% 60% at 8% 5%,var(--g1),transparent 70%),radial-gradient(60% 60% at 95% 5%,var(--g2),transparent 70%),radial-gradient(70% 70% at 50% 115%,var(--g3),transparent 70%)}
+.bar{display:flex;align-items:center;gap:8px;margin-bottom:12px}
+.lo{font-weight:800;font-size:13px;background:var(--glass);padding:5px 8px;border-radius:9px}
+.me{margin-left:auto;width:26px;height:26px;border-radius:50%;background:#FFD6E5;color:#1F2A5C;display:grid;place-items:center;font-weight:800;font-size:12px;box-shadow:0 0 0 1.5px var(--ink)}
+.hl{background:var(--hl);color:var(--hlink);padding:0 .14em;border-radius:6px;display:inline-block;transform:rotate(-2deg)}
+.glass{border-radius:18px;padding:16px;background:var(--glass);backdrop-filter:blur(10px);box-shadow:0 0 0 1.5px var(--line)}
+.glass h3{font-size:22px;font-weight:800;letter-spacing:-.03em;line-height:1.15}
+.glass p{color:var(--muted);font-size:12.5px;margin-top:6px}
+.btn{display:inline-block;margin-top:10px;font-weight:800;font-size:12.5px;padding:8px 12px;border-radius:10px;background:var(--btn);color:var(--btnink);box-shadow:0 0 0 1.5px var(--ink)}
+.btn.g{background:transparent;color:var(--ink)}
+.row{display:grid;grid-template-columns:46px 1fr auto;gap:10px;align-items:center;background:var(--card);border-radius:12px;padding:8px 10px;box-shadow:0 0 0 1.5px var(--line);margin-top:8px}
+.row .lg{height:30px;border-radius:8px;background:var(--logo);display:grid;place-items:center}.row img{max-width:40px;max-height:24px;object-fit:contain}
+.row b{display:block;font-size:13px}.row span{font-size:11px;color:var(--muted)}
+.bd{font-size:11px;font-weight:800;padding:4px 7px;border-radius:8px;white-space:nowrap}
+.urg{background:var(--urg);box-shadow:inset 0 0 0 1.5px var(--urgl)}.soon{background:var(--soon);box-shadow:inset 0 0 0 1.5px var(--soonl)}.ok{background:var(--ok);box-shadow:inset 0 0 0 1.5px var(--okl)}
+.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:10px}
+.tile{height:58px;border-radius:12px;background:var(--logo);display:grid;place-items:center;box-shadow:0 0 0 1.5px var(--line)}
+.tile img{max-width:70px;max-height:30px;object-fit:contain}
+.tile.h{box-shadow:0 0 0 3px var(--hover)}
+.stats{display:flex;gap:8px;margin-top:8px}.st{flex:1;display:flex;gap:8px;align-items:center;background:var(--card);border-radius:12px;padding:8px 10px;box-shadow:0 0 0 1.5px var(--line);font-size:12px;font-weight:800}
+.st i{font-style:normal;font-size:24px;letter-spacing:-.04em}
+.ring{width:38px;height:38px;border-radius:50%;background:conic-gradient(var(--hl) 0 25%,rgba(255,158,196,.25) 25% 100%);display:grid;place-items:center}.ring:after{content:"";width:24px;height:24px;border-radius:50%;background:var(--card)}
+.choose{margin:0 24px;display:flex;gap:8px;flex-wrap:wrap}
+.choose span{font-size:13px;color:#ccc;background:#222;border-radius:10px;padding:8px 12px}
+</style>
+</head>
+<body>
+<h1 class="pg">Dark mode, round 2: six dark versions built from your own pastels (light stays as locked).</h1>
+<p class="pg">Every version keeps the same three pastel glows (pink, blue, green), the cream #FFFCF7 from the light page as the text colour, the pink block, sky-blue button and green hover. Each one leans the background toward one of your colours. Text contrast is 12:1 or better in all six.</p>
+
+<div class="cols" id="cols"></div>
+<script>
+const CLS=0;const LOGO_DIR="../../../public/retailers/";
+const R=id=>window.RETAILERS.find(r=>r.id===id);
+const lg=id=>`<img src="${LOGO_DIR}${R(id).l}" alt="">`;
+const T=[["t-mix","1. Pastel mix at night","The light page's three glows, same size, on a soft blue-grey night."],["t-berry","2. Berry","Leans into the pink: dark berry with a pink glow."],["t-ocean","3. Ocean","Leans into the baby blue: deep sea blue with a blue glow."],["t-forest","4. Mint night","Leans into the mint: deep green with a mint glow."],["t-lilac","5. Lilac night","A soft purple night that sits between the pink and blue."],["t-cocoa","6. Cocoa","Warm dark brown, cream text: like the light page's cream, flipped."]];
+document.getElementById("cols").innerHTML=T.map(([c,h,p])=>`<div class="col"><h2>${h}</h2><p>${p}</p>
+ <div class="scr ${c}"><div class="bar"><span class="lo">The Birthday Run</span></div><div class="glass"><h3>Every birthday freebie, <span class="hl">one run.</span></h3><p>See which brands treat you on your birthday, sign up in time, and plan the stops.</p><span class="btn">Get started</span> <span class="btn g">Browse rewards</span></div></div>
+ <div class="scr ${c}"><div class="bar"><span class="lo">The Birthday Run</span><span class="me">J</span></div><div class="glass"><h3>Happy birth month, <span class="hl">Jay</span></h3><p>2 picked up this Birthday Run</p></div>
+   <div class="stats"><div class="st"><div class="ring"></div>2/8 picked up</div><div class="st"><i>6</i>open now</div></div>
+   <div class="row"><div class="lg">${lg("panera-bread")}</div><div><b>Free bakery treat</b><span>Panera Bread</span></div><span class="bd urg">2 days left</span></div>
+   <div class="row"><div class="lg">${lg("olive-garden")}</div><div><b>Free dessert</b><span>Olive Garden</span></div><span class="bd soon">5 days left</span></div>
+   <div class="row"><div class="lg">${lg("chipotle")}</div><div><b>Chips, guac or queso</b><span>Chipotle</span></div><span class="bd ok">23 days left</span></div></div>
+ </div>`).join("");
+</script>
+</body>
+</html>

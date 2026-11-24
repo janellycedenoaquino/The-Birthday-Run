@@ -1,0 +1,164 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>PROTOTYPE · TBR brand page (full page)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<script src="retailers-detail.js"></script>
+<style>
+/* Throwaway prototype: S-104 as its own page (what Google and shared links open), signed out and in. Locked look: decision 0016. */
+:root{--bg:#FFFCF7;--ink:#1F2A5C;--muted:#4C557D;--hl:#FF9EC4;--btn:#8EC5FF;--hover:#8FE3B0;--line:color-mix(in srgb,var(--ink) 16%,transparent)}
+*{box-sizing:border-box;margin:0}
+body{font-family:"Plus Jakarta Sans",system-ui,sans-serif;background:var(--bg);color:var(--ink);min-height:100vh;overflow-x:hidden}
+.glow{position:fixed;inset:0;z-index:-1;overflow:hidden}
+.blob{position:absolute;width:70vw;height:70vw;border-radius:50%;filter:blur(40px)}
+.blob.p{background:radial-gradient(circle,#FFD6E5 0%,transparent 65%);left:-25vw;top:-30vw}.blob.b{background:radial-gradient(circle,#D6EBFF 0%,transparent 65%);right:-25vw;top:-25vw}.blob.g{background:radial-gradient(circle,#D3F5E1 0%,transparent 65%);left:15vw;bottom:-45vw}
+a{color:inherit}
+.hl{background:var(--hl);padding:0 .14em;border-radius:6px;display:inline-block;transform:rotate(-2deg)}
+.btn{font-family:inherit;font-weight:800;font-size:15px;line-height:1;padding:13px 18px;border-radius:12px;border:0;cursor:pointer;background:var(--btn);color:var(--ink);box-shadow:0 0 0 1.5px var(--ink);text-decoration:none;display:inline-flex;gap:8px;align-items:center;justify-content:center}
+.btn:hover{box-shadow:3px 3px 0 var(--ink),0 0 0 1.5px var(--ink)}.btn.ghost{background:#fff}.btn.added{background:var(--hover)}
+.top{display:flex;align-items:center;gap:12px;padding:16px 24px}
+.logo{font-weight:800;font-size:18px;letter-spacing:-.02em;background:rgba(255,252,247,.7);padding:8px 12px;border-radius:12px;text-decoration:none}
+.top nav{display:flex;gap:4px;margin-left:8px}.top nav a{font-weight:700;font-size:15px;text-decoration:none;padding:9px 12px;border-radius:10px}
+.top nav a[aria-current]{background:#fff;box-shadow:0 0 0 1.5px var(--ink)}
+.top .right{margin-left:auto;display:flex;gap:8px;align-items:center}
+.me{width:40px;height:40px;border-radius:50%;background:#FFD6E5;display:grid;place-items:center;font-weight:800;box-shadow:0 0 0 1.5px var(--ink)}
+body.out .in-only,body.in .out-only{display:none!important}
+main{max-width:1060px;margin:0 auto;padding:4px 24px 140px}
+.crumb{font-size:14px;color:var(--muted);margin:6px 0 14px}.crumb a{font-weight:700;text-decoration:underline;text-decoration-color:var(--hl);text-decoration-thickness:3px;text-underline-offset:3px}
+/* hero layouts */
+.hero{border-radius:28px;background:rgba(255,252,247,.66);backdrop-filter:blur(14px);box-shadow:0 0 0 1.5px color-mix(in srgb,var(--ink) 12%,transparent);overflow:hidden}
+.hero .lgb{background:#fff;display:grid;place-items:center;box-shadow:0 0 0 1.5px var(--line)}
+.hero .lgb img{object-fit:contain}
+.hero h1{font-weight:800;letter-spacing:-.035em;line-height:1.08}
+.hero .desc{color:var(--muted);margin-top:8px}
+.cat{display:inline-block;font-size:12px;font-weight:800;padding:5px 10px;border-radius:9px;background:var(--cc);margin-top:10px;box-shadow:inset 0 0 0 1.5px var(--line)}
+.c-food_drink{--cc:#FFD6E5}.c-retail{--cc:#D6EBFF}.c-beauty{--cc:#D3F5E1}.c-entertainment{--cc:#E6DEFF}
+.gift small{font-size:12px;letter-spacing:.12em;text-transform:uppercase;font-weight:800;color:var(--muted)}
+.gift strong{display:block;font-size:30px;font-weight:800;letter-spacing:-.025em;line-height:1.15;margin-top:6px}
+.gift .ty{margin-top:8px;font-size:14px;color:var(--muted)}.gift .ty b{color:var(--ink)}
+.acts{display:flex;gap:10px;flex-wrap:wrap;margin-top:18px}
+/* A split */
+body.ly-split .hero{display:grid;grid-template-columns:300px 1fr}
+body.ly-split .hero .side{background:var(--cc);padding:28px;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;border-right:1.5px solid var(--line)}
+body.ly-split .hero .lgb{width:200px;height:130px;border-radius:22px}
+body.ly-split .hero .lgb img{max-width:160px;max-height:90px}
+body.ly-split .hero h1{font-size:30px;margin-top:16px}
+body.ly-split .hero .main{padding:28px 30px}
+/* B centered */
+body.ly-center .hero{text-align:center;padding:30px}
+body.ly-center .hero .side{display:flex;flex-direction:column;align-items:center}
+body.ly-center .hero .lgb{width:150px;height:96px;border-radius:20px}
+body.ly-center .hero .lgb img{max-width:120px;max-height:64px}
+body.ly-center .hero h1{font-size:40px;margin-top:14px}
+body.ly-center .gift{margin:22px auto 0;max-width:560px;padding:20px;border-radius:20px;background:#fff;box-shadow:0 0 0 1.5px var(--line)}
+body.ly-center .acts{justify-content:center}
+/* C ticket */
+body.ly-ticket .hero{display:grid;grid-template-columns:1fr 260px;background:#FFE8F0;box-shadow:0 0 0 1.5px var(--ink)}
+body.ly-ticket .hero .side{order:2;padding:26px;border-left:2px dashed var(--ink);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;background:#fff}
+body.ly-ticket .hero .lgb{width:170px;height:110px;border-radius:18px}
+body.ly-ticket .hero .lgb img{max-width:130px;max-height:72px}
+body.ly-ticket .hero .side h1{font-size:22px;text-align:center}
+body.ly-ticket .hero .main{padding:28px 30px}
+body.ly-ticket .hero .main h1{display:none}
+/* facts */
+.facts{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-top:18px}
+.fact{border-radius:20px;padding:16px 18px;background:rgba(255,255,255,.82);box-shadow:0 0 0 1.5px var(--line)}
+.fact h2{font-size:12px;letter-spacing:.12em;text-transform:uppercase;font-weight:800;color:var(--muted);margin-bottom:8px}
+.fact p{line-height:1.5}
+.fact .big{font-size:20px;font-weight:800;letter-spacing:-.02em;line-height:1.25}
+.lock{margin-top:12px;border-radius:14px;padding:12px 14px;background:#FFF5F9;box-shadow:inset 0 0 0 2px var(--hl);font-size:14px}
+.lock b{display:block;margin-bottom:6px}
+.lock .blur{filter:blur(4px);user-select:none;font-weight:800;margin:6px 0}
+.you{margin-top:12px;border-radius:14px;padding:12px 14px;background:#EFFAF2;box-shadow:inset 0 0 0 2px var(--hover);font-weight:800}
+.you span{display:block;font-size:13px;color:var(--muted);font-weight:600}
+.warn{background:#FFF0E6;box-shadow:inset 0 0 0 1.5px #FFB996}
+.fine{margin-top:16px;font-size:13px;color:var(--muted)}
+.fine a{font-weight:700}
+/* sign-up band */
+.band{margin-top:22px;border-radius:24px;padding:22px 26px;display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;background:linear-gradient(90deg,#FFD6E5,#D6EBFF,#D3F5E1);box-shadow:0 0 0 1.5px var(--ink)}
+.band h2{font-size:22px;font-weight:800;letter-spacing:-.02em}.band p{color:var(--muted);margin-top:4px}
+/* more */
+.more{margin-top:30px}
+.more h2{font-size:24px;font-weight:800;letter-spacing:-.02em}
+.more p.s{color:var(--muted);margin-top:4px}
+.mg{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-top:14px}
+.mc{border-radius:18px;background:rgba(255,255,255,.86);box-shadow:0 0 0 1.5px var(--line);padding:14px;text-decoration:none;display:flex;flex-direction:column;gap:6px}
+.mc:hover{box-shadow:0 0 0 3px var(--hover)}
+.mc .lg{height:52px;display:grid;place-items:center}.mc img{max-width:110px;max-height:44px;object-fit:contain}
+.mc b{font-size:13px;color:var(--muted)}.mc span{font-weight:800;line-height:1.25}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
+/* panel */
+.panel{position:fixed;left:16px;bottom:16px;z-index:50;background:#111;color:#ddd;border-radius:16px;padding:12px 14px;font:500 12px/1.2 system-ui,sans-serif;box-shadow:0 20px 50px -10px rgba(0,0,0,.5);max-width:calc(100vw - 32px);width:580px}
+.panel.min .rws{display:none}
+.panel .tp{display:flex;justify-content:space-between;align-items:center}.panel .tp b{color:#fff;font-size:13px}
+.panel button{font:inherit;background:#222;color:#ddd;border:0;border-radius:8px;padding:6px 9px;cursor:pointer}
+.panel button.on{background:#fff;color:#111;font-weight:700}
+.prow{display:grid;grid-template-columns:110px 1fr;gap:8px;align-items:center;margin-top:8px}.prow>span{color:#999}.prow div{display:flex;flex-wrap:wrap;gap:4px}
+.now{margin-top:10px;color:#aaa;line-height:1.5}.now b{color:#fff}
+.ptag{position:fixed;top:10px;left:50%;transform:translateX(-50%);z-index:60;font:700 10px system-ui;letter-spacing:.15em;background:#111;color:#fff;padding:5px 8px;border-radius:6px}
+@media (max-width:760px){.top nav{display:none}.top .out-only.btn:not(.ghost){display:none!important}main{padding:4px 14px 120px}
+ body.ly-split .hero,body.ly-ticket .hero{grid-template-columns:1fr}body.ly-split .hero .side{border-right:0;border-bottom:1.5px solid var(--line)}body.ly-ticket .hero .side{order:0;border-left:0;border-bottom:2px dashed var(--ink)}
+ .facts{grid-template-columns:1fr}.mg{grid-template-columns:1fr 1fr}.gift strong{font-size:24px}body.ly-center .hero h1{font-size:30px}.ptag{top:auto;bottom:62px}.acts .btn{flex:1}}
+.panel{display:none}</style>
+</head>
+<body class="out ly-split">
+<div class="ptag">PROTOTYPE · BRAND PAGE · LOCKED</div>
+<div class="glow" aria-hidden="true"><div class="blob p"></div><div class="blob b"></div><div class="blob g"></div></div>
+<header class="top"><a class="logo" href="#">The Birthday Run</a>
+  <nav class="in-only"><a href="#" aria-current="page">Discover</a><a href="#">My Rewards</a><a href="#">Plan</a><a href="#">History</a></nav>
+  <div class="right"><a class="btn ghost out-only" href="#" style="padding:10px 14px">Sign in</a><a class="btn out-only" href="#" style="padding:10px 14px">Get started</a><span class="me in-only">J</span></div></header>
+<main id="main"></main>
+
+<div class="panel" id="panel">
+  <div class="tp"><b>Brand page options (prototype only)</b><button id="min">Hide</button></div>
+  <div class="rws">
+    <div class="prow"><span>1 Top card</span><div data-k="ly"><button data-v="split">Logo side + gift</button><button data-v="center">Centred</button><button data-v="ticket">Pink ticket</button></div></div>
+    <div class="prow"><span>2 Your dates</span><div data-k="lk"><button data-v="blur">Blurred dates + sign up</button><button data-v="plain">Plain "Sign up to see"</button></div></div>
+    <div class="prow"><span>3 More brands</span><div data-k="mo"><button data-v="same">Same category</button><button data-v="none">None</button></div></div>
+    <div class="prow"><span>Sample</span><div data-k="who"><button data-v="out">Signed out (from Google)</button><button data-v="in">Signed in</button></div><div data-k="brand"><button data-v="starbucks">Starbucks</button><button data-v="olive-garden">Olive Garden</button><button data-v="sephora">Sephora</button></div></div>
+    <div class="now" id="now"></div>
+  </div>
+</div>
+
+<script>
+const LOGO_DIR="../../../public/retailers/";
+const ALL=window.RETAILERS;
+const esc=t=>String(t??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const CAT={food_drink:"Food & drink",retail:"Shopping",beauty:"Beauty",entertainment:"Fun & movies"};
+const TYPE={free_item:["Free item","something free, no purchase needed."],discount:["Discount","money off your order."],bogo:["Buy one, get one","a second item free when you buy one."],points:["Points","bonus points added to your account."],free_with_purchase:["Free with purchase","free when you buy something else."]};
+const W={ly:{split:"logo side + gift",center:"centred",ticket:"pink ticket"},lk:{blur:"blurred dates",plain:"plain sign-up line"},mo:{same:"more in the same category",none:"no more brands"},who:{out:"signed out",in:"signed in"},brand:{starbucks:"Starbucks","olive-garden":"Olive Garden",sephora:"Sephora"}};
+const st={ly:"split",lk:"blur",mo:"same",who:"out",brand:"starbucks",added:false};
+new URLSearchParams(location.search).forEach((v,k)=>{if(W[k]&&W[k][v])st[k]=v});
+const lg=r=>r.l?`<img src="${LOGO_DIR+esc(r.l)}" alt="${esc(r.n)} logo">`:`<b>${esc(r.n)}</b>`;
+const fmtC=s=>new Date(s+"T12:00").toLocaleDateString("en-US",{month:"short",day:"numeric",year:"numeric"});
+function render(){const r=ALL.find(x=>x.id===st.brand);const [tl,tx]=TYPE[r.ty]||["",""];const M=document.getElementById("main");
+  const needs=[r.pur&&`<p><b>Purchase:</b> ${esc(r.pur)}</p>`,r.mem&&`<p><b>Membership:</b> ${esc(r.mem)}</p>`,r.oth&&`<p><b>Also:</b> ${esc(r.oth)}</p>`].filter(Boolean).join("")||"<p>Nothing extra: join the free program.</p>";
+  const dates=st.who==="in"?`<div class="you">Your dates: Dec 6${r.w[0]==="m"?" – Dec 31":r.w[1]>0?" – "+["Dec "+(6+r.w[1])]:""}<span>Starts in 12 days</span></div>`
+    :st.lk==="blur"?`<div class="lock"><b>Your exact dates</b><p class="blur" aria-hidden="true">Dec 6 – Dec 31 · 12 days left</p><a class="btn" href="#" style="padding:10px 14px;font-size:14px">Sign up to see your dates</a></div>`
+    :`<p style="margin-top:10px"><a class="btn ghost" href="#" style="padding:10px 14px;font-size:14px">Sign up to see your exact dates</a></p>`;
+  const more=st.mo==="same"?`<section class="more"><h2>More ${esc(CAT[r.c].toLowerCase())} birthday treats</h2><p class="s">Checked on each brand's own page.</p><div class="mg">${ALL.filter(x=>x.c===r.c&&x.id!==r.id).slice(0,4).map(x=>`<a class="mc" href="?${new URLSearchParams({...st,brand:x.id})}"><div class="lg">${lg(x)}</div><b>${esc(x.n)}</b><span>${esc(x.r)}</span></a>`).join("")}</div><p class="fine"><a class="lk" href="#">See all ${ALL.length} birthday rewards</a></p></section>`:"";
+  M.innerHTML=`<p class="crumb"><a href="#">Discover</a> / ${esc(CAT[r.c])} / ${esc(r.n)}</p>
+  <section class="hero c-${r.c}"><div class="side"><div class="lgb">${lg(r)}</div><h1>${esc(r.n)} birthday reward</h1><p class="desc">${esc(r.desc)}</p><span class="cat">${CAT[r.c]}</span></div>
+   <div class="main"><h1 class="sr">${esc(r.n)} birthday reward</h1><div class="gift"><small>Your birthday gift</small><strong>${esc(r.full)}</strong><p class="ty"><b>${tl}:</b> ${tx}</p></div>
+   <div class="acts">${st.who==="in"?`<button class="btn ${st.added?"added":""}" id="add">${st.added?"✓ Added to My Rewards":"+ Add to My Rewards"}</button>`:`<a class="btn" href="#">Sign up free to track it</a>`}<a class="btn ghost" href="${esc(r.web)}" target="_blank" rel="noopener noreferrer">Visit website ↗<span class="sr">(opens in a new tab)</span></a></div></div></section>
+  <section class="facts"><div class="fact"><h2>When</h2><p class="big">${esc(r.t)}</p>${dates}</div>
+   ${r.lead?`<div class="fact warn"><h2>Join early</h2><p class="big">Join ${esc(r.lead)} days before</p><p>You need to be a member at least ${esc(r.lead)} days before your birthday, or it may not come this year.</p></div>`:`<div class="fact"><h2>Join</h2><p class="big">Any time before</p><p>No waiting period: join the free program before your birthday.</p></div>`}
+   <div class="fact"><h2>What you need</h2>${needs}</div></section>
+  ${st.who==="out"?`<section class="band"><div><h2>Track ${esc(r.n)} with your other rewards</h2><p>Sign up free to get a countdown for your own birthday and plan your run.</p></div><a class="btn" href="#">Sign up free</a></section>`:""}
+  ${more}
+  <p class="fine">Checked on the brand's own page on ${fmtC(r.chk)} · <a href="${esc(r.src)}" target="_blank" rel="noopener noreferrer">source ↗</a>${st.who==="in"?' · <a href="#">Something wrong? Report it</a>':""}</p>`;
+  const a=document.getElementById("add");if(a)a.onclick=()=>{st.added=!st.added;render()}}
+function apply(){document.body.className=`${st.who} ly-${st.ly}`;
+  document.querySelectorAll(".panel [data-k]").forEach(g=>g.querySelectorAll("button").forEach(b=>b.classList.toggle("on",b.dataset.v===st[g.dataset.k])));
+  document.getElementById("now").innerHTML=`Showing: <b>${W.ly[st.ly]}</b> · ${W.lk[st.lk]} · ${W.mo[st.mo]} · ${W.who[st.who]} · ${W.brand[st.brand]}`;
+  render();const q=new URLSearchParams();for(const k in W)q.set(k,st[k]);history.replaceState(null,"","?"+q)}
+document.querySelectorAll(".panel [data-k]").forEach(g=>g.onclick=e=>{const b=e.target.closest("button");if(!b)return;st[g.dataset.k]=b.dataset.v;apply()});
+document.getElementById("min").onclick=e=>{const p=document.getElementById("panel");p.classList.toggle("min");e.target.textContent=p.classList.contains("min")?"Show":"Hide"};
+if(innerWidth<760){document.getElementById("panel").classList.add("min");document.getElementById("min").textContent="Show"}
+apply();
+</script>
+</body>
+</html>
