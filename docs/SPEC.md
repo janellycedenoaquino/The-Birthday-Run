@@ -411,6 +411,7 @@ flowchart TD
 - **States:** nothing to plan: M-239 → S-103 · no groups: M-240 · group with no rewards: M-241 · reorder conflict: BR-17 inline on the card with "Refresh" · loading: skeleton · error: Template S-20.
 
 #### S-107 History (`/history`) · FR-19, FR-20
+- **Look (decision 0016):** one cycle at a time behind year tabs (newest first; the upcoming cycle is a tab too, M-252 when empty); entries as a timeline: a dotted pink line with a dot per pickup, each entry a card with a date block (month, day, weekday), logo, retailer, reward, the note in a soft highlight and the label below, and a ⋯ menu (Edit, Delete). No per-year summary. No pickups ever: M-253 with an illustration and a link to S-105.
 - **Shows:** h1 M-250; one section per cycle, newest first, h2 M-251 (`{year}`), upcoming cycle included (M-252 when empty); entries: retailer, date, note, label (all as text), menu "Edit" (note + label, C-109 fields only) and "Delete" (C-108 M-185/M-186). Retired retailers keep their name.
 - **States:** none ever: M-253 → S-105 · edit/delete errors: BR-11, M-5, M-7, M-117 · success: toast M-254 / M-255.
 

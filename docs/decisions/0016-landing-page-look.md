@@ -72,6 +72,11 @@ Why these colours: research on colour and emotion finds that brightness and satu
 - **Groups:** pink tickets: a white date stamp (month and day), the name, "Pickup: {date} at {time}", a dashed tear line, then numbered stops in pink circles with a drag handle (keyboard: Space, arrows, Space) and a remove ×. The ⋯ menu holds Edit, Duplicate (premium) and Delete (C-108). Premium groups with 2+ stops get "Show route" with a small map.
 - **Adding:** tick rewards (picked-up ones are greyed and can't be ticked), then a navy bar "N selected · Clear · Add to group" sits above the tab bar; the dialog has "New group" / "Existing group" tabs and warns when a reward ends before the pickup. Free users see their limits ("2 of 3 groups", "3 of 5 rewards"); Smart Grouping shows as a pink-blue banner, or its upgrade text for free users.
 
+**History (S-107):**
+- Year tabs ("2027", "2026", "2025", newest first, the current run selected) show one Birthday Run at a time. Pickups sit on a timeline: a dotted pink line with a pink dot per pickup; each card has a date block (month, day, weekday), the logo, retailer, reward, the note in a soft yellow highlight and the "where" below, and a ⋯ menu with "Edit note and place" and "Delete" (asks first). No year summary. With no pickups ever, an illustration (the three girls from the old app, kept by the owner) above M-253 and "Go to My Rewards".
+
+**Illustrations kept from the old app** (outside the repo, `Design/images/` on the owner's machine): the three girls running (loading screen and empty states), the stacked gift boxes and the girls over a map (out of season on My Rewards and Plan). The gift boxes show real brand logos: in the app only, not in ads or on the public landing page.
+
 **Retailer page (S-104), timing split:**
 - **Public:** the general rule (for example "30 days from your birthday"). That fact is what people search for, so it stays readable (decision 0017).
 - **Behind sign-up:** "Sign up to see your exact dates." Signed in, the page shows the user's own dates and days left (for example "Jan 3 – Feb 2 · 12 days left"). Only an account knows the birthday, so this is the honest reason to sign up.
@@ -90,6 +95,7 @@ Why these colours: research on colour and emotion finds that brightness and satu
 - **Brand details as a side drawer or a full page only; a gift-ticket or two-column details layout; a green check or green outline for "added"; the add button only inside the details.**
 - **My Rewards:** one tap to mark picked up (with an undo bar or a "Claimed!" stamp); filters as a select or behind a Filter button; a "Report a problem" link under every card; a plain upgrade card for the route.
 - **Plan:** the list above the groups on every screen; two tabs on every screen; plain group cards; a "route line" group look; a "+ Group" button on each reward.
+- **History:** list rows, a sticker-book look, all years stacked, and count chips per year.
 - **Timing on the cards,** and **hiding the timing behind sign-up:** dropped. Cards stay clean, and hiding the fact would cost search traffic.
 - **Sign in / sign up:** 3D tunnel, two-row marquee and glow-only backgrounds; the card with the reminder at its side or under it; a brand count by category or a sample checklist as the reminder; a link at the bottom to switch (the Template's way); and pick 8's "your birthday run" preview checklist after Continue. The owner kept the confetti from that preview but not the checklist.
 
