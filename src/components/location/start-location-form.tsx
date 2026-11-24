@@ -18,7 +18,14 @@ export const errorText = (e: string) => (e in M ? msg(e as MessageId) : e);
 
 // C-105 Start location (SPEC §3.3: FR-30, NFR-3). The browser is asked only when M-150 is pressed;
 // a ZIP is checked on the server (BR-12) before it's kept. Set: M-155 with "Change" (M-157).
-export function StartLocationForm({ lookupZip }: { lookupZip: LookupZip }) {
+export function StartLocationForm({
+  lookupZip,
+  onSet,
+}: {
+  lookupZip: LookupZip;
+  /** Called once the user sets a start here; a ZIP brings the state its check found (FR-5). */
+  onSet?: (start: StartLocation, state?: string | null) => void;
+}) {
   const { start, setStart, clear } = useStartLocation();
   const [locating, setLocating] = useState(false);
   const [pending, startTransition] = useTransition();
@@ -50,11 +57,13 @@ export function StartLocationForm({ lookupZip }: { lookupZip: LookupZip }) {
     navigator.geolocation.getCurrentPosition(
       (pos) => {
         setLocating(false);
-        setStart({
+        const s: StartLocation = {
           kind: "coords",
           lat: pos.coords.latitude,
           lng: pos.coords.longitude,
-        });
+        };
+        setStart(s);
+        onSet?.(s);
       },
       () => {
         setLocating(false);
@@ -80,7 +89,11 @@ export function StartLocationForm({ lookupZip }: { lookupZip: LookupZip }) {
     }
     startTransition(async () => {
       const r = await lookupZip({ start: { kind: "zip", zip } });
-      if (r.ok) return setStart({ kind: "zip", zip });
+      if (r.ok) {
+        const s: StartLocation = { kind: "zip", zip };
+        setStart(s);
+        return onSet?.(s, r.data?.state ?? null);
+      }
       const field = r.fieldErrors?.zip?.[0];
       if (field) {
         setZipError(field);

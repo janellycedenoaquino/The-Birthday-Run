@@ -13,8 +13,11 @@ import { filterRetailers, type FilterRow } from "@/lib/retailers/filter";
 import { CATEGORIES, CATEGORY_LABELS } from "@/lib/retailers/labels";
 import { enroll, unenroll } from "@/server/actions/enrollments";
 import { getEntitlement } from "@/server/premium/entitlement";
-import { StateFilter } from "@/components/location/state-filter";
-import { US_STATE_CODES } from "@/lib/retailers/csv-schema";
+import {
+  StateCount,
+  StateFilter,
+  StateScoped,
+} from "@/components/location/state-filter";
 import { lookupZip } from "@/server/actions/route";
 import { createClient } from "@/server/supabase/server";
 
@@ -30,7 +33,8 @@ const CARD_COLUMNS =
 
 // BUILD F-3: bad values are dropped, never an error. The premium filters (FR-45: length and
 // "starts early") are read only for premium users; free users' URLs with them get the plain list
-// and C-104 (FR-39, metric 2). So is the state filter (FR-5), set through C-105 (BUILD F-10).
+// and C-104 (FR-39, metric 2). The state filter (FR-5) runs in the browser (decision 0014): it
+// is never a URL parameter, so the server never sees a location (NFR-3).
 const searchSchema = z.object({
   q: z.string().trim().max(100).optional().catch(undefined),
   category: z
@@ -39,11 +43,6 @@ const searchSchema = z.object({
     .catch(undefined),
   length: z.enum(["day", "week", "longer"]).optional().catch(undefined),
   early: z.literal("1").optional().catch(undefined),
-  // FR-5: a two-letter code from the start's ZIP (never the start itself, D10).
-  state: z
-    .enum(US_STATE_CODES as unknown as [string, ...string[]])
-    .optional()
-    .catch(undefined),
 });
 
 type Row = CardRetailer & FilterRow;
@@ -110,7 +109,7 @@ export default async function DiscoverPage({
         today(profile.time_zone, new Date()),
       ).planning.birthday;
   }
-  const { shown, total, hiddenByState } = filterRetailers(
+  const { shown, total } = filterRetailers(
     rows as Row[],
     premium
       ? { ...filters, early: filters.early === "1" }
@@ -121,11 +120,10 @@ export default async function DiscoverPage({
     filters.q ||
     filters.category ||
     // Length/early only filter with a birthday to measure from (filterRetailers ignores them).
-    (premium && occurrence && (filters.length || filters.early)) ||
-    (premium && filters.state),
+    (premium && occurrence && (filters.length || filters.early)),
   );
   /** The current filters as a query, `over` replacing some (premium ones only for premium). */
-  const query = (over: { category?: string; state?: string | null }) => {
+  const query = (over: { category?: string }) => {
     const p = new URLSearchParams();
     if (filters.q) p.set("q", filters.q);
     const category = "category" in over ? over.category : filters.category;
@@ -133,21 +131,24 @@ export default async function DiscoverPage({
     if (premium && occurrence && filters.length)
       p.set("length", filters.length);
     if (premium && occurrence && filters.early) p.set("early", "1");
-    const state = "state" in over ? over.state : filters.state;
-    if (premium && state) p.set("state", state);
     const s = p.toString();
     return s ? `/discover?${s}` : "/discover";
   };
   const href = (category?: string) => query({ category });
+  // FR-5 in the browser: only what the filter needs, for premium users only.
+  const stateRows = premium
+    ? shown.map(({ id, states_scope, state_codes }) => ({
+        id,
+        states_scope,
+        state_codes,
+      }))
+    : [];
 
   return (
     <Shell>
       <form method="get" className="mt-6 flex gap-2" role="search">
         {filters.category ? (
           <input type="hidden" name="category" value={filters.category} />
-        ) : null}
-        {premium && filters.state ? (
-          <input type="hidden" name="state" value={filters.state} />
         ) : null}
         <label htmlFor="discover-q" className="sr-only">
           Search by name
@@ -195,23 +196,7 @@ export default async function DiscoverPage({
       </form>
       {premium ? (
         <section aria-label="Your state" className="mt-4">
-          {filters.state ? (
-            <p className="flex flex-wrap items-center gap-2 text-sm">
-              <span>
-                {msg("M-172")
-                  .replace("{state}", filters.state)
-                  .replace("{hidden}", String(hiddenByState))}
-              </span>
-              <Link
-                href={query({ state: null })}
-                className="underline underline-offset-4"
-              >
-                {msg("M-173")}
-              </Link>
-            </p>
-          ) : (
-            <StateFilter lookupZip={lookupZip} />
-          )}
+          <StateFilter lookupZip={lookupZip} rows={stateRows} />
         </section>
       ) : (
         <div className="mt-4">
@@ -236,11 +221,15 @@ export default async function DiscoverPage({
           })}
         </ul>
       </nav>
-      <p className="mt-4 text-sm text-muted-foreground" aria-live="polite">
-        {msg("M-178")
-          .replace("{shown}", String(shown.length))
-          .replace("{total}", String(total))}
-      </p>
+      {premium ? (
+        <StateCount rows={stateRows} total={total} />
+      ) : (
+        <p className="mt-4 text-sm text-muted-foreground" aria-live="polite">
+          {msg("M-178")
+            .replace("{shown}", String(shown.length))
+            .replace("{total}", String(total))}
+        </p>
+      )}
       {shown.length === 0 ? (
         <div className="mt-6 rounded-lg border border-border/70 p-6">
           <p>{filtered ? msg("M-179") : msg("M-171")}</p>
@@ -255,13 +244,22 @@ export default async function DiscoverPage({
         </div>
       ) : (
         <ul className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {shown.map((r) => (
-            <RetailerCard
-              key={r.id}
-              retailer={r}
-              toggle={{ enrolled: enrolledIds.has(r.id), enroll, unenroll }}
-            />
-          ))}
+          {shown.map((r) => {
+            const card = (
+              <RetailerCard
+                key={r.id}
+                retailer={r}
+                toggle={{ enrolled: enrolledIds.has(r.id), enroll, unenroll }}
+              />
+            );
+            return premium ? (
+              <StateScoped key={r.id} row={r}>
+                {card}
+              </StateScoped>
+            ) : (
+              card
+            );
+          })}
         </ul>
       )}
     </Shell>
