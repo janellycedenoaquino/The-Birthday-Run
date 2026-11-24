@@ -213,7 +213,7 @@ export const M = {
   "M-140": "Upgrade to unlock it. You can cancel any time from Settings.",
   "M-261": "You have Premium.",
   "M-258":
-    "One email a week before your birthday, and one when rewards are about to end.",
+    "One email when it's time to plan (up to a month before your birthday), and one when rewards are about to end.",
   "M-259": "Reminders on.",
   "M-260": "Reminders off.",
   "M-270": "Turn off reminder emails?",

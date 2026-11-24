@@ -4,6 +4,7 @@ import {
   addDays,
   compareDates,
   daysLeft,
+  joinByDate,
   rewardDays,
   rewardStatus,
   timingOf,
@@ -20,6 +21,8 @@ export type ReminderReward = {
   timing_type: string;
   days_before: number | null;
   days_after: number | null;
+  /** FR-49: days before the birthday a member must have joined; null when none. */
+  signup_lead_days?: number | null;
 };
 
 export type ReminderItem = {
@@ -28,6 +31,10 @@ export type ReminderItem = {
   description: string;
   lastDay: LocalDate;
   daysLeft: number;
+  /** The first day it can be picked up. */
+  opens: LocalDate;
+  /** FR-49's join-by date, when the brand has a sign-up lead time. */
+  joinBy: LocalDate | null;
 };
 
 export type DueReminder = {
@@ -38,8 +45,15 @@ export type DueReminder = {
   items: ReminderItem[];
 };
 
-/** E-101 goes out on any of these days before the birthday, once per cycle (D14). */
-export const PLAN_AHEAD_DAYS = { from: 1, to: 7 } as const;
+/**
+ * E-101 (FR-41, owner 2026-11-24): due from a per-user start day until the day before the
+ * birthday, once per cycle (D14: a missed run still sends the next day). The start day is the
+ * earliest day the user can act on a reward still to get (it opens, or its join-by date, FR-49),
+ * minus a buffer, kept between `latest` and `earliest` days before the birthday. With nothing
+ * early, it starts `latest` days before. Earliest real case: a birth-month reward for a birthday on
+ * the 31st opens 30 days before, and the longest join-by lead is 30 days (catalogue, 2026-11-24).
+ */
+export const PLAN_AHEAD = { bufferDays: 2, earliest: 32, latest: 7 } as const;
 /** FR-41: "expiring" means this many days left or fewer. */
 export const EXPIRING_DAYS = 3;
 /** A-9: at most one expiring email every this many days. */
@@ -64,7 +78,11 @@ export function remindersDue(input: {
     const own = input.pickups
       .filter((p) => p.retailerId === r.retailer_id)
       .map((p) => p.date);
+    const opens = rewardDays(t, w.planning.birthday).opens;
+    const lead = r.signup_lead_days ?? 0;
+    const joinBy = lead > 0 ? joinByDate(w.planning.birthday, lead) : opens;
     return {
+      firstAction: compareDates(joinBy, opens) < 0 ? joinBy : opens,
       status: rewardStatus(t, w, own),
       item: {
         retailerId: r.retailer_id,
@@ -72,6 +90,8 @@ export function remindersDue(input: {
         description: r.reward_description,
         lastDay: rewardDays(t, w.planning.birthday).closes,
         daysLeft: daysLeft(t, w),
+        opens,
+        joinBy: lead > 0 ? joinBy : null,
       },
     };
   });
@@ -94,12 +114,18 @@ export function remindersDue(input: {
 
   // Plan ahead (E-101): 1–7 days before the birthday, once per cycle; every reward still to get.
   const cycleStart = w.planning.cycleStart;
+  const bday = w.planning.birthday;
+  const todo = rows.filter(
+    (r) => r.status === "available" || r.status === "not_open",
+  );
+  const open = todo.map((r) => r.item);
+  const startDay = planAheadStart(
+    bday,
+    todo.map((r) => r.firstAction),
+  );
+  // Only before this cycle's birthday: in the window, planning is the current birthday.
   const soon =
-    w.daysUntilBirthday >= PLAN_AHEAD_DAYS.from &&
-    w.daysUntilBirthday <= PLAN_AHEAD_DAYS.to;
-  const open = rows
-    .filter((r) => r.status === "available" || r.status === "not_open")
-    .map((r) => r.item);
+    compareDates(today, bday) < 0 && compareDates(today, startDay) >= 0;
   if (soon && open.length && !input.planAheadCycles.includes(cycleStart))
     due.push({
       kind: "plan_ahead",
@@ -116,3 +142,20 @@ const sortByLastDay = (items: ReminderItem[]) =>
     (a, b) =>
       compareDates(a.lastDay, b.lastDay) || a.name.localeCompare(b.name),
   );
+
+/** The first day E-101 can go out for a birthday (see PLAN_AHEAD). */
+export function planAheadStart(
+  birthday: LocalDate,
+  firstActions: LocalDate[],
+): LocalDate {
+  const latest = addDays(birthday, -PLAN_AHEAD.latest);
+  const earliest = addDays(birthday, -PLAN_AHEAD.earliest);
+  const first = firstActions.reduce<LocalDate | null>(
+    (a, b) => (a && compareDates(a, b) <= 0 ? a : b),
+    null,
+  );
+  if (!first) return latest;
+  const day = addDays(first, -PLAN_AHEAD.bufferDays);
+  if (compareDates(day, earliest) < 0) return earliest;
+  return compareDates(day, latest) > 0 ? latest : day;
+}

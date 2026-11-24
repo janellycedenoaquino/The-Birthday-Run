@@ -251,7 +251,7 @@ isOneToOne: false
                            },
 "reminder_rewards":
 { Args: { "p_user_ids": (string)[] }; Returns: {
-              "days_after": number,"days_before": number,"name": string,"retailer_id": string,"reward_description": string,"timing_type": Database["public"]['Enums']["timing_type"],"user_id": string
+              "days_after": number,"days_before": number,"name": string,"retailer_id": string,"reward_description": string,"signup_lead_days": number,"timing_type": Database["public"]['Enums']["timing_type"],"user_id": string
             }[]
                            },
 "reorder_group_items":

@@ -259,11 +259,14 @@ function compose(
   };
 }
 
-/** M-120 / M-122 for expiring rewards; "Last day: {date}" for the plan-ahead list. */
+/**
+ * M-120 / M-122 for expiring rewards. Plan-ahead lines (E-101): "Join by {date} · " when the brand
+ * has a lead time (FR-49), then "Opens {date} · Last day: {date}".
+ */
 function line(item: ReminderItem, style: "left" | "date"): ReminderLine {
   const when =
     style === "date"
-      ? `${msg("M-120")}: ${formatDate(item.lastDay, "long")}`
+      ? `${item.joinBy ? `Join by ${formatDate(item.joinBy, "long")} · ` : ""}Opens ${formatDate(item.opens, "long")} · ${msg("M-120")}: ${formatDate(item.lastDay, "long")}`
       : item.daysLeft <= 1
         ? msg("M-120")
         : msg("M-122").replace("{days}", String(item.daysLeft));

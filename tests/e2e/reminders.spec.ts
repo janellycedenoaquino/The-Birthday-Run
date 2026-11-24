@@ -115,7 +115,7 @@ test("The daily job: a plan-ahead email arrives with both List-Unsubscribe heade
   expect(res.headers()["cache-control"]).toBe("private, no-store");
   expect(await res.json()).toMatchObject({ sent: expect.any(Number) });
 
-  const mail = await newestMail(user.email, /^Your birthday is a week away$/);
+  const mail = await newestMail(user.email, /^Time to plan your Birthday Run$/);
   expect(mail.html).toContain("16 Handles");
   expect(mail.html).toContain("/reminders/unsubscribe?token=");
   const headers = await mailHeaders(mail.id);
