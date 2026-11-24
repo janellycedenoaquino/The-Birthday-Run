@@ -2,6 +2,7 @@
   "ignore": [
     "**/*.md",
     "**/*.json",
+    "docs/prototypes/**",
     ".github/**",
     "supabase/migrations/**",
     "supabase/templates/**",

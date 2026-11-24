@@ -1,0 +1,156 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>PROTOTYPE v2 · TBR landing colours</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;800&display=swap" rel="stylesheet">
+<script src="retailers.js"></script>
+<style>
+/* Throwaway prototype v2: tunnel locked; question = which light colours. */
+:root{--bg:#FFF4F8;--ink:#1F2A5C;--hl:#FF9EC4;--btn:#8EC5FF;--hover:#8FE3B0;--muted:color-mix(in srgb,var(--ink) 65%,#fff)}
+*{box-sizing:border-box;margin:0}
+body{font-family:"Plus Jakarta Sans",system-ui,sans-serif;background:var(--bg);color:var(--ink);transition:background .4s}
+body.bg-mix{background:radial-gradient(40vw 40vw at 12% 18%,#FFD6E5 0%,transparent 70%),radial-gradient(45vw 45vw at 88% 22%,#D6EBFF 0%,transparent 70%),radial-gradient(50vw 50vw at 50% 100%,#D3F5E1 0%,transparent 70%),#FFFCF7}
+
+.stage{position:relative;height:100vh;min-height:620px;overflow:hidden;isolation:isolate}
+.tunnel{position:absolute;inset:0;perspective:700px;overflow:hidden}
+.tile{position:absolute;left:50%;top:50%;margin:-48px 0 0 -75px;width:150px;height:96px;border-radius:16px;background:#fff;display:flex;align-items:center;justify-content:center;padding:12px 14px;
+  box-shadow:0 0 0 1.5px color-mix(in srgb,var(--ink) 18%,transparent);animation:fly 14s linear infinite;animation-delay:var(--dl);opacity:0;cursor:pointer;transition:box-shadow .2s}
+.tile img{max-width:100%;max-height:56px;object-fit:contain}
+.tile .tip{position:absolute;left:50%;bottom:calc(100% + 10px);transform:translateX(-50%);background:#fff;color:var(--ink);font-size:13px;line-height:1.35;padding:8px 12px;border-radius:10px;
+  white-space:nowrap;opacity:0;pointer-events:none;transition:opacity .2s;box-shadow:0 0 0 2px var(--hover),0 10px 24px -10px rgba(0,0,0,.25)}
+.tile .tip b{display:block;font-weight:800}
+.tile:hover{box-shadow:0 0 0 4px var(--hover),0 18px 34px -14px rgba(0,0,0,.3);z-index:10}
+.tile:hover .tip{opacity:1}
+/* hovering a logo holds the whole tunnel still so you can read it */
+.tunnel:has(.tile:hover) .tile,body.paused .tile{animation-play-state:paused}
+@keyframes fly{0%{transform:translate3d(var(--x),var(--y),-2600px);opacity:0}15%{opacity:1}85%{opacity:1}100%{transform:translate3d(var(--x),var(--y),600px);opacity:0}}
+
+.hero{position:relative;z-index:2;height:100%;display:flex;align-items:center;justify-content:center;padding:24px;pointer-events:none}
+.card{pointer-events:auto;max-width:620px;text-align:center;padding:44px 48px;border-radius:28px;background:color-mix(in srgb,var(--bg) 78%,transparent);
+  backdrop-filter:blur(18px) saturate(1.2);-webkit-backdrop-filter:blur(18px);box-shadow:0 0 0 1.5px color-mix(in srgb,var(--ink) 12%,transparent),0 20px 60px -30px rgba(0,0,0,.25)}
+body.bg-mix .card{background:rgba(255,252,247,.72)}
+h1{font-weight:800;font-size:clamp(38px,6vw,64px);line-height:1.06;letter-spacing:-.035em}
+h1 .hl{background:var(--hl);color:var(--ink);padding:0 .14em;border-radius:6px;display:inline-block;transform:rotate(-2deg)}
+.sub{margin-top:18px;font-size:18px;color:var(--muted);line-height:1.5}
+.ctas{margin-top:28px;display:flex;gap:12px;justify-content:center;flex-wrap:wrap}
+.btn{font-family:inherit;font-weight:700;font-size:16px;line-height:1;padding:15px 26px;border-radius:12px;border:0;cursor:pointer;background:var(--btn);color:var(--ink);box-shadow:0 0 0 1.5px var(--ink)}
+.btn:hover{box-shadow:3px 3px 0 var(--ink),0 0 0 1.5px var(--ink)}
+.btn.ghost{background:transparent}
+.count{margin-top:18px;font-size:13px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);font-weight:700}
+
+/* pause control: part of the real design */
+.pause{position:absolute;z-index:3;right:20px;top:20px;display:flex;align-items:center;gap:8px;font:600 14px "Plus Jakarta Sans",sans-serif;color:var(--ink);
+  background:color-mix(in srgb,var(--bg) 85%,#fff);border:0;border-radius:12px;padding:10px 14px;cursor:pointer;box-shadow:0 0 0 1.5px color-mix(in srgb,var(--ink) 25%,transparent)}
+.pause:focus-visible,.btn:focus-visible{outline:3px solid var(--ink);outline-offset:3px}
+.pause svg{width:16px;height:16px}
+
+/* colour panel (prototype only) */
+.panel{position:fixed;left:16px;bottom:16px;z-index:50;background:#111;color:#ddd;border-radius:16px;padding:14px 16px;font:500 12px/1.2 system-ui,sans-serif;box-shadow:0 20px 50px -10px rgba(0,0,0,.5);width:430px;max-width:calc(100vw - 32px)}
+.panel.min .rows{display:none}
+.panel .top{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}
+.panel .top b{color:#fff;font-size:13px}
+.panel .top button{font:inherit;background:#222;color:#ddd;border:0;border-radius:8px;padding:6px 10px;cursor:pointer}
+.panel.min .top{margin:0}
+.presets{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px}
+.presets button{font:inherit;background:#222;color:#ddd;border:0;border-radius:8px;padding:7px 10px;cursor:pointer}
+.presets button.on{background:#fff;color:#111;font-weight:700}
+.row{display:grid;grid-template-columns:96px 1fr;align-items:center;gap:8px;margin:7px 0}
+.row>span{color:#999}
+.sw{display:flex;flex-wrap:wrap;gap:5px;align-items:center}
+.sw button{width:22px;height:22px;border-radius:6px;border:2px solid #333;cursor:pointer;padding:0}
+.sw button.on{border-color:#fff;outline:2px solid #fff;outline-offset:1px}
+.sw input{width:26px;height:24px;border:0;background:none;padding:0;cursor:pointer}
+.now{margin-top:10px;color:#aaa;line-height:1.5}
+.now b{color:#fff}
+.tag{position:fixed;top:10px;left:10px;z-index:50;font:700 10px system-ui;letter-spacing:.15em;background:#111;color:#fff;padding:5px 8px;border-radius:6px}
+@media (max-width:700px){.card{padding:30px 22px}}
+</style>
+</head>
+<body>
+<div class="tag">PROTOTYPE v2</div>
+<section class="stage">
+  <div class="tunnel" id="tunnel" aria-hidden="true"></div>
+  <button class="pause" id="pause" aria-pressed="false"><svg viewBox="0 0 16 16" fill="currentColor"><rect x="3" y="2" width="3.5" height="12" rx="1"/><rect x="9.5" y="2" width="3.5" height="12" rx="1"/></svg><span>Pause motion</span></button>
+  <div class="hero">
+    <div class="card">
+      <h1>Every birthday freebie, <span class="hl">one run.</span></h1>
+      <p class="sub">See which brands treat you on your birthday, sign up in time, and plan the stops so nothing expires.</p>
+      <div class="ctas"><button class="btn">Get started</button><button class="btn ghost">Sign in</button></div>
+      <p class="count"><span id="n"></span> brands waiting</p>
+    </div>
+  </div>
+</section>
+
+<div class="panel" id="panel">
+  <div class="top"><b>Colours (prototype only)</b><button id="min">Hide</button></div>
+  <div class="rows">
+    <div class="presets" id="presets"></div>
+    <div id="rows"></div>
+    <div class="now" id="now"></div>
+  </div>
+</div>
+
+<script>
+const LOGO_DIR="../../../public/retailers/";
+const R=window.RETAILERS;document.getElementById("n").textContent=R.length;
+const shuffle=a=>a.map(v=>[Math.random(),v]).sort((x,y)=>x[0]-y[0]).map(v=>v[1]);
+
+/* tunnel */
+const t=document.getElementById("tunnel");const set=shuffle(R).slice(0,48);
+set.forEach((r,i)=>{const el=document.createElement("div");el.className="tile";
+  el.innerHTML=`<img src="${LOGO_DIR+r.l}" alt=""><span class="tip"><b>${r.n}</b>${r.r}</span>`;
+  const a=(i*137.5)*Math.PI/180,rad=430+((i*53)%160);
+  el.style.setProperty("--x",Math.cos(a)*rad+"px");el.style.setProperty("--y",Math.sin(a)*rad*.72+"px");el.style.setProperty("--dl",(-14*i/set.length)+"s");t.appendChild(el)});
+
+/* pause: starts paused if the device asks for reduced motion */
+const pb=document.getElementById("pause");
+function setPaused(p){document.body.classList.toggle("paused",p);pb.setAttribute("aria-pressed",p);pb.querySelector("span").textContent=p?"Play motion":"Pause motion";
+  pb.querySelector("svg").innerHTML=p?'<path d="M4 2.5v11l9-5.5z"/>':'<rect x="3" y="2" width="3.5" height="12" rx="1"/><rect x="9.5" y="2" width="3.5" height="12" rx="1"/>'}
+pb.onclick=()=>setPaused(!document.body.classList.contains("paused"));
+setPaused(matchMedia("(prefers-reduced-motion: reduce)").matches);
+
+/* colours */
+const NAMES={"#FFF4F8":"blush white","#FFE8F0":"light pink","#FFD6E5":"pink","#FF9EC4":"bubblegum","#FFB3D1":"rose","#EAF4FF":"ice blue","#D6EBFF":"baby blue","#8EC5FF":"sky blue","#B9DBFF":"light blue",
+ "#EFFAF2":"mint white","#D3F5E1":"mint","#8FE3B0":"spring green","#BDEFC9":"light green","#F1ECFF":"lavender white","#E6DEFF":"lavender","#C3B1FF":"lilac","#FFF0E6":"peach white","#FFB996":"peach",
+ "#FFFCF7":"cream","#FFFFFF":"white","#1F2A5C":"navy","#1A2B8F":"cobalt","#4A2545":"plum","#1E4D3A":"forest","#2B2B33":"charcoal","mix":"pastel mix (pink, blue, green glow)"};
+const OPTS={
+  bg:{label:"Background",list:["#FFF4F8","#FFE8F0","#EAF4FF","#D6EBFF","#EFFAF2","#D3F5E1","#F1ECFF","#FFF0E6","#FFFCF7","#FFFFFF","mix"]},
+  ink:{label:"Text",list:["#1F2A5C","#1A2B8F","#4A2545","#1E4D3A","#2B2B33"]},
+  hl:{label:'"one run" block',list:["#FF9EC4","#FFB3D1","#FFD6E5","#8EC5FF","#B9DBFF","#8FE3B0","#BDEFC9","#C3B1FF","#E6DEFF","#FFB996"]},
+  btn:{label:"Button",list:["#8EC5FF","#B9DBFF","#FF9EC4","#FFB3D1","#8FE3B0","#BDEFC9","#C3B1FF","#FFB996"]},
+  hover:{label:"Logo hover border",list:["#8FE3B0","#BDEFC9","#FF9EC4","#FFB3D1","#8EC5FF","#B9DBFF","#C3B1FF","#FFB996"]}};
+const PRESETS={
+  "Cotton candy":{bg:"#FFF4F8",ink:"#1F2A5C",hl:"#FF9EC4",btn:"#8EC5FF",hover:"#8FE3B0"},
+  "Sky":{bg:"#EAF4FF",ink:"#1A2B8F",hl:"#FFB3D1",btn:"#8FE3B0",hover:"#FF9EC4"},
+  "Mint":{bg:"#EFFAF2",ink:"#1E4D3A",hl:"#FFB3D1",btn:"#B9DBFF",hover:"#C3B1FF"},
+  "Lavender":{bg:"#F1ECFF",ink:"#4A2545",hl:"#8FE3B0",btn:"#FF9EC4",hover:"#8EC5FF"},
+  "Pastel mix":{bg:"mix",ink:"#1F2A5C",hl:"#FF9EC4",btn:"#8EC5FF",hover:"#8FE3B0"},
+  "Cream + all three":{bg:"#FFFCF7",ink:"#2B2B33",hl:"#8EC5FF",btn:"#FF9EC4",hover:"#8FE3B0"}};
+const state={...PRESETS["Cotton candy"]};
+new URLSearchParams(location.search).forEach((v,k)=>{if(k in state&&/^(#[0-9A-Fa-f]{6}|mix)$/.test(v))state[k]=v});
+const nm=c=>NAMES[c.toUpperCase()]||NAMES[c]||c;
+
+const rows=document.getElementById("rows");
+for(const[k,o]of Object.entries(OPTS)){const d=document.createElement("div");d.className="row";
+  d.innerHTML=`<span>${o.label}</span><div class="sw">${o.list.map(c=>`<button data-c="${c}" title="${nm(c)}" style="background:${c==="mix"?"conic-gradient(#FFD6E5,#D6EBFF,#D3F5E1,#FFD6E5)":c}"></button>`).join("")}${k!=="bg"||true?`<input type="color" title="Any colour">`:""}</div>`;
+  d.querySelectorAll("button").forEach(b=>b.onclick=()=>{state[k]=b.dataset.c;apply()});
+  d.querySelector("input").oninput=e=>{state[k]=e.target.value.toUpperCase();apply()};
+  d.dataset.k=k;rows.appendChild(d)}
+const pr=document.getElementById("presets");
+for(const p in PRESETS){const b=document.createElement("button");b.textContent=p;b.onclick=()=>{Object.assign(state,PRESETS[p]);apply()};pr.appendChild(b)}
+document.getElementById("min").onclick=e=>{const p=document.getElementById("panel");p.classList.toggle("min");e.target.textContent=p.classList.contains("min")?"Show":"Hide"};
+
+function apply(){const s=document.documentElement.style;
+  document.body.classList.toggle("bg-mix",state.bg==="mix");s.setProperty("--bg",state.bg==="mix"?"#FFFCF7":state.bg);
+  for(const k of["ink","hl","btn","hover"])s.setProperty("--"+k,state[k]);
+  rows.querySelectorAll(".row").forEach(r=>r.querySelectorAll("button").forEach(b=>b.classList.toggle("on",b.dataset.c===state[r.dataset.k])));
+  pr.querySelectorAll("button").forEach(b=>{const p=PRESETS[b.textContent];b.classList.toggle("on",Object.keys(p).every(k=>p[k]===state[k]))});
+  document.getElementById("now").innerHTML=Object.keys(OPTS).map(k=>`${OPTS[k].label}: <b>${nm(state[k])}</b>${state[k].startsWith("#")?" "+state[k]:""}`).join("<br>");
+  history.replaceState(null,"","?"+new URLSearchParams(state))}
+apply();
+</script>
+</body>
+</html>
