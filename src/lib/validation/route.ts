@@ -36,3 +36,6 @@ export const findStopsSchema = z
 export const groupRouteSchema = z
   .object({ start: startLocationSchema, groupId: z.uuid() })
   .strict();
+export const suggestGroupsSchema = z
+  .object({ start: startLocationSchema })
+  .strict();

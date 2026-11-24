@@ -199,7 +199,10 @@ isOneToOne: false
             [_ in never]: never
           }
           Functions: {
-            "claim_welcome_email":
+            "apply_group_suggestions":
+{ Args: { "p_groups": Json }; Returns: (string)[]
+                           },
+"claim_welcome_email":
 { Args: Record<PropertyKey, never>; Returns: boolean
                            },
 "create_pickup":

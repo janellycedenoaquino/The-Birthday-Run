@@ -15,13 +15,19 @@ import { availableRewards } from "@/lib/rewards/my-rewards";
 import { haversineMeters, toMiles, type LatLng } from "@/lib/route/distance";
 import { deviceFromHeaders, googleLegs } from "@/lib/route/google-links";
 import { orderStops } from "@/lib/route/order";
-import type { RouteResult } from "@/lib/route/result";
-import { chooseStops } from "@/lib/route/stops";
+import type { RouteResult, RouteStop, SuggestResult } from "@/lib/route/result";
+import { suggestGroups as cluster } from "@/lib/route/smart-grouping";
+import { chooseStops, type StoreCandidate } from "@/lib/route/stops";
+import {
+  SMART_GROUPING as GROUPING,
+  suggestionPickup,
+} from "@/lib/rewards/plan";
 import type { Database } from "@/lib/types/database.types";
 import {
   findStopsSchema,
   groupRouteSchema,
   lookupZipSchema,
+  suggestGroupsSchema,
   roundCoord,
   type StartLocation,
 } from "@/lib/validation/route";
@@ -114,21 +120,7 @@ async function buildRoute(
     { ordered },
   );
   const path = ordered ? chosen : orderStops(chosen, at);
-  let prev = at;
-  const stops = path.map((s, i) => {
-    const miles = toMiles(haversineMeters(prev, s));
-    prev = s;
-    return {
-      n: i + 1,
-      retailerId: s.retailerId,
-      retailerName: byId.get(s.retailerId)!.name,
-      storeName: s.storeName,
-      address: s.address,
-      lat: s.lat,
-      lng: s.lng,
-      milesFromPrevious: miles,
-    };
-  });
+  const stops = toStops(path, at, (id) => byId.get(id)!.name);
   const legs = googleLegs(
     stops,
     start.kind === "zip" ? { kind: "zip", zip: start.zip } : { kind: "coords" },
@@ -143,6 +135,29 @@ async function buildRoute(
       legs,
     },
   };
+}
+
+/** Numbered stops with straight-line miles from the previous one (M-163), in path order. */
+function toStops(
+  path: StoreCandidate[],
+  at: LatLng,
+  nameOf: (retailerId: string) => string,
+): RouteStop[] {
+  let prev = at;
+  return path.map((s, i) => {
+    const miles = toMiles(haversineMeters(prev, s));
+    prev = s;
+    return {
+      n: i + 1,
+      retailerId: s.retailerId,
+      retailerName: nameOf(s.retailerId),
+      storeName: s.storeName,
+      address: s.address,
+      lat: s.lat,
+      lng: s.lng,
+      milesFromPrevious: miles,
+    };
+  });
 }
 
 const noPinRow = (b: Brand) => ({
@@ -292,6 +307,94 @@ export async function getGroupRoute(
         return r ? [{ id, name: r.name, finderUrl: finder(r) }] : [];
       });
       return buildRoute(supabase, start, resolved.at, brands, true);
+    }),
+  );
+}
+
+/**
+ * S-106 Smart Grouping (BUILD F-11: FR-29). Suggestions only, nothing saved. Eligible: plannable,
+ * not picked up, not in any group (computed here; the client sends only the start). One store per
+ * reward (FR-31), clustered by distance, each group in a short order from the start.
+ */
+export async function suggestGroups(
+  input: unknown,
+): Promise<ActionResult<SuggestResult>> {
+  const parsed = suggestGroupsSchema.safeParse(input);
+  if (!parsed.success) return bad(parsed);
+  return runAction("suggestGroups", () =>
+    premiumOnly<SuggestResult>(async () => {
+      const { supabase, user, profile } = await requirePremium();
+      const limit = await rateLimit("suggestGroups", { userId: user.id });
+      if (!limit.ok) return limit;
+      const { start } = parsed.data;
+      const notOffered: ActionResult<SuggestResult> = {
+        ok: true,
+        data: { offered: false, needed: GROUPING.minOffered },
+      };
+
+      const ctx = await loadPlanContext(supabase, profile);
+      const { data: items, error } = await supabase
+        .from("reward_group_items")
+        .select("retailer_id");
+      if (error)
+        throw new Error("suggestGroups: could not read group items", {
+          cause: error,
+        });
+      const grouped = new Set(items.map((i) => i.retailer_id));
+      const eligible = ctx.rows.filter(
+        (r) => !r.pickedUp && !grouped.has(r.id),
+      );
+      if (eligible.length < GROUPING.minOffered) return notOffered;
+
+      const resolved = await resolveStart(supabase, start);
+      if (!resolved) return unknownZip;
+      const names = new Map(eligible.map((r) => [r.id, r.name]));
+      const nearby = await findNearbyStores(supabase, resolved.at, [
+        ...names.keys(),
+      ]);
+      if (nearby.failed && nearby.notPremium)
+        return { ok: false, error: "BR-2" };
+      if (nearby.failed)
+        return {
+          ok: true,
+          message: "BR-13",
+          data: { offered: false, needed: GROUPING.minOffered },
+        };
+      const { chosen, noPin } = chooseStops(
+        eligible.map((r) => r.id),
+        nearby.stores,
+        resolved.at,
+      );
+      if (chosen.length < GROUPING.minOffered) return notOffered;
+
+      const { groups, leftOut } = cluster(chosen, GROUPING);
+      const pickup = suggestionPickup(ctx.window, ctx.nowTime);
+      const nameOf = (id: string) => names.get(id)!;
+      return {
+        ok: true,
+        data: {
+          offered: true,
+          groups: groups.map((g) => {
+            const stops = toStops(
+              orderStops(g, resolved.at),
+              resolved.at,
+              nameOf,
+            );
+            return {
+              retailerIds: stops.map((s) => s.retailerId),
+              stops,
+              pickupDate: pickup.date,
+              pickupTime: pickup.time,
+            };
+          }),
+          leftOut: [...noPin, ...leftOut.map((s) => s.retailerId)].map(
+            (id) => ({
+              retailerId: id,
+              retailerName: nameOf(id),
+            }),
+          ),
+        },
+      };
     }),
   );
 }

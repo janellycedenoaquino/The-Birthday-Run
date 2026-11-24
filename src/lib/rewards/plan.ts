@@ -13,6 +13,21 @@ import {
   type LocalDate,
 } from "@/lib/birthday/timing";
 
+/** FR-24 / FR-25: the plan limits. The limit triggers hold the same numbers (migration). */
+export const PLAN_LIMITS = {
+  freeGroups: 3,
+  freeItems: 5,
+  premiumItems: 10,
+} as const;
+
+/** FR-29's kept thresholds; group size is FR-25's premium limit. */
+export const SMART_GROUPING = {
+  minOffered: 4,
+  minGroupSize: 2,
+  maxGroups: 4,
+  maxGroupSize: PLAN_LIMITS.premiumItems,
+} as const;
+
 export type PlanRetailer = {
   id: string;
   name: string;
@@ -114,4 +129,25 @@ export function defaultPickup(
   if (compareDates(tomorrow, range.max) > 0)
     return { date: w.today, time: "23:59" };
   return { date: tomorrow, time: "12:00" };
+}
+
+/**
+ * FR-29's default pickup for a suggested group: tomorrow at 10:00, moved into the planned range.
+ * When that lands on today (the window ends today) and 10:00 has passed, the next full hour; after
+ * 23:00 on the last day, 23:59.
+ */
+export function suggestionPickup(
+  w: BirthdayWindow,
+  nowTime: string,
+): { date: LocalDate; time: string } {
+  const range = planRange(w);
+  let date = addDays(w.today, 1);
+  if (compareDates(date, range.min) < 0) date = range.min;
+  if (compareDates(date, range.max) > 0) date = range.max;
+  if (date !== w.today || nowTime < "10:00") return { date, time: "10:00" };
+  const next = Number(nowTime.slice(0, 2)) + 1;
+  return {
+    date,
+    time: next <= 23 ? `${String(next).padStart(2, "0")}:00` : "23:59",
+  };
 }

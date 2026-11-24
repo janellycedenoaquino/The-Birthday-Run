@@ -58,6 +58,8 @@ describe("LIMITS (the §0.4 table)", () => {
     ["findStops", { user: [60, 3600] }],
     ["getGroupRoute", { user: [60, 3600] }],
     ["lookupZip", { user: [60, 3600] }],
+    ["suggestGroups", { user: [30, 3600] }],
+    ["applySuggestions", { user: [300, 3600] }],
     ["authConfirm", { ip: [30, 600] }],
   ] as const)("%s", (action, expected) => {
     expect(LIMITS[action]).toEqual(expected);
@@ -100,6 +102,8 @@ describe("LIMITS (the §0.4 table)", () => {
         "findStops",
         "getGroupRoute",
         "lookupZip",
+        "suggestGroups",
+        "applySuggestions",
         "authConfirm",
         "authCallback",
       ].sort(),

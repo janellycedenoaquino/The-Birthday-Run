@@ -24,3 +24,18 @@ export type RouteResult = {
   /** Google Maps URLs, one per leg (FR-34). */
   legs: string[];
 };
+
+/** suggestGroups' answer (BUILD F-11: FR-29). Suggestions only; nothing is saved. */
+export type Suggestion = {
+  retailerIds: string[];
+  stops: RouteStop[];
+  pickupDate: string;
+  pickupTime: string;
+};
+export type SuggestResult =
+  | { offered: false; needed: number }
+  | {
+      offered: true;
+      groups: Suggestion[];
+      leftOut: { retailerId: string; retailerName: string }[];
+    };

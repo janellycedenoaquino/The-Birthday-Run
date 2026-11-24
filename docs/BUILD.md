@@ -1364,7 +1364,7 @@ None.
 #### `suggestGroups(stops, limits)` in `src/lib/route/smart-grouping.ts` (pure)
 - `limits` = `{ minOffered: 4, minGroupSize: 2, maxGroups: 4 }` (FR-29's kept thresholds) plus `maxGroupSize` = FR-25's premium limit from F-6's plan-limit constants (one home).
 - **Complete linkage:** start with singletons; cluster distance = the **largest** pairwise haversine between members; repeatedly merge the closest pair whose merged size ≤ `maxGroupSize`; stop when ≤ `maxGroups` clusters remain or no merge is allowed.
-- Then each singleton joins the nearest cluster (complete-linkage distance) of size ≥ 2 with room; otherwise it's left out. If more than `maxGroups` clusters still remain (only possible beyond 4 × `maxGroupSize` stops), keep the largest (ties: smaller diameter) and list the rest as left out.
+- Then, while a cluster is smaller than `minGroupSize`, it merges with its closest partner (any cluster with room, complete linkage); one that can't is left out. (As built: with exactly `maxGroups` stops the first pass merges nothing, so this pass is what forms groups; another singleton counts as a partner.) If more than `maxGroups` clusters still remain (only possible beyond 4 × `maxGroupSize` stops), keep the largest (ties: smaller diameter) and list the rest as left out.
 - Returns `{ groups, leftOut }` in a deterministic order (ties by retailer ID).
 
 ### Flow
