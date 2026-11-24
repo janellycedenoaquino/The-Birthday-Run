@@ -381,9 +381,21 @@ describe("data/retailers.csv", () => {
     expect(missing).toEqual([]);
   });
 
+  // F-14: rows that can't be verified wait here (not imported) and keep their logos.
+  const held = parseRetailerCsv(
+    readFileSync("data/retailers-unverified.csv", "utf8"),
+  );
+
+  it("held-back rows parse and never also appear in the catalogue", () => {
+    expect(held.ok ? [] : held.errors).toEqual([]);
+    if (!r.ok || !held.ok) return;
+    const ids = new Set(r.rows.map((x) => x.id));
+    expect(held.rows.filter((x) => ids.has(x.id)).map((x) => x.id)).toEqual([]);
+  });
+
   it("has no logo file that no row uses", () => {
-    if (!r.ok) return;
-    const used = new Set(r.rows.map((x) => x.logo_file));
+    if (!r.ok || !held.ok) return;
+    const used = new Set([...r.rows, ...held.rows].map((x) => x.logo_file));
     expect(readdirSync("public/retailers").filter((f) => !used.has(f))).toEqual(
       [],
     );
