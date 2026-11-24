@@ -41,6 +41,8 @@ export const serverEnvSchema = z
     SENTRY_AUTH_TOKEN: optional(nonEmpty),
     SENTRY_ORG: optional(nonEmpty),
     SENTRY_PROJECT: optional(nonEmpty),
+    // FR-38 (D8): payments stay off unless this is exactly "true".
+    PAYMENTS_ENABLED: optional(z.enum(["true", "false"])),
   })
   .superRefine((values, ctx) => {
     checkPublic(values, ctx);

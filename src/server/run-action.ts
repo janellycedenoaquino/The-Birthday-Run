@@ -19,6 +19,7 @@ const REFUSALS: Record<Exclude<GuardFailure, "reauth_required">, string> = {
   mfa_required: "API-2",
   password_required: "API-3",
   not_onboarded: "BR-1",
+  not_premium: "BR-2",
 };
 
 export async function runAction<T>(

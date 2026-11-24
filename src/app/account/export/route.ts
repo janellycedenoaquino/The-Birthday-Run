@@ -14,6 +14,7 @@ const GUARD_TARGETS = {
   reauth_required: "/auth/reauthenticate?next=%2Fsettings",
   // requireUser never fails this way (export is exempt from onboarding); kept for a total map.
   not_onboarded: "/onboarding",
+  not_premium: "/settings",
 } as const;
 
 function to(request: NextRequest, path: string) {
