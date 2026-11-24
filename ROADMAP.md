@@ -96,6 +96,7 @@ Raised by the owner. Each one needs a SPEC requirement and a phase before it's b
 
 1. **"How did it go?" after a pickup** (owner, 2026-11-23). After a user marks a reward picked up (FR-17), ask whether they got it, with fixed choices: got it as listed, got something different, needed a purchase, store said no. "Got it as listed" is evidence the row is still right, so it could feed FR-47's staleness check. The other answers raise the same check as an FR-48 report. Fixed choices only, so the NFR-11 and D16 rules still hold: nothing user-written reaches GitHub or the checker.
 2. **"Tell us about a freebie we're missing"** (owner, 2026-11-23). A signed-in form for a business name, a link and a short note. It's free text, so it's stored for the owner only (an owner-read table, rate limited per Template rule 13) and never sent to GitHub or the checker (D16). The owner checks the brand's site (FR-46) and adds the row through a CSV PR (D2).
+3. **Pet birthdays** (owner, 2026-11-23). Petco and PetSmart reward a pet's birthday, not the member's, so their dates can't use the member's birthday. They stay in `data/retailers-unverified.csv` (F-14 batch 7) until a feature lets users add pets with their own birthdays.
 
 ## Weekly check
 Every Sunday, compare hours spent against this table. If a phase is past the flag point, apply the cut list before moving a date. The owner decides.
