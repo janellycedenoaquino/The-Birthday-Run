@@ -48,7 +48,9 @@ Two launches (ROADMAP): **v1** after phase 4 and **v2 sign-off** after phase 7 (
 - [ ] Metrics 1–5 pass (SPEC §2.1; collected per DESIGN §5.7)
 - [ ] Store coverage report saved in RESEARCH.md (metric 6)
 - [ ] Map works with tiles blocked (NFR-7); OpenStreetMap credit shows
+- [ ] Vercel Production has `CRON_SECRET` and `REMINDER_UNSUBSCRIBE_SECRET` (Sensitive; `openssl rand -hex 32` each), and Vercel → Cron Jobs lists `/api/cron/reminders` (decision 0015: without them no reminder is sent)
 - [ ] Reminder emails: a doubled run sends once; one-click turn-off works from Gmail's button; send budget respected (D15)
+- [ ] In Gmail's "Show original" of a real reminder, Resend's DKIM signature covers `List-Unsubscribe` and `List-Unsubscribe-Post` (RFC 8058; BUILD F-12 "Unverified")
 - [ ] **Reminder emails and CAN-SPAM:** decide the postal-address question (DESIGN §4.4) before any reminder reaches someone outside the family
 - [ ] Report heartbeat check fails loudly when the reminder cron is stopped (D16)
 - [ ] The checker's GitHub token has only the scopes in D16, and expires within a year

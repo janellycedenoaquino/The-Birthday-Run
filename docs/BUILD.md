@@ -1503,6 +1503,8 @@ stateDiagram-v2
 | Settings switch toggles and persists; free user sees C-104 (M-137) | e2e | S-109 | FR-42, FR-39 |
 | One reminder arrives in Mailpit with both headers | e2e | cron route called with the bearer + mailbox adapter | FR-41 |
 
+**As built (2026-11-24, decision 0015):** the job reads its users' rewards and pickups through two more service_role-only definer functions, `reminder_rewards(user_ids)` and `reminder_pickups(user_ids, since)`, instead of admin table reads (production has auto-grant off, and service_role has no grants on `enrollments`/`pickups`). `CRON_SECRET` and `REMINDER_UNSUBSCRIBE_SECRET` are optional in the env schema and fail closed (no secret: the route answers 401; no token, so nothing is sent). The secret-key client is imported by the two route handlers; `runReminders` takes it as a parameter. Mailpit's `/api/v1/send` `Headers` field is checked by `tests/e2e/reminders.spec.ts`.
+
 Sources (2026-10-06): https://www.rfc-editor.org/rfc/rfc8058.html (`List-Unsubscribe=One-Click`, one HTTPS URI, no cookies/auth, no redirect, DKIM must cover both headers) · https://vercel.com/docs/cron-jobs/manage-cron-jobs (`Authorization: Bearer <CRON_SECRET>`, no retries, may fire twice, Hobby fires anywhere in the hour). **Unverified:** that Resend's DKIM signature covers custom headers (RFC 8058 requires it); Mailpit's `/api/v1/send` `Headers` field; Hobby's current function duration limit for `maxDuration = 60`.
 
 ## F-13 Reports and staleness · FR-47, FR-48, NFR-11 · screens C-107 (in S-104, S-105) · decisions D14, D16

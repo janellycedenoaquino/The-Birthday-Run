@@ -3,8 +3,8 @@ import { Resend } from "resend";
 import { env } from "@/server/env";
 import { logError } from "@/server/errors";
 
-// The app's own email transport (BUILD F-5, D7): only the welcome email uses it; Supabase sends
-// the auth emails itself. Resend in deployed apps, the local Supabase stack's Mailpit in dev and
+// The app's own email transport (BUILD F-5, D7): the welcome and reminder emails use it; Supabase
+// sends the auth emails itself. Resend in deployed apps, the local Supabase stack's Mailpit in dev and
 // CI (week-1 check 2: its /api/v1/send is on). Never throws; the recipient is never logged.
 
 export type Email = {
@@ -13,6 +13,8 @@ export type Email = {
   html: string;
   text: string;
   replyTo?: string;
+  /** Extra headers, e.g. List-Unsubscribe for reminders (F-12, RFC 8058). */
+  headers?: Record<string, string>;
 };
 
 const MAILPIT_TIMEOUT_MS = 5_000;
@@ -36,7 +38,7 @@ function parseFrom(from: string): { Name?: string; Email: string } {
 }
 
 export async function sendEmail(
-  { to, subject, html, text, replyTo }: Email,
+  { to, subject, html, text, replyTo, headers }: Email,
   { fetchFn = fetch }: { fetchFn?: typeof fetch } = {},
 ): Promise<{ ok: boolean }> {
   try {
@@ -50,6 +52,7 @@ export async function sendEmail(
           html,
           text,
           ...(replyTo && { replyTo }),
+          ...(headers && { headers }),
         }),
         RESEND_TIMEOUT_MS,
       );
@@ -66,6 +69,7 @@ export async function sendEmail(
         Subject: subject,
         HTML: html,
         Text: text,
+        ...(headers && { Headers: headers }),
       }),
       signal: AbortSignal.timeout(MAILPIT_TIMEOUT_MS),
     });

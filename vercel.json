@@ -6,5 +6,6 @@
       "main": true
     }
   },
+  "crons": [{ "path": "/api/cron/reminders", "schedule": "0 14 * * *" }],
   "ignoreCommand": "bash -c '[[ \"$VERCEL_GIT_COMMIT_REF\" == dependabot/* ]]'"
 }

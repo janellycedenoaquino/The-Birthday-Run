@@ -15,7 +15,7 @@ import {
 import type { ReactNode } from "react";
 import { appConfig } from "../../config/app";
 
-// The one layout for E-1..E-4 (BUILD F-5, SPEC §3.4 "Emails", D16): logo, app name, a
+// The one layout for E-1..E-4 and the reminders E-101/E-102 (BUILD F-5, SPEC §3.4 "Emails", D16): logo, app name, a
 // brand-colour button, the plain URL below it, the support email. No expiry times. Relative
 // imports: the react-email CLI bundles these files itself.
 
@@ -27,6 +27,8 @@ export function EmailLayout({
   buttonLabel,
   url,
   footnote,
+  children,
+  footer,
 }: {
   /** `{{ .SiteURL }}` in auth templates; getSiteUrl() for the welcome email. */
   siteUrl: string;
@@ -35,7 +37,11 @@ export function EmailLayout({
   intro: string;
   buttonLabel: string;
   url: string;
-  footnote: ReactNode;
+  footnote?: ReactNode;
+  /** Shown between the intro and the button (F-12's reward lists). */
+  children?: ReactNode;
+  /** A line above the app name in the footer (F-12's M-275 turn-off links). */
+  footer?: ReactNode;
 }) {
   const { brand, name, supportEmail } = appConfig;
   return (
@@ -99,6 +105,7 @@ export function EmailLayout({
           >
             {intro}
           </Text>
+          {children}
           <Button
             href={url}
             style={{
@@ -126,17 +133,31 @@ export function EmailLayout({
               {url}
             </Link>
           </Text>
-          <Text
-            style={{
-              color: "#57605c",
-              fontSize: 14,
-              lineHeight: "22px",
-              margin: "16px 0 0",
-            }}
-          >
-            {footnote}
-          </Text>
+          {footnote ? (
+            <Text
+              style={{
+                color: "#57605c",
+                fontSize: 14,
+                lineHeight: "22px",
+                margin: "16px 0 0",
+              }}
+            >
+              {footnote}
+            </Text>
+          ) : null}
           <Hr style={{ borderColor: "#e5e8e6", margin: "28px 0 16px" }} />
+          {footer ? (
+            <Text
+              style={{
+                color: "#6b7470",
+                fontSize: 12,
+                lineHeight: "18px",
+                margin: "0 0 8px",
+              }}
+            >
+              {footer}
+            </Text>
+          ) : null}
           <Text style={{ color: "#6b7470", fontSize: 12, margin: 0 }}>
             {name} ·{" "}
             <Link href={`mailto:${supportEmail}`} style={{ color: "#6b7470" }}>

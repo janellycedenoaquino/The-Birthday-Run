@@ -91,7 +91,7 @@ const eslintConfig = defineConfig([
             {
               regex: "(^|/)supabase/admin$",
               message:
-                "The secret-key client is only for security/rate-limit.ts, email/welcome.ts and actions/account.ts (BUILD §0.1, rule 6).",
+                "The secret-key client is only for security/rate-limit.ts, email/welcome.ts, actions/account.ts and the two reminder routes (BUILD §0.1, rule 6).",
             },
           ],
         },
@@ -132,6 +132,9 @@ const eslintConfig = defineConfig([
       "src/server/security/rate-limit.ts",
       "src/server/email/welcome.ts",
       "src/server/actions/account.ts",
+      // F-12 (BUILD §0.1): the reminder job's claims and the token-checked turn-off.
+      "src/app/api/cron/reminders/route.ts",
+      "src/app/api/reminders/unsubscribe/route.ts",
     ],
     rules: { "no-restricted-imports": "off" },
   },

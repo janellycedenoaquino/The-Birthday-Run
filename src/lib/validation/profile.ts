@@ -72,3 +72,8 @@ export const onboardingProgramsSchema = z
     retailerIds: retailerIdsSchema.optional(),
   })
   .strict();
+
+/** F-12 setReminders (FR-42): the switch's new state. */
+export const remindersSchema = z
+  .object({ enabled: z.enum(["on", "off"]) })
+  .strict();

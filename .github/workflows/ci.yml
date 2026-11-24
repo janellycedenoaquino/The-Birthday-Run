@@ -47,11 +47,13 @@ jobs:
         with:
           node-version-file: .nvmrc
           cache: npm
-      - name: Generate the rate-limit HMAC secret
+      - name: Generate the rate-limit HMAC, cron and unsubscribe secrets
         run: |
-          secret=$(openssl rand -hex 32)
-          echo "::add-mask::$secret"
-          echo "RATE_LIMIT_HMAC_SECRET=$secret" >> "$GITHUB_ENV"
+          for name in RATE_LIMIT_HMAC_SECRET CRON_SECRET REMINDER_UNSUBSCRIBE_SECRET; do
+            secret=$(openssl rand -hex 32)
+            echo "::add-mask::$secret"
+            echo "$name=$secret" >> "$GITHUB_ENV"
+          done
       - run: npm ci
       - run: npm run check:env
       - run: npm run lint
@@ -87,11 +89,13 @@ jobs:
         with:
           node-version-file: .nvmrc
           cache: npm
-      - name: Generate the rate-limit HMAC secret
+      - name: Generate the rate-limit HMAC, cron and unsubscribe secrets
         run: |
-          secret=$(openssl rand -hex 32)
-          echo "::add-mask::$secret"
-          echo "RATE_LIMIT_HMAC_SECRET=$secret" >> "$GITHUB_ENV"
+          for name in RATE_LIMIT_HMAC_SECRET CRON_SECRET REMINDER_UNSUBSCRIBE_SECRET; do
+            secret=$(openssl rand -hex 32)
+            echo "::add-mask::$secret"
+            echo "$name=$secret" >> "$GITHUB_ENV"
+          done
       # The Supabase CLI is the npm devDependency, so its version comes from package-lock.json.
       - run: npm ci
       - run: npm run check:supabase-env

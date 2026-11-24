@@ -60,6 +60,8 @@ describe("LIMITS (the §0.4 table)", () => {
     ["lookupZip", { user: [60, 3600] }],
     ["suggestGroups", { user: [30, 3600] }],
     ["applySuggestions", { user: [300, 3600] }],
+    ["setReminders", { user: [30, 3600] }],
+    ["reminderUnsubscribe", { ip: [30, 600] }],
     ["authConfirm", { ip: [30, 600] }],
   ] as const)("%s", (action, expected) => {
     expect(LIMITS[action]).toEqual(expected);
@@ -104,6 +106,8 @@ describe("LIMITS (the §0.4 table)", () => {
         "lookupZip",
         "suggestGroups",
         "applySuggestions",
+        "setReminders",
+        "reminderUnsubscribe",
         "authConfirm",
         "authCallback",
       ].sort(),

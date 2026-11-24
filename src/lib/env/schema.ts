@@ -41,6 +41,10 @@ export const serverEnvSchema = z
     SENTRY_AUTH_TOKEN: optional(nonEmpty),
     SENTRY_ORG: optional(nonEmpty),
     SENTRY_PROJECT: optional(nonEmpty),
+    // F-12 (D14, D15). Optional so a deploy without them still builds; the code fails closed:
+    // no CRON_SECRET → the cron route answers 401; no unsubscribe secret → no reminder is sent.
+    CRON_SECRET: optional(z.string().min(32)),
+    REMINDER_UNSUBSCRIBE_SECRET: optional(z.string().min(32)),
     // FR-38 (D8): payments stay off unless this is exactly "true".
     PAYMENTS_ENABLED: optional(z.enum(["true", "false"])),
   })
