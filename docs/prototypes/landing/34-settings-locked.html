@@ -1,0 +1,161 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>PROTOTYPE · TBR Settings options</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+/* Throwaway prototype: Settings (Template S-13–S-18 + S-108–S-110) in the locked look (decision 0016). */
+:root{--bg:#FFFCF7;--ink:#1F2A5C;--muted:#4C557D;--hl:#FF9EC4;--btn:#8EC5FF;--hover:#8FE3B0;--line:color-mix(in srgb,var(--ink) 16%,transparent)}
+*{box-sizing:border-box;margin:0}
+body{font-family:"Plus Jakarta Sans",system-ui,sans-serif;background:var(--bg);color:var(--ink);min-height:100vh;overflow-x:hidden}
+.glow{position:fixed;inset:0;z-index:-1;overflow:hidden}
+.blob{position:absolute;width:70vw;height:70vw;border-radius:50%;filter:blur(40px)}
+.blob.p{background:radial-gradient(circle,#FFD6E5 0%,transparent 65%);left:-25vw;top:-30vw}.blob.b{background:radial-gradient(circle,#D6EBFF 0%,transparent 65%);right:-25vw;top:-25vw}.blob.g{background:radial-gradient(circle,#D3F5E1 0%,transparent 65%);left:15vw;bottom:-45vw}
+.hl{background:var(--hl);padding:0 .14em;border-radius:6px;display:inline-block;transform:rotate(-2deg)}
+.btn{font-family:inherit;font-weight:800;font-size:15px;line-height:1;padding:12px 16px;border-radius:12px;border:0;cursor:pointer;background:var(--btn);color:var(--ink);box-shadow:0 0 0 1.5px var(--ink);text-decoration:none;display:inline-flex;gap:6px;align-items:center;justify-content:center}
+.btn:hover{box-shadow:3px 3px 0 var(--ink),0 0 0 1.5px var(--ink)}.btn.ghost{background:#fff}.btn.danger{background:#FFDCDC;box-shadow:0 0 0 1.5px #B02A2A;color:#7A1414}
+.lnk{font-weight:700;color:var(--ink);text-decoration:underline;text-decoration-color:var(--hl);text-decoration-thickness:3px;text-underline-offset:4px}
+.top{display:flex;align-items:center;gap:14px;padding:16px 24px}
+.logo{font-weight:800;font-size:18px;letter-spacing:-.02em;background:rgba(255,252,247,.7);padding:8px 12px;border-radius:12px}
+.top nav{display:flex;gap:4px;margin-left:8px}.top nav a{font-weight:700;font-size:15px;text-decoration:none;padding:9px 12px;border-radius:10px;color:var(--ink)}
+.me{margin-left:auto;width:40px;height:40px;border-radius:50%;background:#FFD6E5;display:grid;place-items:center;font-weight:800;box-shadow:0 0 0 2.5px var(--ink)}
+.tabbar{display:none}
+main{max-width:1080px;margin:0 auto;padding:8px 24px 160px}
+.head h1{font-size:42px;font-weight:800;letter-spacing:-.035em}
+.head p{color:var(--muted);margin-top:6px}
+/* layout options */
+.shell{margin-top:22px;display:grid;gap:22px}
+body.ly-side .shell{grid-template-columns:230px 1fr;align-items:start}
+.snav{display:flex;flex-direction:column;gap:4px;position:sticky;top:16px;padding:10px;border-radius:20px;background:rgba(255,252,247,.62);backdrop-filter:blur(14px);box-shadow:0 0 0 1.5px var(--line)}
+.snav a{display:flex;gap:10px;align-items:center;font-weight:700;font-size:15px;padding:10px 12px;border-radius:12px;text-decoration:none;color:var(--ink)}
+.snav a i{width:28px;height:28px;border-radius:8px;display:grid;place-items:center;background:var(--cc);font-style:normal;font-size:14px}
+.snav a.on{background:#fff;box-shadow:0 0 0 1.5px var(--ink)}
+.snav .sep{height:1.5px;background:var(--line);margin:6px 8px}
+body.ly-tabs .snav{flex-direction:row;flex-wrap:nowrap;overflow-x:auto;position:static;padding:5px;width:max-content;max-width:100%}
+body.ly-tabs .snav a{white-space:nowrap}
+.shell{grid-template-columns:minmax(0,1fr)}.shell,.cards,.card{min-width:0}.card select,.card input{min-width:0}
+body.ly-tabs .snav .sep{display:none}
+body.ly-tabs .snav a i{display:none}
+body.ly-stack .snav{display:none}
+.cards{display:grid;gap:16px}
+body.ly-tabs .card{display:none}body.ly-tabs .card.show{display:block}
+.card{border-radius:24px;padding:22px 24px;background:rgba(255,255,255,.86);box-shadow:0 0 0 1.5px var(--line);scroll-margin-top:16px}
+.card h2{font-size:22px;font-weight:800;letter-spacing:-.02em;display:flex;gap:10px;align-items:center}
+.card h2 i{width:34px;height:34px;border-radius:10px;display:grid;place-items:center;background:var(--cc);font-style:normal;font-size:17px;box-shadow:inset 0 0 0 1.5px var(--line)}
+body.cs-plain .card h2 i{display:none}
+body.cs-band .card{padding-top:0;overflow:hidden}
+body.cs-band .card h2{margin:0 -24px 16px;padding:14px 24px;background:var(--cc);border-bottom:1.5px solid var(--line)}
+body.cs-band .card h2 i{background:#fff}
+.card p.t{color:var(--muted);margin-top:8px;line-height:1.5}
+.card label{display:block;font-weight:700;font-size:14px;margin:14px 0 6px}
+.card input,.card select{width:100%;max-width:420px;font-family:inherit;font-size:16px;padding:11px 12px;border-radius:12px;border:0;background:#fff;color:var(--ink);box-shadow:inset 0 0 0 1.5px var(--line)}
+.row2{display:flex;gap:12px;max-width:420px}.row2>div{flex:1}
+.help{font-size:13px;color:var(--muted);margin-top:6px;max-width:520px}
+.acts{margin-top:16px;display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.toggle{display:flex;align-items:center;justify-content:space-between;gap:16px;margin-top:12px;padding:14px 16px;border-radius:16px;background:#FFFCF7;box-shadow:inset 0 0 0 1.5px var(--line)}
+.toggle b{display:block}.toggle span{font-size:13px;color:var(--muted)}
+.sw{width:52px;height:30px;border-radius:30px;background:#E3E6EF;position:relative;border:0;cursor:pointer;box-shadow:inset 0 0 0 1.5px var(--ink);flex:none}
+.sw:after{content:"";position:absolute;top:4px;left:4px;width:22px;height:22px;border-radius:50%;background:#fff;box-shadow:0 0 0 1.5px var(--ink);transition:left .2s}
+.sw[aria-checked=true]{background:var(--hover)}.sw[aria-checked=true]:after{left:26px}
+.up{margin-top:12px;border-radius:16px;padding:14px 16px;background:rgba(255,252,247,.85);box-shadow:inset 0 0 0 2px var(--hl)}
+.up b{display:block}.up span{font-size:14px;color:var(--muted)}
+.prem{display:flex;gap:16px;align-items:center;margin-top:10px}
+.prem .badge{font-weight:800;padding:8px 12px;border-radius:12px;background:linear-gradient(90deg,#FFD6E5,#D6EBFF,#D3F5E1);box-shadow:0 0 0 1.5px var(--ink)}
+.gate{margin-top:12px;padding:14px 16px;border-radius:16px;background:#EAF4FF;box-shadow:inset 0 0 0 1.5px var(--line);display:flex;justify-content:space-between;gap:12px;align-items:center;flex-wrap:wrap}
+.card.danger{box-shadow:0 0 0 2px #E7A3A3;background:#FFF7F7}
+.card.danger h2 i{background:#FFDCDC}
+body.cs-band .card.danger h2{background:#FFDCDC}
+.card .email{font-weight:700;margin-top:8px}
+/* panel */
+.panel{position:fixed;left:16px;bottom:16px;z-index:50;background:#111;color:#ddd;border-radius:16px;padding:12px 14px;font:500 12px/1.2 system-ui,sans-serif;box-shadow:0 20px 50px -10px rgba(0,0,0,.5);max-width:calc(100vw - 32px);width:560px}
+.panel.min .rws{display:none}
+.panel .tp{display:flex;justify-content:space-between;align-items:center}.panel .tp b{color:#fff;font-size:13px}
+.panel button{font:inherit;background:#222;color:#ddd;border:0;border-radius:8px;padding:6px 9px;cursor:pointer}
+.panel button.on{background:#fff;color:#111;font-weight:700}
+.prow{display:grid;grid-template-columns:110px 1fr;gap:8px;align-items:center;margin-top:8px}.prow>span{color:#999}.prow div{display:flex;flex-wrap:wrap;gap:4px}
+.now{margin-top:10px;color:#aaa;line-height:1.5}.now b{color:#fff}
+.ptag{position:fixed;top:10px;left:50%;transform:translateX(-50%);z-index:60;font:700 10px system-ui;letter-spacing:.15em;background:#111;color:#fff;padding:5px 8px;border-radius:6px}
+@media (max-width:760px){body.ly-side .shell{grid-template-columns:1fr}body.ly-side .snav{position:static;flex-direction:row;flex-wrap:wrap}body.ly-side .snav .sep{display:none}}
+@media (max-width:700px){
+  .top nav{display:none}.ptag{top:auto;bottom:130px}
+  .tabbar{display:grid;grid-template-columns:repeat(4,1fr);position:fixed;left:0;right:0;bottom:0;z-index:25;background:rgba(255,252,247,.94);backdrop-filter:blur(14px);border-top:1.5px solid var(--line);padding:8px 4px}
+  .tabbar a{display:flex;flex-direction:column;align-items:center;gap:3px;text-decoration:none;font-size:10.5px;font-weight:700;color:var(--muted)}
+  .tabbar i{width:42px;height:30px;border-radius:10px;display:grid;place-items:center}.tabbar svg{width:20px;height:20px}
+  main{padding:4px 14px 150px}.head h1{font-size:32px}.card{padding:18px}body.cs-band .card h2{margin:0 -18px 14px;padding:12px 18px}.panel{bottom:76px}}
+.panel{display:none}</style>
+</head>
+<body>
+<div class="ptag">PROTOTYPE · SETTINGS · LOCKED</div>
+<div class="glow" aria-hidden="true"><div class="blob p"></div><div class="blob b"></div><div class="blob g"></div></div>
+<header class="top"><span class="logo">The Birthday Run</span><nav><a href="#">Discover</a><a href="#">My Rewards</a><a href="#">Plan</a><a href="#">History</a></nav><div class="me" title="Account menu is open on this page">J</div></header>
+<main>
+  <section class="head"><h1><span class="hl">Settings</span></h1><p>Signed in as jay@example.com</p></section>
+  <div class="shell">
+    <nav class="snav" id="snav" aria-label="Settings sections"></nav>
+    <div class="cards" id="cards">
+      <section class="card" id="birthday" style="--cc:#FFD6E5"><h2><i class="ic"></i>Birthday</h2>
+        <div class="row2"><div><label for="m">Month</label><select id="m"><option>December</option></select></div><div><label for="d">Day</label><select id="d"><option>6</option></select></div></div>
+        <label for="tz">Time zone</label><select id="tz"><option>America/New_York (current)</option></select>
+        <p class="help">Used to work out which day it is for you and when reminder emails go out.</p>
+        <div class="acts"><button class="btn">Save</button></div></section>
+      <section class="card" id="reminders" style="--cc:#D6EBFF"><h2><i class="ic"></i>Reminders</h2>
+        <div id="remBody"></div></section>
+      <section class="card" id="premium" style="--cc:#E6DEFF"><h2><i class="ic"></i>Premium</h2><div id="premBody"></div></section>
+      <section class="card" id="profile" style="--cc:#D3F5E1"><h2><i class="ic"></i>Profile</h2>
+        <p class="email">jay@example.com</p><p class="t">To change your email, <a class="lnk" href="#">contact support</a>.</p>
+        <label for="dn">Display name</label><input id="dn" value="Jay" autocomplete="name"><p class="help">Shown on My Rewards.</p>
+        <div class="acts"><button class="btn">Save</button></div></section>
+      <section class="card" id="password" style="--cc:#FFE8D6"><h2><i class="ic"></i>Password</h2>
+        <div class="gate"><span>For your security, confirm it's you before changing this.</span><button class="btn ghost">Confirm it's you</button></div></section>
+      <section class="card" id="two-step" style="--cc:#FFF5D6"><h2><i class="ic"></i>Two-step sign-in</h2>
+        <p class="t">Two-step sign-in is off. Turn it on to enter a code from an authenticator app each time you sign in.</p><div class="acts"><button class="btn ghost">Set up two-step sign-in</button></div></section>
+      <section class="card" id="your-data" style="--cc:#EAF4FF"><h2><i class="ic"></i>Your data</h2>
+        <p class="t">Download a copy of your account details and everything saved in The Birthday Run, as a JSON file.</p><div class="acts"><a class="btn ghost" href="#">Download my data</a></div></section>
+      <section class="card danger" id="delete-account" style="--cc:#FFDCDC"><h2><i class="ic"></i>Delete account</h2>
+        <p class="t">This permanently deletes your account and everything in it. It can't be undone. Backup copies are deleted automatically within 30 days. Want a copy first? <a class="lnk" href="#your-data">Download your data</a>.</p>
+        <label for="ce">Type your email to confirm: jay@example.com</label><input id="ce" autocomplete="off"><div class="acts"><button class="btn danger">Delete my account</button></div></section>
+    </div>
+  </div>
+</main>
+<nav class="tabbar" id="tabbar" aria-label="Main"></nav>
+
+<div class="panel" id="panel">
+  <div class="tp"><b>Settings options (prototype only)</b><button id="min">Hide</button></div>
+  <div class="rws">
+    <div class="prow"><span>1 Layout</span><div data-k="ly"><button data-v="side">Side menu + all cards</button><button data-v="tabs">Pill tabs, one card</button><button data-v="stack">Cards only</button></div></div>
+    <div class="prow"><span>2 Card look</span><div data-k="cs"><button data-v="icon">Pastel icon</button><button data-v="band">Pastel header band</button><button data-v="plain">Plain</button></div></div>
+    <div class="prow"><span>Sample</span><div data-k="tier"><button data-v="free">Free user</button><button data-v="premium">Premium user</button></div></div>
+    <div class="now" id="now"></div>
+  </div>
+</div>
+<script>
+const SECS=[["birthday","Birthday","","#FFD6E5"],["reminders","Reminders","","#D6EBFF"],["premium","Premium","","#E6DEFF"],["sep"],["profile","Profile","","#D3F5E1"],["password","Password","","#FFE8D6"],["two-step","Two-step sign-in","","#FFF5D6"],["your-data","Your data","","#EAF4FF"],["delete-account","Delete account","","#FFDCDC"]];
+const W={ly:{side:"side menu",tabs:"pill tabs",stack:"cards only"},cs:{icon:"pastel icon",band:"header band",plain:"plain"},tier:{free:"free user",premium:"premium user"}};
+const st={ly:"side",cs:"band",tier:"free",cur:"birthday"};
+new URLSearchParams(location.search).forEach((v,k)=>{if(W[k]&&W[k][v])st[k]=v});
+const sv=d=>`<svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="#1F2A5C" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${d}</svg>`;
+const IC={birthday:sv('<path d="M4 21h16v-8H4zM4 16c2 1 4 1 6 0s4-1 6 0 3 1 4 0M12 13V9M12 6c-1-1-1-2 0-3 1 1 1 2 0 3"/>'),reminders:sv('<rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 7 9 6 9-6"/>'),premium:sv('<path d="M12 3l2.5 5.5L20 9l-4 4 1 6-5-3-5 3 1-6-4-4 5.5-.5z"/>'),profile:sv('<circle cx="12" cy="8" r="4"/><path d="M4 21c1-4 4-6 8-6s7 2 8 6"/>'),password:sv('<circle cx="8" cy="15" r="4"/><path d="m11 12 9-9M17 6l3 3"/>'),"two-step":sv('<rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/>'),"your-data":sv('<path d="M12 3v12M7 10l5 5 5-5M4 21h16"/>'),"delete-account":sv('<path d="M12 4 2 20h20zM12 10v4M12 17v.5"/>')};
+document.querySelectorAll(".card").forEach(c=>{const i=c.querySelector("h2 .ic");if(i)i.innerHTML=IC[c.id]});
+function nav(){document.getElementById("snav").innerHTML=SECS.map(s=>s[0]==="sep"?'<span class="sep"></span>':`<a href="#${s[0]}" data-s="${s[0]}" class="${st.cur===s[0]?"on":""}" style="--cc:${s[3]}"><i>${IC[s[0]]}</i>${s[1]}</a>`).join("");
+  document.querySelectorAll("[data-s]").forEach(a=>a.onclick=e=>{st.cur=a.dataset.s;if(st.ly==="tabs"){e.preventDefault();show()}else nav()})}
+function show(){document.querySelectorAll(".card").forEach(c=>c.classList.toggle("show",c.id===st.cur));nav()}
+function tier(){const p=st.tier==="premium";
+  document.getElementById("remBody").innerHTML=p?`<div class="toggle"><div><b>Birthday reminder emails</b><span>One email a week before your birthday, and one when rewards are about to end.</span></div><button class="sw" role="switch" aria-checked="true" id="sw" aria-label="Birthday reminder emails"></button></div>`:`<div class="up"><b>Birthday reminder emails are part of Premium</b><span>Premium is coming soon. Everything else in the app stays free.</span></div>`;
+  document.getElementById("premBody").innerHTML=p?`<div class="prem"><span class="badge">Premium</span><p class="t" style="margin:0">You have Premium.</p></div>`:`<div class="up"><b>Premium</b><span>Map and routes, Smart Grouping, more groups and reminder emails. Premium is coming soon. Everything else in the app stays free.</span></div>`;
+  const sw=document.getElementById("sw");if(sw)sw.onclick=()=>sw.setAttribute("aria-checked",sw.getAttribute("aria-checked")!=="true")}
+const ICN={d:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="m15.5 8.5-2 5-5 2 2-5z"/></svg>',r:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="8" width="18" height="13" rx="2"/><path d="M12 8v13M3 12h18M12 8c-2-4-6-4-6-1s4 1 6 1c2 0 6 2 6-1s-4-3-6 1"/></svg>',p:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="6" cy="18" r="2.5"/><circle cx="18" cy="6" r="2.5"/><path d="M8.5 18H15a3 3 0 0 0 0-6H9a3 3 0 0 1 0-6h6.5"/></svg>',h:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5M12 7v5l3 2"/></svg>'};
+document.getElementById("tabbar").innerHTML=[["d","Discover"],["r","My Rewards"],["p","Plan"],["h","History"]].map(([k,t])=>`<a href="#"><i>${ICN[k]}</i>${t}</a>`).join("");
+function apply(){document.body.className=`ly-${st.ly} cs-${st.cs}`;tier();if(st.ly==="tabs")show();else nav();
+  document.querySelectorAll(".panel [data-k]").forEach(g=>g.querySelectorAll("button").forEach(b=>b.classList.toggle("on",b.dataset.v===st[g.dataset.k])));
+  document.getElementById("now").innerHTML=`Showing: <b>${W.ly[st.ly]}</b> · ${W.cs[st.cs]} · ${W.tier[st.tier]}.`;
+  const q=new URLSearchParams();for(const k in W)q.set(k,st[k]);history.replaceState(null,"","?"+q)}
+document.querySelectorAll(".panel [data-k]").forEach(g=>g.onclick=e=>{const b=e.target.closest("button");if(!b)return;st[g.dataset.k]=b.dataset.v;apply()});
+document.getElementById("min").onclick=e=>{const p=document.getElementById("panel");p.classList.toggle("min");e.target.textContent=p.classList.contains("min")?"Show":"Hide"};
+if(innerWidth<700){document.getElementById("panel").classList.add("min");document.getElementById("min").textContent="Show"}
+apply();
+</script>
+</body>
+</html>

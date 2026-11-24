@@ -1,0 +1,110 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>PROTOTYPE · TBR small pages and emails</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+/* Throwaway prototype: the small pages (Template S-6–S-11, S-19, S-20; S-111, S-112), the loading screen and the emails, in the locked look. */
+:root{--bg:#FFFCF7;--ink:#1F2A5C;--muted:#4C557D;--hl:#FF9EC4;--btn:#8EC5FF;--hover:#8FE3B0;--line:color-mix(in srgb,var(--ink) 16%,transparent)}
+*{box-sizing:border-box;margin:0}
+body{font-family:"Plus Jakarta Sans",system-ui,sans-serif;background:#2b2b33;color:#eee}
+h1.pg{font-size:16px;margin:16px 24px 4px}p.pg{margin:0 24px;color:#aaa;font-size:14px}
+.bar[hidden]{display:none}.bar{display:flex;gap:6px;margin:12px 24px 0;flex-wrap:wrap}
+.bar button{font:600 12px system-ui;background:#222;color:#ddd;border:0;border-radius:8px;padding:7px 10px;cursor:pointer}
+.bar button.on{background:#fff;color:#111}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(400px,1fr));gap:22px;padding:18px 24px 40px}
+figure{margin:0}figcaption{font-size:13px;color:#bbb;margin-bottom:8px}figcaption b{color:#fff}
+.scr{position:relative;height:470px;border-radius:16px;overflow:hidden;background:var(--bg);color:var(--ink);box-shadow:0 0 0 6px #111;isolation:isolate}
+.scr .gl{position:absolute;inset:0;z-index:-1;background:radial-gradient(60% 60% at 10% 10%,#FFD6E5,transparent 70%),radial-gradient(60% 60% at 95% 5%,#D6EBFF,transparent 70%),radial-gradient(70% 70% at 50% 110%,#D3F5E1,transparent 70%)}
+.scr .lo{position:absolute;top:12px;left:14px;font-weight:800;font-size:13px;background:rgba(255,252,247,.75);padding:5px 8px;border-radius:9px}
+.scr .in{position:absolute;inset:0;display:grid;place-items:center;padding:44px 22px 20px}
+.cd{width:100%;max-width:340px;border-radius:22px;padding:22px;background:rgba(255,252,247,.68);backdrop-filter:blur(12px);box-shadow:0 0 0 1.5px color-mix(in srgb,var(--ink) 12%,transparent);text-align:left}
+body.sp-center .cd{text-align:center}
+.cd h2{font-size:24px;font-weight:800;letter-spacing:-.03em;line-height:1.15}
+.cd p{color:var(--muted);font-size:13.5px;margin-top:8px;line-height:1.45}
+.cd label{display:block;font-weight:700;font-size:12.5px;margin:12px 0 5px;text-align:left}
+.cd input{width:100%;font-family:inherit;font-size:14px;padding:10px;border-radius:10px;border:0;background:#fff;box-shadow:inset 0 0 0 1.5px var(--line);color:var(--ink)}
+.cd .code{letter-spacing:.5em;text-align:center;font-size:20px;font-weight:800}
+.b{display:inline-flex;justify-content:center;width:100%;margin-top:14px;font-family:inherit;font-weight:800;font-size:14px;padding:11px;border-radius:11px;border:0;background:var(--btn);color:var(--ink);box-shadow:0 0 0 1.5px var(--ink)}
+.b.g{background:#fff}
+.lk{display:inline-block;margin-top:12px;font-size:13px;font-weight:700;text-decoration:underline;text-decoration-color:var(--hl);text-decoration-thickness:3px;text-underline-offset:3px}
+.hl{background:var(--hl);padding:0 .14em;border-radius:6px;display:inline-block;transform:rotate(-2deg)}
+.art{display:none;margin:0 auto 12px;border-radius:14px;overflow:hidden;box-shadow:0 0 0 1.5px var(--ink)}
+.art img{display:block;width:100%;height:110px;object-fit:cover}
+.art.doll{width:84px;height:84px;border-radius:50%;background:#FFD6E5}.art.doll img{height:84px;object-fit:cover;object-position:center 15%}
+body.sp-art .art{display:block}
+.art.keep{display:block}
+.big{font-size:72px;font-weight:800;letter-spacing:-.05em;line-height:.9}
+.st{display:inline-block;font-size:11px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin-bottom:6px}
+.warn{margin-top:10px;padding:8px 10px;border-radius:10px;background:#FFF0E6;box-shadow:inset 0 0 0 1.5px #FFB996;font-size:12.5px}
+/* loading */
+.load{display:grid;place-items:center;text-align:center;gap:12px}
+.load img{width:300px;border-radius:16px;box-shadow:0 0 0 1.5px var(--ink)}
+.dots{display:flex;gap:6px;justify-content:center}.dots i{width:9px;height:9px;border-radius:50%;background:var(--hl);animation:b 1s infinite ease-in-out}.dots i:nth-child(2){background:var(--btn);animation-delay:.15s}.dots i:nth-child(3){background:var(--hover);animation-delay:.3s}
+@keyframes b{50%{transform:translateY(-8px)}}
+@media (prefers-reduced-motion:reduce){.dots i{animation:none}}
+.skel{width:100%;max-width:360px;display:grid;gap:10px}.skel i{height:54px;border-radius:14px;background:linear-gradient(90deg,#fff,#FFE8F0,#fff);background-size:200% 100%;animation:sh 1.4s infinite linear;box-shadow:inset 0 0 0 1.5px var(--line)}
+@keyframes sh{to{background-position:-200% 0}}
+/* emails */
+.mail{height:520px;overflow:auto;border-radius:12px;background:#EEF0F5;box-shadow:0 0 0 6px #111;padding:14px;color:#1F2A5C}
+.mhead{font-size:12px;color:#6b7290;margin-bottom:10px}.mhead b{color:#1F2A5C}
+.m{max-width:480px;margin:0 auto;background:#FFFCF7;border-radius:16px;overflow:hidden;font-family:"Plus Jakarta Sans",Arial,sans-serif}
+.m .mt{padding:18px 22px;background:linear-gradient(90deg,#FFD6E5,#D6EBFF,#D3F5E1);font-weight:800;font-size:15px}
+body.em-plain .m .mt{background:#FFFCF7;border-bottom:1.5px solid #E2E4EC}
+.m .mb{padding:22px}
+.m h3{font-size:22px;font-weight:800;letter-spacing:-.02em}
+.m p{font-size:14px;line-height:1.55;color:#4C557D;margin-top:10px}
+.m .mbtn{display:inline-block;margin-top:16px;background:#8EC5FF;color:#1F2A5C;font-weight:800;padding:12px 18px;border-radius:12px;border:1.5px solid #1F2A5C;text-decoration:none}
+.m .rr{display:flex;gap:10px;align-items:center;padding:10px 12px;border-radius:12px;background:#fff;border:1.5px solid #E2E4EC;margin-top:8px;font-size:14px}
+.m .rr b{flex:1}.m .rr span{font-size:12px;font-weight:800;padding:4px 8px;border-radius:8px;background:#FFE3D3}
+.m .mf{padding:14px 22px 20px;font-size:12px;color:#6b7290;border-top:1.5px solid #ECEEF3}
+.m .mf a{color:#1F2A5C}
+.m .mdoll{display:none;width:64px;height:64px;border-radius:50%;background:#FFD6E5;overflow:hidden;border:1.5px solid #1F2A5C;margin-bottom:10px}
+.m .mdoll img{width:100%;height:100%;object-fit:cover;object-position:center 15%}
+body.em-doll .m .mdoll{display:block}
+</style>
+</head>
+<body class="sp-art em-gradient">
+<h1 class="pg">Small pages, loading and emails: locked picks.</h1>
+<p class="pg">Pictures only on "link didn't work", 404 and loading (loading changes picture each time; here it cycles every 1.8 s). Everything else is a plain card. Emails use the pastel header.</p>
+<div class="bar" id="b1" hidden><span style="color:#999;font:12px system-ui;align-self:center">Small pages:</span><button data-k="sp" data-v="art">With a picture</button><button data-v="plain" data-k="sp">Plain card</button><button data-v="center" data-k="sp">Plain, centred text</button></div>
+<div class="bar" id="b3" hidden><span style="color:#999;font:12px system-ui;align-self:center">Loading:</span><button data-k="ld" data-v="girls">Three girls + dots</button><button data-k="ld" data-v="skel">Skeleton rows</button></div>
+<div class="bar" id="b2" hidden><span style="color:#999;font:12px system-ui;align-self:center">Emails:</span><button data-k="em" data-v="gradient">Pastel header</button><button data-k="em" data-v="plain">Plain header</button><button data-k="em" data-v="doll">Pastel header + doll</button></div>
+<div class="grid" id="grid"></div>
+<script>
+const IMG="../../../public/illustrations/";
+const DOLL="../../../public/brand/doll-head.png";
+const st={sp:"plain",ld:"girls",em:"gradient"};
+new URLSearchParams(location.search).forEach((v,k)=>{if(k in st)st[k]=v});
+const art=(f,cls="")=>`<div class="art ${cls}"><img src="${f.startsWith("file")?f:IMG+f}" alt=""></div>`;
+const scr=(cap,inner)=>`<figure><figcaption>${cap}</figcaption><div class="scr"><div class="gl"></div><span class="lo">The Birthday Run</span><div class="in">${inner}</div></div></figure>`;
+function pages(){return [
+ scr("<b>Forgot password</b> (S-6)",`<div class="cd">${art(DOLL,"doll")}<h2>Reset your <span class="hl">password</span></h2><p>Enter the email you sign in with and we'll send you a link to choose a new password.</p><label>Email</label><input><button class="b">Send reset link</button><a class="lk">Back to sign in</a></div>`),
+ scr("<b>Choose a new password</b> (S-7) and <b>Set password</b> (S-9)",`<div class="cd"><span class="st">Step 2 of 2</span><h2>Choose a <span class="hl">password</span></h2><p>Your email jay@example.com is confirmed. Choose a password to finish setting up your account.</p><label>Password</label><input type="password" value="........"><p style="font-size:12px">At least 10 characters.</p><button class="b">Save password</button><a class="lk">Not you? Sign out</a></div>`),
+ scr("<b>Two-step code</b> (S-10)",`<div class="cd">${art(DOLL,"doll")}<h2>Enter your <span class="hl">code</span></h2><p>Open your authenticator app and enter the 6-digit code for The Birthday Run.</p><label>6-digit code</label><input class="code" value="482 9"><button class="b">Verify</button><a class="lk">Sign out</a></div>`),
+ scr("<b>Confirm it's you</b> (S-11)",`<div class="cd"><h2>Confirm it's <span class="hl">you</span></h2><p>For your security, sign in again before making this change.</p><p><b style="color:var(--ink)">jay@example.com</b></p><label>Password</label><input type="password"><button class="b">Confirm</button><a class="lk">Cancel</a></div>`),
+ scr("<b>Link didn't work</b> (S-8)",`<div class="cd">${art("TBR_Planning.JPG").replace('class="art ','class="art keep ')}<h2>That link didn't <span class="hl">work</span></h2><p>It may have expired or already been used. Ask for a new one below.</p><button class="b">Sign in</button><button class="b g">Send a new reset link</button></div>`),
+ scr("<b>Page not found</b> (S-19, 404)",`<div class="cd">${art("TBR_clean.JPG").replace('class="art ','class="art keep ')}<h2>Page not <span class="hl">found</span></h2><p>This page wandered off the route. Let's get you back on track.</p><button class="b">Go home</button></div>`),
+ scr("<b>Something went wrong</b> (S-20)",`<div class="cd">${art(DOLL,"doll")}<h2>Something went <span class="hl">wrong</span></h2><p>Try again. If it keeps happening, <u>contact support</u>.</p><button class="b">Try again</button><button class="b g">Go home</button></div>`),
+ scr("<b>Turn off reminders</b> (S-112, from an email link)",`<div class="cd"><h2>Turn off reminder <span class="hl">emails?</span></h2><p>You'll stop getting birthday reminder emails. You can turn them back on in Settings.</p><button class="b">Turn off reminders</button></div>`),
+ scr("<b>Payment return</b> (S-111; payments are off for now)",`<div class="cd">${art(DOLL,"doll")}<h2>Thanks! <span class="hl">Almost there</span></h2><p>We're confirming your payment. This usually takes a few seconds.</p><button class="b">Check again</button><button class="b g">Go to My Rewards</button></div>`),
+ scr("<b>Loading</b> (between pages)",st.ld==="girls"?`<div class="load"><img id="rot" src="${IMG}TBR_clean.JPG" alt=""><div class="dots" role="status" aria-label="Loading"><i></i><i></i><i></i></div></div>`:`<div class="skel" role="status" aria-label="Loading"><i></i><i></i><i></i><i></i><i></i></div>`)
+ ].join("")}
+const mail=(cap,from,subj,body)=>`<figure><figcaption>${cap}</figcaption><div class="mail"><p class="mhead">From <b>${from}</b> · <b>${subj}</b></p><div class="m"><div class="mt">The Birthday Run</div><div class="mb"><div class="mdoll"><img src="${DOLL}" alt=""></div>${body}</div><div class="mf">You're getting this because you turned on birthday reminders. <a href="#">Turn off reminders</a> · The Birthday Run</div></div></div></figure>`;
+function mails(){return [
+ mail("<b>Reminder: a week before</b> (premium, E-101)","The Birthday Run","Your birthday run starts in 7 days",`<h3>Your birthday is a week away</h3><p>Hi Jay, these rewards open soon. Two need you to join ahead of time:</p><div class="rr"><b>Starbucks</b><span>Join by Nov 29</span></div><div class="rr"><b>Olive Garden</b><span>Opens Nov 22</span></div><div class="rr"><b>Sephora</b><span>All of December</span></div><a class="mbtn" href="#">See my rewards</a>`),
+ mail("<b>Reminder: ending soon</b> (premium, E-102)","The Birthday Run","3 rewards end this week",`<h3>Don't miss these</h3><p>Hi Jay, these end in the next few days:</p><div class="rr"><b>Panera Bread</b><span>2 days left</span></div><div class="rr"><b>Cheesecake Factory</b><span>3 days left</span></div><div class="rr"><b>Olive Garden</b><span>4 days left</span></div><a class="mbtn" href="#">Plan my run</a>`),
+ mail("<b>Confirm your email</b> (sign-up)","The Birthday Run","Confirm your email",`<h3>Confirm your email</h3><p>Tap the button to confirm it's you and choose your password. The link works for 1 hour.</p><a class="mbtn" href="#">Confirm my email</a><p style="font-size:12px">Didn't sign up? You can ignore this email.</p>`)
+ ].join("").replace(/You're getting this because you turned on birthday reminders. <a href="#">Turn off reminders<\/a> · The Birthday Run<\/div><\/div><\/div><\/figure>$/,"You got this because someone signed up with this address. The Birthday Run</div></div></div></figure>")}
+function render(){document.body.className=`sp-${st.sp} em-${st.em}`;document.getElementById("grid").innerHTML=pages()+mails();
+  document.querySelectorAll(".bar button").forEach(b=>b.classList.toggle("on",st[b.dataset.k]===b.dataset.v));
+  history.replaceState(null,"","?"+new URLSearchParams(st))}
+document.querySelectorAll(".bar button").forEach(b=>b.onclick=()=>{st[b.dataset.k]=b.dataset.v;render()});
+render();
+const ROT=["TBR_clean.JPG","TBR_Planning.JPG","TBR_Gifts.JPG"];let ri=0;setInterval(()=>{const i=document.getElementById("rot");if(i){ri=(ri+1)%3;i.src=IMG+ROT[ri]}},1800);
+</script>
+</body>
+</html>
