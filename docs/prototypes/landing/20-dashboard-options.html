@@ -1,0 +1,192 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>PROTOTYPE · TBR dashboard options</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<script src="retailers-detail.js"></script>
+<style>
+/* Throwaway prototype: Dashboard (S-102) in the locked look (decision 0016). Sample: birthday Dec 6, 8 programs. */
+:root{--bg:#FFFCF7;--ink:#1F2A5C;--muted:#4C557D;--hl:#FF9EC4;--btn:#8EC5FF;--hover:#8FE3B0;--line:color-mix(in srgb,var(--ink) 16%,transparent)}
+*{box-sizing:border-box;margin:0}
+body{font-family:"Plus Jakarta Sans",system-ui,sans-serif;background:var(--bg);color:var(--ink);min-height:100vh}
+.glow{position:fixed;inset:0;z-index:-1;overflow:hidden}
+.blob{position:absolute;width:70vw;height:70vw;border-radius:50%;filter:blur(40px)}
+.blob.p{background:radial-gradient(circle,#FFD6E5 0%,transparent 65%);left:-25vw;top:-30vw}
+.blob.b{background:radial-gradient(circle,#D6EBFF 0%,transparent 65%);right:-25vw;top:-25vw}
+.blob.g{background:radial-gradient(circle,#D3F5E1 0%,transparent 65%);left:15vw;bottom:-45vw}
+a{color:inherit}
+.hl{background:var(--hl);padding:0 .14em;border-radius:6px;display:inline-block;transform:rotate(-2deg)}
+.btn{font-family:inherit;font-weight:800;font-size:15px;line-height:1;padding:12px 16px;border-radius:12px;border:0;cursor:pointer;background:var(--btn);color:var(--ink);box-shadow:0 0 0 1.5px var(--ink);text-decoration:none;display:inline-flex;gap:6px;align-items:center}
+.btn:hover{box-shadow:3px 3px 0 var(--ink),0 0 0 1.5px var(--ink)}
+.btn.sm{font-size:13px;padding:9px 12px}
+.btn.ghost{background:#fff}
+
+/* top bar (laptop) + tab bar (phone), locked */
+.top{display:flex;align-items:center;gap:14px;padding:16px 24px}
+.logo{font-weight:800;font-size:18px;letter-spacing:-.02em;background:rgba(255,252,247,.7);padding:8px 12px;border-radius:12px;text-decoration:none}
+.top nav{display:flex;gap:4px;margin-left:8px}
+.top nav a{font-weight:700;font-size:15px;text-decoration:none;padding:9px 12px;border-radius:10px}
+.top nav a[aria-current]{background:#fff;box-shadow:0 0 0 1.5px var(--ink)}
+.me{margin-left:auto;width:40px;height:40px;border-radius:50%;background:#FFD6E5;display:grid;place-items:center;font-weight:800;box-shadow:0 0 0 1.5px var(--ink)}
+.tabbar{display:none}
+main{max-width:1100px;margin:0 auto;padding:8px 24px 140px}
+
+/* hero */
+.hero{display:flex;align-items:center;gap:26px;border-radius:28px;padding:30px 32px;background:rgba(255,252,247,.62);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);box-shadow:0 0 0 1.5px color-mix(in srgb,var(--ink) 12%,transparent),0 20px 60px -30px rgba(0,0,0,.2)}
+.hero .tx{flex:1}
+.hero small{font-size:13px;letter-spacing:.12em;text-transform:uppercase;font-weight:800;color:var(--muted)}
+.hero h1{font-size:44px;font-weight:800;letter-spacing:-.035em;line-height:1.08;margin-top:6px}
+.hero p{color:var(--muted);margin-top:10px;font-size:17px;line-height:1.5}
+.big{font-size:96px;font-weight:800;letter-spacing:-.05em;line-height:.9}
+.doll{display:none;width:150px;height:150px;border-radius:50%;background:#FFD6E5;overflow:hidden;flex:none;box-shadow:0 0 0 1.5px var(--ink)}
+.doll img{width:100%;height:100%;object-fit:cover;object-position:center 12%}
+body.dl-on .doll{display:block}
+.ringp{width:150px;height:150px;flex:none;position:relative}
+.ringp svg{width:100%;height:100%;transform:rotate(-90deg)}
+.ringp b{position:absolute;inset:0;display:grid;place-items:center;font-size:30px;font-weight:800;text-align:center;line-height:1}
+.ringp b span{display:block;font-size:12px;color:var(--muted);font-weight:700;margin-top:4px}
+
+/* sections */
+.sec{margin-top:26px}
+.sec h2{font-size:24px;font-weight:800;letter-spacing:-.02em;display:flex;align-items:center;gap:10px;justify-content:space-between}
+.sec h2 a{font-size:14px;font-weight:700;text-decoration:underline;text-decoration-color:var(--hl);text-decoration-thickness:3px;text-underline-offset:3px}
+.rows{display:grid;gap:10px;margin-top:12px}
+.rw{display:grid;grid-template-columns:76px 1fr auto auto;gap:14px;align-items:center;background:rgba(255,255,255,.85);border-radius:16px;padding:10px 14px;box-shadow:0 0 0 1.5px var(--line)}
+.rw .lg{height:44px;display:grid;place-items:center}
+.rw img{max-width:70px;max-height:40px;object-fit:contain}
+.rw .nm{font-size:13px;font-weight:700;color:var(--muted)}
+.rw .gf{font-weight:800;font-size:16px;line-height:1.25}
+.badge{display:flex;align-items:center;gap:6px;font-size:13px;font-weight:800;padding:6px 10px;border-radius:10px;white-space:nowrap}
+.badge svg{width:15px;height:15px}
+.b-urgent{background:#FFDCDC;box-shadow:inset 0 0 0 1.5px #D64545}
+.b-soon{background:#FFE3D3;box-shadow:inset 0 0 0 1.5px #E07A3F}
+.b-relax{background:#D3F5E1;box-shadow:inset 0 0 0 1.5px #2E9E6A}
+.b-later{background:#EEF1FA;box-shadow:inset 0 0 0 1.5px var(--line)}
+.badge i{font-style:normal;font-weight:600;color:var(--muted)}
+/* checklist */
+.chk{cursor:pointer}
+.chk .tick{width:30px;height:30px;border-radius:9px;box-shadow:inset 0 0 0 2px var(--line);display:grid;place-items:center;font-weight:800;background:#fff}
+.chk.on{background:rgba(211,245,225,.7)}
+.chk.on .tick{background:var(--hover);box-shadow:inset 0 0 0 2px var(--ink)}
+.chk.on .gf{text-decoration:line-through;text-decoration-color:var(--hl);text-decoration-thickness:3px}
+.pbar{height:12px;border-radius:7px;background:#fff;box-shadow:inset 0 0 0 1.5px var(--line);overflow:hidden;margin-top:12px}
+.pbar i{display:block;height:100%;background:var(--hl);transition:width .4s}
+/* stats (spec) */
+.stats{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:12px}
+.stat{border-radius:18px;padding:18px 20px;background:rgba(255,255,255,.85);box-shadow:0 0 0 1.5px var(--line)}
+.stat b{display:block;font-size:40px;font-weight:800;letter-spacing:-.03em}
+.stat span{color:var(--muted)}
+/* link cards */
+.links{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-top:12px}
+.lk{border-radius:18px;padding:18px;background:var(--cc);box-shadow:0 0 0 1.5px var(--ink);text-decoration:none;display:flex;flex-direction:column;gap:6px;transition:box-shadow .2s}
+.lk:hover{box-shadow:3px 3px 0 var(--ink),0 0 0 1.5px var(--ink)}
+.lk b{font-size:18px;font-weight:800}
+.lk span{font-size:14px;color:var(--muted);line-height:1.4}
+body.lk-none .sec.lks{display:none}
+.namehint{margin-top:16px;font-size:14px}
+.namehint a{font-weight:700;text-decoration:underline;text-decoration-color:var(--hl);text-decoration-thickness:3px;text-underline-offset:3px}
+canvas#conf{position:fixed;inset:0;z-index:40;pointer-events:none}
+
+/* panel */
+.panel{position:fixed;left:16px;bottom:16px;z-index:50;background:#111;color:#ddd;border-radius:16px;padding:12px 14px;font:500 12px/1.2 system-ui,sans-serif;box-shadow:0 20px 50px -10px rgba(0,0,0,.5);max-width:calc(100vw - 32px);width:560px}
+.panel.min .rws{display:none}
+.panel .tp{display:flex;justify-content:space-between;align-items:center}.panel .tp b{color:#fff;font-size:13px}
+.panel button{font:inherit;background:#222;color:#ddd;border:0;border-radius:8px;padding:6px 9px;cursor:pointer}
+.panel button.on{background:#fff;color:#111;font-weight:700}
+.prow{display:grid;grid-template-columns:110px 1fr;gap:8px;align-items:center;margin-top:8px}.prow>span{color:#999}.prow div{display:flex;flex-wrap:wrap;gap:4px}
+.now{margin-top:10px;color:#aaa;line-height:1.5}.now b{color:#fff}
+.ptag{position:fixed;top:10px;left:50%;transform:translateX(-50%);z-index:60;font:700 10px system-ui;letter-spacing:.15em;background:#111;color:#fff;padding:5px 8px;border-radius:6px}
+@media (max-width:700px){
+  .top nav{display:none}.ptag{top:auto;bottom:130px}
+  .tabbar{display:grid;grid-template-columns:repeat(5,1fr);position:fixed;left:0;right:0;bottom:0;z-index:25;background:rgba(255,252,247,.94);backdrop-filter:blur(14px);border-top:1.5px solid var(--line);padding:8px 4px calc(8px + env(safe-area-inset-bottom))}
+  .tabbar a{display:flex;flex-direction:column;align-items:center;gap:3px;text-decoration:none;font-size:10.5px;font-weight:700;color:var(--muted)}
+  .tabbar i{width:42px;height:30px;border-radius:10px;display:grid;place-items:center}.tabbar svg{width:20px;height:20px}
+  .tabbar a[aria-current]{color:var(--ink)}.tabbar a[aria-current] i{background:var(--hl);box-shadow:0 0 0 1.5px var(--ink)}
+  main{padding:4px 14px 130px}.hero{flex-direction:column;align-items:flex-start;padding:22px 20px;gap:14px}.hero h1{font-size:32px}.big{font-size:72px}
+  .doll,.ringp{width:96px;height:96px}.ringp b{font-size:20px}
+  .rw{grid-template-columns:56px 1fr;gap:6px 10px}.rw .badge,.rw .act,.rw .tick{grid-column:2;justify-self:start}.rw.chk{grid-template-columns:56px 1fr auto}.rw.chk .tick{grid-column:3;grid-row:1/3;align-self:center}.rw img{max-width:52px}body{overflow-x:hidden}
+  .links{grid-template-columns:1fr 1fr}.stats{grid-template-columns:1fr 1fr}.panel{bottom:76px}}
+</style>
+</head>
+<body class="dl-on lk-cards">
+<div class="ptag">PROTOTYPE · DASHBOARD</div>
+<div class="glow" aria-hidden="true"><div class="blob p"></div><div class="blob b"></div><div class="blob g"></div></div>
+<header class="top"><a class="logo" href="#">The Birthday Run</a>
+  <nav><a href="#" aria-current="page">Home</a><a href="#">Discover</a><a href="#">My Rewards</a><a href="#">Plan</a><a href="#">History</a></nav><div class="me">J</div></header>
+<main id="main"></main>
+<nav class="tabbar" id="tabbar" aria-label="Main"></nav>
+<canvas id="conf"></canvas>
+
+<div class="panel" id="panel">
+  <div class="tp"><b>Dashboard options (prototype only)</b><button id="min">Hide</button></div>
+  <div class="rws">
+    <div class="prow"><span>Sample day</span><div data-k="dy"><button data-v="before">Before the birthday (Nov 24)</button><button data-v="during">During the run (Dec 9)</button></div></div>
+    <div class="prow"><span>1 Top</span><div data-k="hr"><button data-v="count">Big countdown</button><button data-v="ring">Progress ring</button><button data-v="welcome">Welcome (as specced)</button></div></div>
+    <div class="prow"><span>2 Main</span><div data-k="mn"><button data-v="soon">Ending soon list</button><button data-v="check">Your run checklist (pick 8)</button><button data-v="stats">Stats only (as specced)</button></div></div>
+    <div class="prow"><span>3 Shortcuts</span><div data-k="lk"><button data-v="cards">4 link cards</button><button data-v="none">None (menu is enough)</button></div></div>
+    <div class="prow"><span>4 Doll</span><div data-k="dl"><button data-v="on">Doll in the top card</button><button data-v="off">No doll</button></div></div>
+    <div class="now" id="now"></div>
+  </div>
+</div>
+
+<script>
+const LOGO_DIR="../../../public/retailers/";
+const DOLL="../../../public/brand/doll-head.png";
+const ALL=window.RETAILERS;
+const esc=t=>String(t??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const MINE=["starbucks","sephora","chipotle","panera-bread","olive-garden","alamo-drafthouse","cheesecake-factory","red-lobster"].map(id=>ALL.find(r=>r.id===id)).filter(Boolean);
+const W={dy:{before:"before the birthday",during:"during the run"},hr:{count:"big countdown",ring:"progress ring",welcome:"welcome"},mn:{soon:"ending soon list",check:"run checklist",stats:"stats only"},lk:{cards:"4 link cards",none:"no shortcuts"},dl:{on:"doll",off:"no doll"}};
+const st={dy:"during",hr:"count",mn:"soon",lk:"cards",dl:"on"};
+new URLSearchParams(location.search).forEach((v,k)=>{if(W[k]&&W[k][v])st[k]=v});
+const picked=new Set(["starbucks","sephora"]);
+const BD=new Date(2026,11,6);const day=86400000;
+const fmt=d=>d.toLocaleDateString("en-US",{month:"short",day:"numeric"});
+const add=(d,n)=>new Date(d.getFullYear(),d.getMonth(),d.getDate()+n);
+function win(r){const w=r.w;if(w[0]==="m")return[new Date(2026,11,1),new Date(2026,11,31)];if(w[0]==="ms")return[new Date(2026,11,1),add(new Date(2026,11,1),w[1]-1)];if(w[0]==="me")return[BD,new Date(2026,11,31)];return[add(BD,w[0]),add(BD,w[1])]}
+const IC={alert:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v6M12 16.5v.5"/></svg>',clock:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>',check:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="m8 12 3 3 5-6"/></svg>',cal:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><rect x="4" y="5" width="16" height="15" rx="2"/><path d="M4 10h16M9 3v4M15 3v4"/></svg>'};
+function status(r,today){const[s,e]=win(r);const left=Math.round((e-today)/day)+1,until=Math.round((s-today)/day);
+  if(until>0)return{open:false,sort:1000+until,html:`<span class="badge b-later">${IC.cal}Starts ${fmt(s)}</span>`};
+  if(left<=0)return{open:false,gone:true,sort:9999,html:`<span class="badge b-later">Ended</span>`};
+  const txt=left===1?"Last day":`${left} days left`;
+  const [cls,ic,word]=left<4?["b-urgent",IC.alert,"Ends soon"]:left<=10?["b-soon",IC.clock,"Coming up"]:["b-relax",IC.check,"Plenty of time"];
+  return{open:true,sort:left,html:`<span class="badge ${cls}">${ic}${txt} <i>· ${word}</i></span>`}}
+const lgo=r=>`<img src="${LOGO_DIR+esc(r.l)}" alt="${esc(r.n)} logo">`;
+
+function render(){const today=st.dy==="before"?new Date(2026,10,24):new Date(2026,11,9);const M=document.getElementById("main");
+  const rows=MINE.map(r=>({r,s:status(r,today)}));const open=rows.filter(x=>x.s.open&&!picked.has(x.r.id));
+  const daysTo=Math.round((BD-today)/day),runDay=Math.round((today-BD)/day)+1;const n=picked.size,tot=MINE.length;
+  let hero="";const doll=`<div class="doll"><img src="${DOLL}" alt=""></div>`;
+  if(st.hr==="count")hero=`<section class="hero">${doll}<div class="tx">${st.dy==="before"?`<small>Your birthday is Dec 6</small><h1><span class="big">${daysTo}</span> days to <span class="hl">your birthday</span></h1><p>${rows.filter(x=>x.s.open).length} of your rewards already open early. The rest start on your birthday or Dec 1.</p>`:`<small>Day ${runDay} of your Birthday Run</small><h1><span class="big">${open.length}</span> rewards <span class="hl">open now</span></h1><p>${(k=>k?`${k} end${k===1?"s":""} in the next 3 days.`:"None end in the next 3 days.")(open.filter(x=>x.s.sort<4).length)} ${n} of ${tot} picked up so far.</p>`}</div></section>`;
+  if(st.hr==="ring"){const pct=n/tot,C=2*Math.PI*62;hero=`<section class="hero">${doll}<div class="ringp"><svg viewBox="0 0 150 150"><circle cx="75" cy="75" r="62" fill="none" stroke="#fff" stroke-width="16"/><circle cx="75" cy="75" r="62" fill="none" stroke="#FF9EC4" stroke-width="16" stroke-linecap="round" stroke-dasharray="${C*pct} ${C}"/></svg><b>${n}/${tot}<span>picked up</span></b></div><div class="tx"><small>${st.dy==="before"?`${daysTo} days to your birthday`:`Day ${runDay} of your Birthday Run`}</small><h1>Your run is <span class="hl">${Math.round(pct*100)}% done</span></h1><p>${open.length} open now · ${rows.filter(x=>!x.s.open&&!x.s.gone).length} starting later.</p></div></section>`}
+  if(st.hr==="welcome")hero=`<section class="hero">${doll}<div class="tx"><h1>Welcome, <span class="hl">Jay</span></h1><p>${n?`${n} picked up this Birthday Run · Last pickup: Dec 6`:"No pickups yet this Birthday Run."}</p></div></section>`;
+  let main="";
+  if(st.mn==="soon"){const list=rows.filter(x=>!picked.has(x.r.id)&&!x.s.gone).sort((a,b)=>a.s.sort-b.s.sort).slice(0,5);
+    main=`<section class="sec"><h2>${st.dy==="before"?"Coming up first":"Ending soon"} <a href="#">All my rewards</a></h2><div class="rows">${list.map(({r,s})=>`<div class="rw"><div class="lg">${lgo(r)}</div><div><p class="nm">${esc(r.n)}</p><p class="gf">${esc(r.r)}</p></div>${s.html}<div class="act">${s.open?`<button class="btn sm ghost" data-pick="${esc(r.id)}">Picked up</button>`:""}</div></div>`).join("")}</div></section>`}
+  if(st.mn==="check"){main=`<section class="sec"><h2>Your Birthday Run <a href="#">Plan the route</a></h2><div class="pbar"><i style="width:${n/tot*100}%"></i></div><p class="namehint" style="margin-top:6px">${n} of ${tot} claimed. Tap a reward when you've picked it up.</p>
+    <div class="rows">${rows.filter(x=>!x.s.gone||picked.has(x.r.id)).sort((a,b)=>(picked.has(a.r.id)-picked.has(b.r.id))||a.s.sort-b.s.sort).map(({r,s})=>`<div class="rw chk ${picked.has(r.id)?"on":""}" role="checkbox" tabindex="0" aria-checked="${picked.has(r.id)}" data-pick="${esc(r.id)}"><div class="lg">${lgo(r)}</div><div><p class="nm">${esc(r.n)}</p><p class="gf">${esc(r.r)}</p></div>${picked.has(r.id)?'<span class="badge b-relax">Picked up</span>':s.html}<span class="tick" aria-hidden="true">${picked.has(r.id)?"✓":""}</span></div>`).join("")}</div></section>`}
+  if(st.mn==="stats")main=`<section class="sec"><div class="stats"><div class="stat"><b>${n}</b><span>picked up this Birthday Run</span></div><div class="stat"><b>${n?"Dec 6":"–"}</b><span>${n?"Last pickup":"No pickups yet this Birthday Run."}</span></div></div></section>`;
+  const links=`<section class="sec lks"><h2>Go to</h2><div class="links"><a class="lk" href="#" style="--cc:#FFD6E5"><b>Discover</b><span>Find birthday rewards and add your programs.</span></a><a class="lk" href="#" style="--cc:#D6EBFF"><b>My Rewards</b><span>See what's open now and how long it lasts.</span></a><a class="lk" href="#" style="--cc:#D3F5E1"><b>Plan</b><span>Group pickups into runs.</span></a><a class="lk" href="#" style="--cc:#E6DEFF"><b>History</b><span>Everything you've picked up.</span></a></div><p class="namehint"><a href="#">Add your name in Settings</a></p></section>`;
+  M.innerHTML=hero+main+links;
+  M.querySelectorAll("[data-pick]").forEach(el=>{const f=()=>{const id=el.dataset.pick;picked.has(id)?picked.delete(id):picked.add(id);render();if(picked.size===MINE.length)confetti()};el.onclick=f;el.onkeydown=e=>{if(e.key===" "||e.key==="Enter"){e.preventDefault();f()}}})}
+
+function confetti(){const c=document.getElementById("conf"),x=c.getContext("2d");c.width=innerWidth;c.height=innerHeight;
+  const ps=Array.from({length:120},()=>({x:innerWidth/2+(Math.random()-.5)*200,y:innerHeight*.4,vx:(Math.random()-.5)*14,vy:-Math.random()*14-4,r:Math.random()*6.28,vr:(Math.random()-.5)*.3,c:["#FF9EC4","#8EC5FF","#8FE3B0","#FFD6E5","#D6EBFF"][Math.floor(Math.random()*5)],w:6+Math.random()*6}));
+  let t=0;(function f(){t++;x.clearRect(0,0,c.width,c.height);ps.forEach(p=>{p.vy+=.35;p.x+=p.vx;p.y+=p.vy;p.r+=p.vr;x.save();x.translate(p.x,p.y);x.rotate(p.r);x.fillStyle=p.c;x.fillRect(-p.w/2,-p.w/4,p.w,p.w/2);x.restore()});if(t<110)requestAnimationFrame(f);else x.clearRect(0,0,c.width,c.height)})()}
+
+const ICN={home:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 11 12 4l8 7v9H4z"/><path d="M10 20v-5h4v5"/></svg>',d:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="m15.5 8.5-2 5-5 2 2-5z"/></svg>',r:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="8" width="18" height="13" rx="2"/><path d="M12 8v13M3 12h18M12 8c-2-4-6-4-6-1s4 1 6 1c2 0 6 2 6-1s-4-3-6 1"/></svg>',p:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="6" cy="18" r="2.5"/><circle cx="18" cy="6" r="2.5"/><path d="M8.5 18H15a3 3 0 0 0 0-6H9a3 3 0 0 1 0-6h6.5"/></svg>',h:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5M12 7v5l3 2"/></svg>'};
+document.getElementById("tabbar").innerHTML=[["home","Home",1],["d","Discover"],["r","My Rewards"],["p","Plan"],["h","History"]].map(([k,t,c])=>`<a href="#" ${c?'aria-current="page"':""}><i>${ICN[k]}</i>${t}</a>`).join("");
+
+function apply(){document.body.className=`dl-${st.dl} lk-${st.lk}`;
+  document.querySelectorAll(".panel [data-k]").forEach(g=>g.querySelectorAll("button").forEach(b=>b.classList.toggle("on",b.dataset.v===st[g.dataset.k])));
+  document.getElementById("now").innerHTML=`Showing: <b>${W.hr[st.hr]}</b> · ${W.mn[st.mn]} · ${W.lk[st.lk]} · ${W.dl[st.dl]} · sample day ${W.dy[st.dy]}`;
+  render();const q=new URLSearchParams();for(const k in W)q.set(k,st[k]);history.replaceState(null,"","?"+q)}
+document.querySelectorAll(".panel [data-k]").forEach(g=>g.onclick=e=>{const b=e.target.closest("button");if(!b)return;st[g.dataset.k]=b.dataset.v;apply()});
+document.getElementById("min").onclick=e=>{const p=document.getElementById("panel");p.classList.toggle("min");e.target.textContent=p.classList.contains("min")?"Show":"Hide"};
+if(innerWidth<700){document.getElementById("panel").classList.add("min");document.getElementById("min").textContent="Show"}
+apply();
+</script>
+</body>
+</html>
