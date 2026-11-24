@@ -150,12 +150,18 @@ body:not(.pv-d) .sheet{display:none}
 @media (min-width:701px){.sheet-tab{border-radius:20px 20px 0 0}.sheet-body{box-shadow:0 0 0 1.5px color-mix(in srgb,var(--ink) 15%,transparent)}}
 @media (max-width:700px){.pause{bottom:auto;top:16px}.hero{padding-top:70px}}
 .panel{display:none}
+
+/* site name, top left (same as the sign in page) */
+.logo{position:absolute;z-index:3;left:24px;top:20px;font-weight:800;font-size:18px;letter-spacing:-.02em;background:rgba(255,252,247,.7);padding:8px 12px;border-radius:12px;color:var(--ink)}
+.tag{left:50%!important;transform:translateX(-50%)}
+@media (max-width:700px){.logo{left:16px;top:16px;font-size:16px}}
 </style>
 </head>
 <body>
 <div class="tag">PROTOTYPE v6</div>
 <section class="stage">
   <div class="wave" id="wave" aria-hidden="true"></div>
+  <div class="logo">The Birthday Run</div>
   <div class="tunnel" id="tunnel" aria-hidden="true"></div>
   <button class="pause" id="pause" aria-pressed="false"><svg viewBox="0 0 16 16" fill="currentColor"><rect x="3" y="2" width="3.5" height="12" rx="1"/><rect x="9.5" y="2" width="3.5" height="12" rx="1"/></svg><span>Pause motion</span></button>
   <div class="hero">
