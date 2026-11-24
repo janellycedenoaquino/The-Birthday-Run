@@ -5,9 +5,9 @@ import {
   type ReminderLine,
 } from "./components/reminder-parts";
 
-// E-101 plan ahead (SPEC §3.4, BUILD F-12, FR-41): sent 1–7 days before the birthday, once per
-// birthday year. Subject (no app name, Template §3.4): PLAN_AHEAD_SUBJECT.
-export const PLAN_AHEAD_SUBJECT = "Your birthday is a week away";
+// E-101 plan ahead (SPEC §3.4, BUILD F-12, FR-41): sent once per birthday year, before the user's
+// earliest reward opens or join-by date (up to 32 days ahead, at the latest 7; due.ts PLAN_AHEAD). Subject (no app name, Template §3.4): PLAN_AHEAD_SUBJECT.
+export const PLAN_AHEAD_SUBJECT = "Time to plan your Birthday Run";
 
 type Props = {
   siteUrl: string;
@@ -28,7 +28,7 @@ export default function ReminderPlanAhead({
       siteUrl={siteUrl}
       preview={`Your birthday is on ${birthday}.`}
       heading="Plan your Birthday Run"
-      intro={`Your birthday is on ${birthday}. Here's what you can pick up:`}
+      intro={`Your birthday is on ${birthday}. Here's what you can pick up, and when:`}
       buttonLabel="Plan your run"
       url={`${siteUrl}/plan`}
       footer={
@@ -50,7 +50,7 @@ ReminderPlanAhead.PreviewProps = {
     {
       name: "Starbucks",
       description: "A free drink or food item",
-      when: "Last day: June 15",
+      when: "Opens June 15 · Last day: June 15",
     },
   ],
   unsubscribeUrl: "http://localhost:3000/reminders/unsubscribe?token=preview",

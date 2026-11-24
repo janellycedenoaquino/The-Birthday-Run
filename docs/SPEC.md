@@ -148,7 +148,7 @@ All priorities are **must**.
 #### Reminder emails
 | ID | Requirement | Acceptance | Priority |
 | --- | --- | --- | --- |
-| FR-41 | **[v2-premium]** Premium users get birthday reminder emails about their window and expiring rewards. | Two kinds: one email **7 days before the birthday** ("plan your run"), and an **expiring** email when a reward has 3 days or fewer left, at most one every 3 days (**A-9**). Each lists only the user's enrolled, not-picked-up rewards, uses the Template email pipeline (Template FR-28/FR-29), and is sent at most once per reminder per cycle. Free users get none. | must |
+| FR-41 | **[v2-premium]** Premium users get birthday reminder emails about their window and expiring rewards. | Two kinds: one **plan-ahead** email before the user can first act on a reward (decision 0019: 2 days before their earliest reward opens or join-by date, at most 32 and at the latest 7 days before the birthday), and an **expiring** email when a reward has 3 days or fewer left, at most one every 3 days (**A-9**). Each lists only the user's enrolled, not-picked-up rewards, uses the Template email pipeline (Template FR-28/FR-29), and is sent at most once per reminder per cycle. Free users get none. | must |
 | FR-42 | **[v2-premium]** Reminders can be turned off and on in settings, and every reminder has a one-click turn-off. | Once off, none are sent; the setting persists. (First non-transactional emails, so the Template's "no unsubscribe" scope no longer covers them.) | must |
 
 #### Store data and imports
@@ -484,6 +484,7 @@ Template M-, API-, E- texts apply unchanged. Placeholders in `{braces}` are fill
 - M-181: "Birthday only" · (every "{n} days" below reads "1 day" for one) · M-182: "{days} days from your birthday" · M-183: "All birth month" · M-184: "From {before} days before to {after} days after your birthday" (`{after}` = 0: "From {before} days before to your birthday") · M-184a: "{days} days from the 1st of your birth month" · M-184b: "From your birthday to the end of your birth month"
 - M-276: "Brands may end it early by their own clock. Go early in the day."
 - M-279 (S-104, signed in): "Your dates: {start} – {end} · {days} days left" ("1 day left" for one; "Ends today" on the last day; "Starts in {days} days" before the window opens) · M-280 (S-104, signed out): "Sign up to see your exact dates."
+- M-281 (E-101 line): "Opens {date}"
 - M-277: "Join by {date} to get this one." · M-277b (after that date): "{brand} needs members to join {days} days before the birthday, so it may not come this year."
 - M-278: "In years without Feb 29 we count Feb 28. Some brands use Mar 1, so check their app."
 - M-189a: "Purchase: {text}" · M-189b: "Membership: {text}" · M-189c: "Also: {text}"
@@ -535,7 +536,7 @@ Template M-, API-, E- texts apply unchanged. Placeholders in `{braces}` are fill
 - M-254: "Pickup saved." · M-255: "Pickup deleted."
 - M-256: "Used to work out which day it is for you and when reminder emails go out."
 - M-257: "Birthday saved."
-- M-258: "One email a week before your birthday, and one when rewards are about to end."
+- M-258: "One email when it's time to plan (up to a month before your birthday), and one when rewards are about to end."
 - M-259 / M-260: "Reminders on." / "Reminders off."
 - M-261: "You have Premium."
 - M-262: "Premium renews on {date}." · M-263: "Premium ends on {date}."
@@ -572,7 +573,7 @@ Template M-, API-, E- texts apply unchanged. Placeholders in `{braces}` are fill
 **Emails** (FR-41, FR-42). Template email layout and rules (Template §3.4: no app name in subjects). Every reminder adds the footer M-275 and the `List-Unsubscribe` headers (D15). Lists show retailer, reward description and M-120–M-122 / last day.
 | ID | Template | Subject | Heading | Body and button |
 | --- | --- | --- | --- | --- |
-| E-101 | plan ahead (7 days before) | Your birthday is a week away | Plan your Birthday Run | "Your birthday is on {date}. Here's what you can pick up:" then the list. Button "Plan your run" → `{site}/plan`. |
+| E-101 | plan ahead (decision 0019: up to 32 days before) | Time to plan your Birthday Run | Plan your Birthday Run | "Your birthday is on {date}. Here's what you can pick up, and when:" then the list, each line: M-277 when a join-by date is still ahead (M-277b when it has passed), M-281 when the reward hasn't opened yet, then "Last day: {date}", joined by " · ". Button "Plan your run" → `{site}/plan`. |
 | E-102 | expiring | "{count} birthday rewards end soon" / "1 birthday reward ends soon" | Don't miss these | "These rewards end in the next few days:" then the list with each one's last day. Button "See my rewards" → `{site}/rewards`. |
 - M-275 (reminder footer): "You're getting this because birthday reminders are on. Turn off reminders" (link → S-112) " · Change in Settings" (link → `/settings#reminders`).
 

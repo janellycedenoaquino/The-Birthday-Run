@@ -104,6 +104,7 @@ export const M = {
   "M-189b": "Membership: {text}",
   "M-189c": "Also: {text}",
   "M-277": "Join by {date} to get this one.",
+  "M-281": "Opens {date}",
   "M-277b":
     "{brand} needs members to join {days} days before the birthday, so it may not come this year.",
   "M-101b": "My Rewards",
@@ -213,7 +214,7 @@ export const M = {
   "M-140": "Upgrade to unlock it. You can cancel any time from Settings.",
   "M-261": "You have Premium.",
   "M-258":
-    "One email a week before your birthday, and one when rewards are about to end.",
+    "One email when it's time to plan (up to a month before your birthday), and one when rewards are about to end.",
   "M-259": "Reminders on.",
   "M-260": "Reminders off.",
   "M-270": "Turn off reminder emails?",
