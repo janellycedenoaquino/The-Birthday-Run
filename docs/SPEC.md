@@ -305,7 +305,8 @@ flowchart TD
 ### 3.2 Shared components
 
 **C-101 App navigation** (all pages; extends Template C-1)
-- Signed in: links Dashboard · Discover · My Rewards · Plan · History in a row under the header that wraps on narrow screens (no horizontal scroll); current page `aria-current="page"`. Settings stays in the Template account menu.
+- Signed in: links Dashboard · Discover · My Rewards · Plan · History in a row under the header on wider screens; current page `aria-current="page"`. Settings stays in the Template account menu.
+- **Phones (decision 0016):** the links move to a bottom tab bar fixed to the bottom of the screen: five tabs with an icon and a label (Dashboard shown as "Home"), the current one on the pink block. The account menu stays on the round initial top right (Settings, Birthday & reminders, Premium, Sign out). Page content keeps room above the bar.
 - Signed out: "Discover" next to Template C-1's Sign in / Sign up.
 - Hidden on S-101 (onboarding has one job) and on Template S-9–S-11.
 - Labels: M-101.
@@ -363,6 +364,7 @@ flowchart TD
 - **Look:** decision 0016: the tilted wall of retailer cards behind one frosted card with "Create account" / "Sign in" tabs (links between the two routes, keeping `next`), a rotating "waiting for you" reward under the tabs, and a confetti burst with the "Check your email" panel. Everything else as Template S-4 and S-5.
 
 #### S-101 Onboarding (`/onboarding`) · FR-6, FR-7, FR-10
+- **Look (decision 0016):** one frosted card on a still glow (nothing moves on its own, so no pause control), step text M-118. Continue turns the card around (a 3D flip) and its back is step 2; "Change birthday" turns it back. Step 2 is a logo grid with checkboxes; the Save button's count is the only pick feedback. No flip when motion is paused or reduced.
 - **Who:** signed in, no birthday (onboarded users go to S-102).
 - **Shows:** M-118 step label; h1 M-105.
   1. **Birthday:** text M-106; "Month" select and "Day" select (days follow the month; Feb 29 listed; picking it shows M-278, FR-49); no year field. Detected time zone shown as M-107 (changed in S-108); if detection fails, S-108's time-zone picker shows inline here and is required. Button "Continue" (M-108).
