@@ -1,6 +1,6 @@
 import { existsSync } from "node:fs";
 import { expect, test } from "@playwright/test";
-import { ownIp, passwordSignIn } from "./support";
+import { confirmDelete, monthDayIn, ownIp, passwordSignIn } from "./support";
 
 // Its own client IP, so sign-ins don't share one per-IP budget (support.ts ownIp).
 test.use(ownIp(17));
@@ -13,16 +13,7 @@ const { adminClient, createUser, PASSWORD, sql } =
   await import("../rls/helpers");
 
 const ZONE = "America/New_York";
-const todayIn = (zone: string, plusDays = 0) => {
-  const now = new Date(Date.now() + plusDays * 86_400_000);
-  const parts = new Intl.DateTimeFormat("en-CA", {
-    timeZone: zone,
-    month: "numeric",
-    day: "numeric",
-  }).formatToParts(now);
-  const get = (t: string) => Number(parts.find((p) => p.type === t)!.value);
-  return { month: get("month"), day: get("day") };
-};
+const todayIn = monthDayIn;
 
 test("My Rewards: the list, filters, pages, and the other views (FR-12–FR-16, FR-21)", async ({
   page,
@@ -164,12 +155,7 @@ test("My Rewards: the list, filters, pages, and the other views (FR-12–FR-16, 
 
   // Delete asks first, with "Cancel" focused; confirming removes it and the reward is back (FR-20).
   await entry.getByRole("link", { name: `Delete ${name} pickup` }).click();
-  const confirm = page.getByRole("alertdialog");
-  await expect(
-    confirm.getByRole("heading", { name: "Delete this pickup?" }),
-  ).toBeVisible();
-  await expect(confirm.getByRole("button", { name: "Cancel" })).toBeFocused();
-  await confirm.getByRole("button", { name: "Delete" }).click();
+  await confirmDelete(page, "Delete this pickup?");
   await expect(page.getByText("Pickup deleted.")).toBeVisible();
   await expect(
     page.getByText(

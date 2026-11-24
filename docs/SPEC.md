@@ -119,7 +119,7 @@ All priorities are **must**.
 | --- | --- | --- | --- |
 | FR-22 | **[v1]** Plan lists plannable rewards: in the window, enrolled ones neither expired nor picked up; outside it, all enrolled ones (next cycle). | Each shows days left (in window) and which groups it's in; search and a "hide grouped" filter work; picked-up rewards can't be selected. None → empty state. | must |
 | FR-23 | **[v1]** A user can create a named group with a pickup date and time and add selected rewards, or add them to an existing group. | Name required, unique per user ignoring case. Pickup not in the past and inside the window being planned: in the window, now to its end; outside, the next window (changed: old picker skipped the current window). Rewards expiring before the pickup trigger a warning; saving is still allowed. | must |
-| FR-24 | **[v1]** A free user can have at most **3 groups**; premium has no group limit. | At the limit, creating another is refused by the server and the UI shows FR-39. | must |
+| FR-24 | **[v1]** A free user can have at most **3 groups** in the current birthday year (groups whose pickup is in a past cycle don't count and stay for reference; owner, 2026-11-23); premium has no group limit. | At the limit, creating another is refused by the server and the UI shows FR-39. | must |
 | FR-25 | **[v1]** A group holds at most **5 rewards** (free) or **10** (premium). | An add that would exceed the limit is refused whole, with the limit named. | must |
 | FR-26 | **[v1]** A reward can be in several of the user's groups (e.g. plan A and plan B), at most once per group; only enrolled rewards can be added. | Adding a reward twice to the same group is refused. Marking it picked up (FR-17) removes it from every group. | must |
 | FR-27 | **[v1]** A user can rename a group, change its pickup date/time, remove or reorder its rewards, and delete it. | Edits follow FR-23 (changed: old could edit only the time and reset the date). Reorder by drag and by keyboard; order survives reload. Delete asks first; its rewards become plannable. | must |
@@ -425,7 +425,7 @@ flowchart TD
 Template M-, API-, E- texts apply unchanged. Placeholders in `{braces}` are filled as text. Plurals: one message per form where shown (`{days}` = 1 uses the singular ID). Dates: "Oct 6" style in the user's time zone; times "10:00 AM".
 
 **Navigation and onboarding**
-- M-101 (C-101): "Dashboard" · "Discover" · "My Rewards" (M-101b) · "Plan" · "History" (M-101c)
+- M-101 (C-101): "Dashboard" · "Discover" · "My Rewards" (M-101b) · "Plan" (M-101d) · "History" (M-101c)
 - M-102 (S-1): "Browse rewards"
 - M-103 / M-104 (C-102 toggle): "Add" / "Added"
 - M-105 (S-101 h1): "When's your birthday?"
@@ -516,6 +516,7 @@ Template M-, API-, E- texts apply unchanged. Placeholders in `{braces}` are fill
 - M-236: "Move {retailer}" (accessible name) · M-237 (announcements): "Picked up {retailer}. Position {pos} of {total}." · "{retailer} moved to position {pos} of {total}." · "{retailer} dropped at position {pos} of {total}." · "Move cancelled."
 - M-238: "Show route"
 - M-239: "Nothing to plan yet. Add programs in Discover." · M-240: "No groups yet. Select rewards above and add them to a group." · M-241: "No rewards in this group yet."
+- M-242 (group name with control characters): "Remove line breaks and tabs from the name." (blank and too long reuse Template M-35 / M-36)
 
 **History and settings**
 - M-250: "History" · M-251: "{year} Birthday Run" · M-252: "Nothing picked up yet." · M-253: "No pickups yet. When you mark a reward picked up, it shows here."

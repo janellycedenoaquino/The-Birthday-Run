@@ -6,24 +6,8 @@ import { FormAlert, formError } from "@/components/auth/form-alert";
 import { TextField, useDialogForm } from "@/components/rewards/pickup-dialog";
 import { toast } from "sonner";
 import { useSuccessToast } from "@/components/settings/use-success-toast";
-import {
-  AlertDialog,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
+import { ConfirmCancel, ConfirmDialog, EditDialog } from "@/components/dialogs";
 import { Button } from "@/components/ui/button";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
 import type { ActionResult } from "@/lib/action-result";
 import { msg, type MessageId } from "@/lib/messages";
 
@@ -54,12 +38,20 @@ export function PickupActions({
   return (
     <div className="flex gap-2">
       <EditDialog
-        pickupId={pickupId}
-        retailer={retailer}
-        note={note}
-        locationLabel={locationLabel}
-        updatePickup={updatePickup}
-      />
+        label={`Edit ${retailer} pickup`}
+        title={retailer}
+        description="Edit the note and place."
+      >
+        {(close) => (
+          <EditForm
+            pickupId={pickupId}
+            note={note}
+            locationLabel={locationLabel}
+            updatePickup={updatePickup}
+            onDone={close}
+          />
+        )}
+      </EditDialog>
       <Button asChild size="sm" variant="ghost">
         <Link
           href={`/history?confirm=${pickupId}`}
@@ -73,28 +65,25 @@ export function PickupActions({
           Delete
         </Link>
       </Button>
-      <AlertDialog open={confirming} onOpenChange={setConfirming}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>{msg("M-185")}</AlertDialogTitle>
-            <AlertDialogDescription>{msg("M-186")}</AlertDialogDescription>
-          </AlertDialogHeader>
-          <DeleteForm
-            pickupId={pickupId}
-            deletePickup={deletePickup}
-            onDone={() => setConfirming(false)}
-          >
-            <AlertDialogFooter>
-              <AlertDialogCancel autoFocus>Cancel</AlertDialogCancel>
-              {/* A plain submit, not AlertDialogAction: the dialog stays open until the result,
-                  so an error (BR-11, M-5) shows here; it closes on success (onDone). */}
-              <Button type="submit" variant="destructive">
-                Delete
-              </Button>
-            </AlertDialogFooter>
-          </DeleteForm>
-        </AlertDialogContent>
-      </AlertDialog>
+      <ConfirmDialog
+        open={confirming}
+        onOpenChange={setConfirming}
+        title={msg("M-185")}
+        text={msg("M-186")}
+      >
+        <DeleteForm
+          pickupId={pickupId}
+          deletePickup={deletePickup}
+          onDone={() => setConfirming(false)}
+        >
+          <div className="flex justify-end gap-2">
+            <ConfirmCancel />
+            <Button type="submit" variant="destructive">
+              Delete
+            </Button>
+          </div>
+        </DeleteForm>
+      </ConfirmDialog>
     </div>
   );
 }
@@ -136,52 +125,6 @@ export function DeleteForm({
       ) : null}
       {children}
     </form>
-  );
-}
-
-function EditDialog({
-  pickupId,
-  retailer,
-  note,
-  locationLabel,
-  updatePickup,
-}: {
-  pickupId: string;
-  retailer: string;
-  note: string | null;
-  locationLabel: string | null;
-  updatePickup: Action;
-}) {
-  const [open, setOpen] = useState(false);
-  return (
-    <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>
-        <Button
-          size="sm"
-          variant="outline"
-          aria-label={`Edit ${retailer} pickup`}
-        >
-          Edit
-        </Button>
-      </DialogTrigger>
-      <DialogContent>
-        <DialogHeader>
-          <DialogTitle>{retailer}</DialogTitle>
-          <DialogDescription className="sr-only">
-            Edit the note and place.
-          </DialogDescription>
-        </DialogHeader>
-        {open ? (
-          <EditForm
-            pickupId={pickupId}
-            note={note}
-            locationLabel={locationLabel}
-            updatePickup={updatePickup}
-            onDone={() => setOpen(false)}
-          />
-        ) : null}
-      </DialogContent>
-    </Dialog>
   );
 }
 

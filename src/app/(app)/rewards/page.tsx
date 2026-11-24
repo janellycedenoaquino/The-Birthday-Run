@@ -227,7 +227,7 @@ export default async function RewardsPage({
 const latest = (a: LocalDate, b: LocalDate) =>
   compareDates(a, b) >= 0 ? a : b;
 
-/** FR-15 / FR-16: a message with the way forward (Plan's link arrives with Phase 3). */
+/** FR-15 / FR-16: a message with the way forward: Discover and Plan. */
 function Notice({ text }: { text: string }) {
   return (
     <div className="mt-8 grid gap-4 rounded-lg border border-border/70 p-6">
@@ -235,6 +235,9 @@ function Notice({ text }: { text: string }) {
       <div>
         <Button asChild size="lg">
           <Link href="/discover">Browse Discover</Link>
+        </Button>
+        <Button asChild size="lg" variant="outline" className="ml-2">
+          <Link href="/plan">Start planning</Link>
         </Button>
       </div>
     </div>

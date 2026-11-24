@@ -1,0 +1,180 @@
+import type { Metadata } from "next";
+import Link from "next/link";
+import { redirect } from "next/navigation";
+import { z } from "zod";
+import { GroupCard, type GroupCardData } from "@/components/plan/group-card";
+import { PlanRewards, type PlanListRow } from "@/components/plan/plan-rewards";
+import { Button } from "@/components/ui/button";
+import { formatDate, planRange, type LocalDate } from "@/lib/birthday/timing";
+import { msg } from "@/lib/messages";
+import { defaultPickup, outsideWindow } from "@/lib/rewards/plan";
+import {
+  addToGroup,
+  createGroup,
+  deleteGroup,
+  removeFromGroup,
+  reorderGroupItems,
+  updateGroup,
+} from "@/server/actions/groups";
+import { requireOnboarded } from "@/server/auth/app-guards";
+import { loadPlanContext } from "@/server/rewards/plan-context";
+
+// S-106 Plan (SPEC §3.3, BUILD F-6: FR-22–FR-27, FR-9, FR-40). `onboarded` level. Smart Grouping
+// (FR-29), Duplicate (FR-28) and the route (C-106) are premium and arrive with F-7, F-10, F-11.
+export const metadata: Metadata = {
+  title: "Plan",
+  robots: { index: false },
+};
+
+const FREE_GROUPS = 3; // FR-24
+const FREE_ITEMS = 5; // FR-25
+
+const searchSchema = z.object({
+  deleteGroup: z.uuid().optional().catch(undefined),
+});
+
+/** The no-JS delete confirmation's action (FR-27): delete (deleteGroup checks everything). */
+async function confirmDeleteGroup(formData: FormData) {
+  "use server";
+  await deleteGroup(null, formData);
+  redirect("/plan");
+}
+
+export default async function PlanPage({ searchParams }: PageProps<"/plan">) {
+  const { supabase, profile } = await requireOnboarded();
+  const { deleteGroup: confirming } = searchSchema.parse(await searchParams);
+  const ctx = await loadPlanContext(supabase, profile);
+  const { data: groups, error } = await supabase
+    .from("reward_groups")
+    .select(
+      "id, name, pickup_date, pickup_time, reward_group_items(id, retailer_id, position)",
+    )
+    .order("pickup_date")
+    .order("name");
+  if (error) throw new Error("S-106: could not read groups", { cause: error });
+
+  // From every enrolled reward, expired ones too: a group can still hold them.
+  const names = new Map(ctx.all.map((r) => [r.id, r.name]));
+  const range = planRange(ctx.window);
+  const start = defaultPickup(ctx.window, ctx.nowTime);
+  const rows: PlanListRow[] = ctx.rows.map((r) => ({
+    id: r.id,
+    name: r.name,
+    logo_file: r.logo_file,
+    pickedUp: r.pickedUp,
+    daysLeft: r.daysLeft,
+    groups: groups
+      .filter((g) => g.reward_group_items.some((i) => i.retailer_id === r.id))
+      .map((g) => g.name),
+  }));
+  const cards: GroupCardData[] = groups.map((g) => ({
+    id: g.id,
+    name: g.name,
+    pickupDate: g.pickup_date,
+    pickupTime: g.pickup_time.slice(0, 5),
+    pickupLabel: msg("M-234")
+      .replace("{date}", formatDate(g.pickup_date as LocalDate, "long"))
+      .replace("{time}", g.pickup_time.slice(0, 5)),
+    outside: outsideWindow(ctx.window, g.pickup_date as LocalDate),
+    items: [...g.reward_group_items]
+      .sort((a, b) => a.position - b.position || a.id.localeCompare(b.id))
+      .map((i) => ({
+        id: i.id,
+        name: names.get(i.retailer_id) ?? i.retailer_id,
+      })),
+  }));
+  // FR-40: more than the free plan allows (after premium ends; nobody is premium yet).
+  // FR-24 counts only this birthday year's groups (from today's cycle start), as the trigger does.
+  const thisYear = groups.filter(
+    (g) => g.pickup_date >= ctx.window.current.cycleStart,
+  );
+  const overLimit =
+    thisYear.length > FREE_GROUPS ||
+    groups.some((g) => g.reward_group_items.length > FREE_ITEMS);
+  const confirmGroup = confirming
+    ? groups.find((g) => g.id === confirming)
+    : undefined;
+
+  return (
+    <div className="mx-auto w-full max-w-3xl px-4 py-12 sm:px-6">
+      <h1 className="text-2xl font-semibold">{msg("M-220")}</h1>
+      <p className="mt-1 text-muted-foreground">
+        {msg("M-221")
+          .replace("{start}", formatDate(range.min, "long"))
+          .replace("{end}", formatDate(range.max, "long"))}
+      </p>
+      {overLimit ? (
+        <p className="mt-4 rounded-lg border border-border/70 p-4">
+          {msg("M-222")}
+        </p>
+      ) : null}
+
+      {confirmGroup ? (
+        <section
+          aria-labelledby="confirm-group"
+          className="mt-6 grid gap-3 rounded-lg border border-destructive/60 p-6"
+        >
+          <h2 id="confirm-group" className="font-semibold">
+            {msg("M-187").replace("{name}", confirmGroup.name)}
+          </h2>
+          <p>{msg("M-188")}</p>
+          <form action={confirmDeleteGroup} className="flex gap-2">
+            <input type="hidden" name="groupId" value={confirmGroup.id} />
+            <Button asChild variant="outline">
+              <Link href="/plan">Cancel</Link>
+            </Button>
+            <Button type="submit" variant="destructive">
+              Delete
+            </Button>
+          </form>
+        </section>
+      ) : null}
+
+      {rows.length === 0 ? (
+        <div className="mt-8 grid gap-4 rounded-lg border border-border/70 p-6">
+          <p>{msg("M-239")}</p>
+          <div>
+            <Button asChild size="lg">
+              <Link href="/discover">Browse Discover</Link>
+            </Button>
+          </div>
+        </div>
+      ) : (
+        <PlanRewards
+          rows={rows}
+          groups={groups.map((g) => ({ id: g.id, name: g.name }))}
+          defaultDate={start.date}
+          defaultTime={start.time}
+          range={{ min: range.min, max: range.max }}
+          createGroup={createGroup}
+          addToGroup={addToGroup}
+        />
+      )}
+
+      <section aria-labelledby="plan-groups" className="mt-10">
+        <h2 id="plan-groups" className="text-lg font-semibold">
+          {msg("M-233")}
+        </h2>
+        {cards.length === 0 ? (
+          <p className="mt-2 text-muted-foreground">{msg("M-240")}</p>
+        ) : (
+          <ul className="mt-4 grid gap-4">
+            {cards.map((g) => (
+              <GroupCard
+                key={`${g.id}:${g.items.map((i) => i.id).join()}`}
+                group={g}
+                range={{ min: range.min, max: range.max }}
+                actions={{
+                  updateGroup,
+                  deleteGroup,
+                  removeFromGroup,
+                  reorderGroupItems,
+                }}
+              />
+            ))}
+          </ul>
+        )}
+      </section>
+    </div>
+  );
+}

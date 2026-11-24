@@ -1,7 +1,9 @@
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import {
   adminClient,
+  birthdayTodayWith,
   createUser,
+  dayFromToday,
   deleteUsers,
   publicClient,
   signIn,
@@ -16,9 +18,7 @@ import { enrollTotp, totp } from "./totp";
 // users get a birthday of today in UTC, so the dates below are always inside today's cycle.
 const RETAILER = "starbucks";
 const OTHER = "sephora";
-const ZONE = "UTC";
-const day = (offset: number) =>
-  new Date(Date.now() + offset * 86_400_000).toISOString().slice(0, 10);
+const day = dayFromToday;
 let a: TestUser;
 let b: TestUser;
 
@@ -39,27 +39,11 @@ const rowsOf = async (userId: string) =>
       .eq("user_id", userId)
   ).data ?? [];
 
-async function setUp(u: TestUser) {
-  const [, month, date] = day(0).split("-").map(Number);
-  const { error } = await adminClient()
-    .from("profiles")
-    .update({ birth_month: month, birth_day: date, time_zone: ZONE })
-    .eq("id", u.id);
-  if (error) throw new Error(`setup birthday failed: ${error.message}`);
-  const { error: enrollError } = await u.client
-    .from("enrollments")
-    .insert(
-      [RETAILER, OTHER].map((retailer_id) => ({ user_id: u.id, retailer_id })),
-    );
-  if (enrollError)
-    throw new Error(`setup enroll failed: ${enrollError.message}`);
-}
-
 beforeAll(async () => {
   a = await createUser("pickups-a");
   b = await createUser("pickups-b");
-  await setUp(a);
-  await setUp(b);
+  await birthdayTodayWith(a, [RETAILER, OTHER]);
+  await birthdayTodayWith(b, [RETAILER, OTHER]);
 });
 afterAll(() => deleteUsers(a, b)); // cascades enrollments and pickups
 
@@ -193,7 +177,7 @@ describe("create_pickup and MFA (D8)", () => {
 
   it("an MFA user's aal1 session → not_allowed; after the code it works", async () => {
     m = await createUser("pickups-mfa");
-    await setUp(m);
+    await birthdayTodayWith(m, [RETAILER, OTHER]);
     const factor = await enrollTotp(m.client);
 
     const pending = await signIn(m.email); // aal1 with a verified factor

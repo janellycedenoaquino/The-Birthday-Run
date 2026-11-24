@@ -137,3 +137,28 @@ export async function confirmFromEmail(email: string): Promise<Client> {
   }
   throw new Error(`no email to ${email} in Mailpit`);
 }
+
+/** A date `offset` days from today in UTC, `YYYY-MM-DD`. */
+export const dayFromToday = (offset: number) =>
+  new Date(Date.now() + offset * 86_400_000).toISOString().slice(0, 10);
+
+/**
+ * Gives a test user a birthday of today (UTC) and enrolls them in `retailerIds`, so "today" is
+ * always inside their window and cycle, whatever day the tests run.
+ */
+export async function birthdayTodayWith(user: TestUser, retailerIds: string[]) {
+  const [, month, day] = dayFromToday(0).split("-").map(Number);
+  const { error } = await adminClient()
+    .from("profiles")
+    .update({ birth_month: month, birth_day: day, time_zone: "UTC" })
+    .eq("id", user.id);
+  if (error) throw new Error(`setup birthday failed: ${error.message}`);
+  if (!retailerIds.length) return;
+  const { error: enrollError } = await user.client
+    .from("enrollments")
+    .insert(
+      retailerIds.map((retailer_id) => ({ user_id: user.id, retailer_id })),
+    );
+  if (enrollError)
+    throw new Error(`setup enroll failed: ${enrollError.message}`);
+}

@@ -5,6 +5,7 @@ import { FormAlert, formError } from "@/components/auth/form-alert";
 import type { CardRetailer } from "@/components/retailers/retailer-card";
 import { RetailerLogo } from "@/components/retailers/retailer-logo";
 import { Button } from "@/components/ui/button";
+import { useSelection } from "@/components/use-selection";
 import type { ActionResult } from "@/lib/action-result";
 import { msg } from "@/lib/messages";
 import { filterRetailers, type FilterRow } from "@/lib/retailers/filter";
@@ -36,7 +37,7 @@ export function ProgramsForm({
   // Programs joined already (e.g. from Discover) show ticked and locked: this step only adds,
   // so an untick here couldn't be saved. Leaving a program is Discover's toggle (FR-8).
   const joined = new Set(enrolledIds);
-  const [selected, setSelected] = useState(() => new Set<string>());
+  const { selected, toggle } = useSelection();
   const hydrated = useSyncExternalStore(
     noSubscribe,
     () => true,
@@ -45,13 +46,6 @@ export function ProgramsForm({
   const visible = new Set(
     filterRetailers(retailers, { q, category }, {}).shown.map((r) => r.id),
   );
-  const toggle = (id: string, on: boolean) =>
-    setSelected((prev) => {
-      const next = new Set(prev);
-      if (on) next.add(id);
-      else next.delete(id);
-      return next;
-    });
   const count = selected.size;
 
   return (

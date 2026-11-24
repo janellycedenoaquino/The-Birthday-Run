@@ -12,6 +12,8 @@ export const USER_DATA_TABLES = [
   { schema: "public", table: "profiles", ownerColumn: "id" },
   { schema: "public", table: "enrollments", ownerColumn: "user_id" },
   { schema: "public", table: "pickups", ownerColumn: "user_id" },
+  { schema: "public", table: "reward_groups", ownerColumn: "user_id" },
+  { schema: "public", table: "reward_group_items", ownerColumn: "user_id" },
 ] as const satisfies readonly UserDataTable[];
 
 export const NON_USER_DATA_TABLES = [

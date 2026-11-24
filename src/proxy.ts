@@ -16,6 +16,7 @@ const PROTECTED_PREFIXES = [
   "/dashboard",
   "/history",
   "/onboarding",
+  "/plan",
   "/rewards",
   "/settings",
   "/auth/set-password",

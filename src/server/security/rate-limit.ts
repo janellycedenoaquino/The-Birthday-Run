@@ -44,6 +44,12 @@ export const LIMITS = {
   createPickup: { user: [300, HOUR] },
   deletePickup: { user: [300, HOUR] },
   updatePickup: { user: [300, HOUR] },
+  createGroup: { user: [300, HOUR] },
+  addToGroup: { user: [300, HOUR] },
+  updateGroup: { user: [300, HOUR] },
+  removeFromGroup: { user: [300, HOUR] },
+  reorderGroupItems: { user: [300, HOUR] },
+  deleteGroup: { user: [300, HOUR] },
   authConfirm: { ip: [30, 10 * MIN] },
   authCallback: { ip: [30, 10 * MIN] },
 } as const satisfies Record<string, Limit>;
