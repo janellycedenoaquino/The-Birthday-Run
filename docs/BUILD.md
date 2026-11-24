@@ -861,7 +861,7 @@ All in `actions/groups.ts`; Who `onboarded` (plus `premium` for `duplicateGroup`
 | `removeFromGroup` | `{ groupId, itemId: z.uuid() }` | `{ ok }` | BR-11 | item deleted |
 | `reorderGroupItems` | `{ groupId, itemIds }` | `{ ok }` | BR-11, BR-17 | `rpc('reorder_group_items')` |
 | `deleteGroup` | `{ groupId }` | `{ ok }` | BR-11 | cascade; rewards plannable again; confirm C-108 (M-187/M-188), no-JS confirm as F-5 |
-| `duplicateGroup` (Who: `premium`, `requirePremium()`) | `{ groupId }` | `{ ok, data: { groupId } }` | BR-2, BR-4, BR-6, BR-11 | copy named `"<name> (Copy)"` (FR-28), then `(Copy 2)`, `(Copy 3)`… on `23505` (20 tries, then BR-6), base cut to fit A-19; same pickup; items in the same positions; compensating delete as `createGroup` |
+| `duplicateGroup` (Who: `premium`, `requirePremium()`) | `{ groupId }` | `{ ok, data: { groupId } }` | BR-2, BR-4, BR-6, BR-11 | copy named `"<name> (Copy)"` (FR-28), then `(Copy 2)`, `(Copy 3)`… on `23505` (20 tries, then BR-6 as `fieldErrors.form`: the button has no name field), base cut to fit A-19; same pickup; items in the same order, leaving out any FR-26 no longer allows (picked up, retired, unenrolled; expired ones stay), renumbered 1…n; compensating delete as `createGroup` |
 
 M-227 is returned when an added reward's `closes` is before the pickup date (FR-23: a warning; the save still happens).
 
@@ -1323,7 +1323,7 @@ type RouteResult = {
 9. `noPin` entries carry `store_finder_url`, else `website_url` (FR-31).
 10. Return `RouteResult`. C-106 renders the list, no-pin list and links from it as plain HTML (no map dependency), then mounts the map with `start` and `stops`.
 
-**`getGroupRoute`** (S-106, groups with ≥ 2 rewards): same, but step 6 reads the group's items in F-6's order through RLS (none → BR-11) and step 8 uses `chooseStops(…, { order })` and no `orderStops`.
+**`getGroupRoute`** (S-106, groups with ≥ 2 rewards): same, but step 6 reads the group's items in F-6's order through RLS (none → BR-11), leaving out rewards already picked up this cycle (owner, 2026-11-24) and step 8 uses `chooseStops(…, { order })` and no `orderStops`.
 
 ### States and edge cases
 - No start yet: only C-105 (C-106 rule). Start cleared on reload (D10).

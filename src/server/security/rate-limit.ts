@@ -50,6 +50,7 @@ export const LIMITS = {
   removeFromGroup: { user: [300, HOUR] },
   reorderGroupItems: { user: [300, HOUR] },
   deleteGroup: { user: [300, HOUR] },
+  duplicateGroup: { user: [300, HOUR] },
   // BUILD §0.4: route lookups, 60 per user per hour, a separate key each.
   findStops: { user: [60, HOUR] },
   getGroupRoute: { user: [60, HOUR] },
