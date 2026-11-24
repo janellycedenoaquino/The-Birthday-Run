@@ -132,14 +132,14 @@ canvas#conf{position:fixed;inset:0;z-index:40;pointer-events:none}
 .now{margin-top:10px;color:#aaa;line-height:1.5}.now b{color:#fff}
 .tag{position:fixed;top:10px;left:50%;transform:translateX(-50%);z-index:50;font:700 10px system-ui;letter-spacing:.15em;background:#111;color:#fff;padding:5px 8px;border-radius:6px}
 @media (max-width:900px){.wrap{flex-direction:column;gap:18px}body.ly-split .side{padding:22px}.side h2{font-size:32px}}
-.panel{display:none}</style>
+.panel{display:none}@media (max-width:700px){.pause{top:16px;right:16px;padding:9px 11px}.pause span{display:none}.logo{left:16px;top:16px;font-size:16px}.tag{top:auto!important;bottom:10px}}</style>
 </head>
 <body class="ly-center sw-tabs">
 <div class="tag">PROTOTYPE · SIGN IN / SIGN UP · LOCKED</div>
 <section class="stage">
   <div class="glow"><div class="blob p"></div><div class="blob b"></div><div class="blob g"></div></div>
   <div id="bg" aria-hidden="true"></div>
-  <div class="logo">The Birthday Run</div>
+  <a class="logo" href="10-landing-locked.html" style="color:var(--ink);text-decoration:none">The Birthday Run</a>
   <button class="pause" id="pause" aria-pressed="false"><svg viewBox="0 0 16 16" fill="currentColor"></svg><span></span></button>
 
   <div class="wrap">
@@ -214,6 +214,7 @@ const W={bg:{wall:"Tilted wall",tunnel:"3D tunnel",marquee:"Two-row marquee",glo
   rm:{count:"brand count",ticker:"rotating reward",list:"sample checklist",none:"nothing extra"},sw:{tabs:"tabs in one card",link:"link at the bottom"},af:{preview:"preview + confetti after Continue",plain:"plain message after Continue",plainconf:"plain message + confetti after Continue"}};
 const st={bg:"wall",ly:"center",rm:"ticker",sw:"tabs",af:"plainconf",mode:"up"};
 new URLSearchParams(location.search).forEach((v,k)=>{if(W[k]&&W[k][v])st[k]=v});
+if(new URLSearchParams(location.search).get("mode")==="in")st.mode="in";
 
 /* background */
 function buildBg(){const bg=document.getElementById("bg");bg.innerHTML="";

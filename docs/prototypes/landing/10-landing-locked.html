@@ -1,0 +1,335 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>PROTOTYPE v8 · Browse rewards locked</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;800&display=swap" rel="stylesheet">
+<script src="retailers.js"></script>
+<style>
+/* Throwaway prototype v2: tunnel locked; question = which light colours. */
+:root{--bg:#FFFCF7;--ink:#1F2A5C;--hl:#FF9EC4;--btn:#8EC5FF;--hover:#8FE3B0;--muted:#4C557D}
+*{box-sizing:border-box;margin:0}
+body{font-family:"Plus Jakarta Sans",system-ui,sans-serif;background:var(--bg);color:var(--ink);transition:background .4s}
+body.bg-mix{background:radial-gradient(40vw 40vw at 12% 18%,#FFD6E5 0%,transparent 70%),radial-gradient(45vw 45vw at 88% 22%,#D6EBFF 0%,transparent 70%),radial-gradient(50vw 50vw at 50% 100%,#D3F5E1 0%,transparent 70%),#FFFCF7}
+
+.stage{position:relative;height:100vh;min-height:620px;overflow:hidden;isolation:isolate}
+.tunnel{position:absolute;inset:0;perspective:700px;overflow:hidden}
+.tile{position:absolute;left:50%;top:50%;margin:-48px 0 0 -75px;width:150px;height:96px;border-radius:16px;background:#fff;display:flex;align-items:center;justify-content:center;padding:12px 14px;
+  box-shadow:0 0 0 1.5px color-mix(in srgb,var(--ink) 18%,transparent);animation:fly 14s linear infinite;animation-delay:var(--dl);opacity:0;cursor:pointer;transition:box-shadow .2s}
+.tile img{max-width:100%;max-height:56px;object-fit:contain}
+.tile .tip{position:absolute;left:50%;bottom:calc(100% + 10px);transform:translateX(-50%);background:#fff;color:var(--ink);font-size:13px;line-height:1.35;padding:8px 12px;border-radius:10px;
+  white-space:nowrap;opacity:0;pointer-events:none;transition:opacity .2s;box-shadow:0 0 0 2px var(--hover),0 10px 24px -10px rgba(0,0,0,.25)}
+.tile .tip b{display:block;font-weight:800}
+.tile:hover{box-shadow:0 0 0 4px var(--hover),0 18px 34px -14px rgba(0,0,0,.3);z-index:10}
+.tile:hover .tip{opacity:1}
+/* hovering a logo holds the whole tunnel still so you can read it */
+.tunnel:has(.tile:hover) .tile,body.paused .tile{animation-play-state:paused}
+@keyframes fly{0%{transform:translate3d(var(--x),var(--y),-2600px);opacity:0}15%{opacity:1}85%{opacity:1}100%{transform:translate3d(var(--x),var(--y),600px);opacity:0}}
+
+.hero{position:relative;z-index:2;height:100%;display:flex;align-items:center;justify-content:center;padding:24px;pointer-events:none}
+.card{pointer-events:auto;max-width:620px;text-align:center;padding:44px 48px;border-radius:28px;background:color-mix(in srgb,var(--bg) 78%,transparent);
+  backdrop-filter:blur(18px) saturate(1.2);-webkit-backdrop-filter:blur(18px);box-shadow:0 0 0 1.5px color-mix(in srgb,var(--ink) 12%,transparent),0 20px 60px -30px rgba(0,0,0,.25)}
+body.bg-mix .card{background:rgba(255,252,247,.72)}
+h1{font-weight:800;font-size:clamp(38px,6vw,64px);line-height:1.06;letter-spacing:-.035em}
+h1 .hl{background:var(--hl);color:var(--ink);padding:0 .14em;border-radius:6px;display:inline-block;transform:rotate(-2deg)}
+.sub{margin-top:18px;font-size:18px;color:var(--muted);line-height:1.5}
+.ctas{margin-top:28px;display:flex;gap:12px;justify-content:center;flex-wrap:wrap}
+.btn{font-family:inherit;font-weight:700;font-size:16px;line-height:1;padding:15px 26px;border-radius:12px;border:0;cursor:pointer;background:var(--btn);color:var(--ink);box-shadow:0 0 0 1.5px var(--ink)}
+.btn:hover{box-shadow:3px 3px 0 var(--ink),0 0 0 1.5px var(--ink)}
+.btn.ghost{background:transparent}
+.count{margin-top:18px;font-size:13px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);font-weight:700}
+
+/* pause control: part of the real design */
+.pause{position:absolute;z-index:3;right:20px;top:20px;display:flex;align-items:center;gap:8px;font:600 14px "Plus Jakarta Sans",sans-serif;color:var(--ink);
+  background:color-mix(in srgb,var(--bg) 85%,#fff);border:0;border-radius:12px;padding:10px 14px;cursor:pointer;box-shadow:0 0 0 1.5px color-mix(in srgb,var(--ink) 25%,transparent)}
+.pause:focus-visible,.btn:focus-visible{outline:3px solid var(--ink);outline-offset:3px}
+.pause svg{width:16px;height:16px}
+
+/* colour panel (prototype only) */
+.panel{position:fixed;left:16px;bottom:16px;z-index:50;background:#111;color:#ddd;border-radius:16px;padding:14px 16px;font:500 12px/1.2 system-ui,sans-serif;box-shadow:0 20px 50px -10px rgba(0,0,0,.5);width:430px;max-width:calc(100vw - 32px)}
+.panel.min .rows{display:none}
+.panel .top{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}
+.panel .top b{color:#fff;font-size:13px}
+.panel .top button{font:inherit;background:#222;color:#ddd;border:0;border-radius:8px;padding:6px 10px;cursor:pointer}
+.panel.min .top{margin:0}
+.presets{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px}
+.presets button{font:inherit;background:#222;color:#ddd;border:0;border-radius:8px;padding:7px 10px;cursor:pointer}
+.presets button.on{background:#fff;color:#111;font-weight:700}
+.row{display:grid;grid-template-columns:96px 1fr;align-items:center;gap:8px;margin:7px 0}
+.row>span{color:#999}
+.sw{display:flex;flex-wrap:wrap;gap:5px;align-items:center}
+.sw button{width:22px;height:22px;border-radius:6px;border:2px solid #333;cursor:pointer;padding:0}
+.sw button.on{border-color:#fff;outline:2px solid #fff;outline-offset:1px}
+.sw input{width:26px;height:24px;border:0;background:none;padding:0;cursor:pointer}
+.now{margin-top:10px;color:#aaa;line-height:1.5}
+.now b{color:#fff}
+.tag{position:fixed;top:10px;left:10px;z-index:50;font:700 10px system-ui;letter-spacing:.15em;background:#111;color:#fff;padding:5px 8px;border-radius:6px}
+@media (max-width:700px){.card{padding:30px 22px}}
+
+/* background modes */
+.card{background:rgba(255,252,247,.58);backdrop-filter:blur(14px) saturate(1.2);-webkit-backdrop-filter:blur(14px)}
+.wave{position:absolute;inset:0;overflow:hidden;z-index:0}
+.tunnel{z-index:1}
+.wave.still{background:radial-gradient(40vw 40vw at 12% 18%,#FFD6E5 0%,transparent 70%),radial-gradient(45vw 45vw at 88% 22%,#D6EBFF 0%,transparent 70%),radial-gradient(50vw 50vw at 50% 100%,#D3F5E1 0%,transparent 70%)}
+.blob{position:absolute;width:70vw;height:70vw;border-radius:50%;filter:blur(40px);opacity:.95}
+.blob.p{background:radial-gradient(circle,#FFD6E5 0%,transparent 65%);left:-25vw;top:-30vw;animation:b1 calc(22s*var(--k)) ease-in-out infinite alternate}
+.blob.b{background:radial-gradient(circle,#D6EBFF 0%,transparent 65%);right:-25vw;top:-25vw;animation:b2 calc(26s*var(--k)) ease-in-out infinite alternate}
+.blob.g{background:radial-gradient(circle,#D3F5E1 0%,transparent 65%);left:15vw;bottom:-45vw;animation:b3 calc(30s*var(--k)) ease-in-out infinite alternate}
+@keyframes b1{to{transform:translate(45vw,35vh) scale(1.2)}}
+@keyframes b2{to{transform:translate(-50vw,40vh) scale(.9)}}
+@keyframes b3{to{transform:translate(-20vw,-45vh) scale(1.15)}}
+.wave svg{position:absolute;left:0;width:200%;height:60vh}
+.wave svg.w1{bottom:38vh;animation:roll calc(28s*var(--k)) linear infinite}
+.wave svg.w2{bottom:18vh;animation:roll calc(20s*var(--k)) linear infinite reverse}
+.wave svg.w3{bottom:-4vh;animation:roll calc(16s*var(--k)) linear infinite}
+@keyframes roll{to{transform:translateX(-50%)}}
+body.paused .wave *,.stage:has(.tile:hover) .wave *{animation-play-state:paused}
+
+/* mini game inside the card */
+.card{max-width:640px;padding:36px 40px}
+.mg{margin-top:20px;text-align:left}
+.mg-hud{display:flex;justify-content:space-between;align-items:baseline;font-size:12px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:6px;padding:0 4px}
+.mg-hud b{color:var(--ink);font-size:15px;letter-spacing:0;margin-left:4px}
+.mg-board{position:relative;border-radius:16px;overflow:hidden;background:rgba(255,255,255,.55);box-shadow:inset 0 0 0 1.5px color-mix(in srgb,var(--ink) 15%,transparent)}
+.mg-board canvas{display:block;width:100%;height:190px;cursor:none}
+.mg-start{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;gap:10px;flex-direction:column}
+.mg-start button{font-family:inherit;font-weight:700;font-size:14px;padding:10px 16px;border-radius:10px;border:0;cursor:pointer;background:var(--hl);color:var(--ink);box-shadow:0 0 0 1.5px var(--ink)}
+.mg-start span{font-size:12px;color:var(--muted)}
+
+/* ---- phone layouts (laptop unchanged) ---- */
+.mg-open,.sheet-tab{display:none}
+body.nopanel .panel,body.nopanel .tag{display:none}
+@media (max-width:700px){
+  .card{display:flex;flex-direction:column;padding:26px 20px;max-height:calc(100vh - 90px)}
+  h1{font-size:40px}
+  .sub{font-size:16px;margin-top:12px}
+  .pause{top:auto;bottom:16px;right:16px;padding:8px 12px;font-size:13px}
+  .hero{align-items:flex-start;padding-top:56px}
+  /* A: tap to play, buttons first */
+  body.pv-a .mg{display:none;order:5}
+  body.pv-a.mg-on .mg{display:block}
+  body.pv-a .ctas{order:3}
+  body.pv-a .count{order:4}
+  body.pv-a .mg-open{display:inline-flex;order:4;align-self:center;margin-top:14px;gap:6px;align-items:center;font:700 14px "Plus Jakarta Sans",sans-serif;color:var(--ink);background:none;border:0;text-decoration:underline;text-decoration-color:var(--hl);text-decoration-thickness:3px;text-underline-offset:4px;cursor:pointer}
+  body.pv-a.mg-on .mg-open{display:none}
+  body.pv-a .count{display:none}
+  /* B: buttons first, game below */
+  body.pv-b .ctas{order:3}
+  body.pv-b .count{order:4;display:none}
+  body.pv-b .mg{order:5}
+  body.pv-b .mg-board canvas{height:150px}
+  /* C: compact, game stays between, no subtext */
+  body.pv-c .sub{display:none}
+  body.pv-c .mg{margin-top:16px}
+  body.pv-c .mg-board canvas{height:130px}
+  body.pv-c .count{display:none}
+  body.pv-c .ctas{margin-top:16px}
+  body.pv-c .ctas .btn{flex:1}
+  /* D: game in a pull-up sheet at the bottom */
+  body.pv-d .card .mg{display:none}
+  body.pv-d .sheet-tab{display:flex}
+  body.pv-d .pause{bottom:auto;top:16px}
+  body.pv-d .hero{padding-top:70px}
+}
+.sheet{position:fixed;left:0;right:0;bottom:0;z-index:20;transform:translateY(calc(100% - 52px));transition:transform .35s ease}
+.sheet.open{transform:none}
+.sheet-tab{width:100%;justify-content:center;align-items:center;gap:8px;height:52px;border:0;border-radius:20px 20px 0 0;background:var(--hl);color:var(--ink);font:800 15px "Plus Jakarta Sans",sans-serif;box-shadow:0 -1.5px 0 var(--ink);cursor:pointer}
+.sheet-body{background:#FFFCF7;padding:14px 16px 22px;box-shadow:0 -1.5px 0 color-mix(in srgb,var(--ink) 15%,transparent)}
+.sheet-body .mg{display:block!important;margin:0}
+@media (min-width:701px){.sheet{display:none}}
+body:not(.pv-d) .sheet{display:none}
+
+/* ---- v6: pull-up tab on every screen size ---- */
+.card .mg,.mg-open{display:none!important}
+.sheet{display:block!important;left:50%;right:auto;width:min(640px,100vw);transform:translate(-50%,calc(100% - 52px))}
+.sheet.open{transform:translate(-50%,0)}
+.sheet-tab{display:flex!important}
+.sheet-body{border-radius:0}
+@media (min-width:701px){.sheet-tab{border-radius:20px 20px 0 0}.sheet-body{box-shadow:0 0 0 1.5px color-mix(in srgb,var(--ink) 15%,transparent)}}
+@media (max-width:700px){.pause{bottom:auto;top:16px}.hero{padding-top:70px}}
+.panel{display:none}
+
+/* site name, top left (same as the sign in page) */
+.logo{position:absolute;z-index:3;left:24px;top:20px;font-weight:800;font-size:18px;letter-spacing:-.02em;background:rgba(255,252,247,.7);padding:8px 12px;border-radius:12px;color:var(--ink)}
+.tag{left:50%!important;transform:translateX(-50%)}
+@media (max-width:700px){.logo{left:16px;top:16px;font-size:16px}}
+
+/* ---- v7: ways to reach Discover ---- */
+.dl-only{display:none!important}
+body.dl-a .dl-a-show,body.dl-b .dl-b-show,body.dl-c .dl-c-show,body.dl-d .dl-d-show{display:revert!important}
+body.dl-b .dl-b-hide{display:none!important}
+.textlink{margin-top:16px;font-weight:700;font-size:15px;color:var(--ink);text-decoration:underline;text-decoration-color:var(--hl);text-decoration-thickness:3px;text-underline-offset:4px}
+.topnav{position:absolute;z-index:3;top:20px;left:220px;display:flex;gap:6px}
+.topnav a{font-weight:700;font-size:15px;color:var(--ink);text-decoration:none;padding:9px 12px;border-radius:10px;background:rgba(255,252,247,.7)}
+.topnav a:hover{box-shadow:inset 0 0 0 2px var(--hover)}
+.topright{position:absolute;z-index:3;top:20px;right:170px}
+.topright a{font-weight:700;font-size:15px;color:var(--ink);text-decoration:none;padding:9px 14px;border-radius:12px;background:#fff;box-shadow:0 0 0 1.5px var(--ink);display:inline-block}
+.dpanel{position:fixed;left:16px;top:70px;z-index:60;background:#111;color:#ddd;border-radius:14px;padding:10px 12px;font:500 12px/1.3 system-ui,sans-serif;max-width:300px}
+.dpanel b{color:#fff;display:block;margin-bottom:6px}
+.dpanel button{font:inherit;background:#222;color:#ddd;border:0;border-radius:8px;padding:6px 9px;cursor:pointer;margin:2px 0;display:block;width:100%;text-align:left}
+.dpanel button.on{background:#fff;color:#111;font-weight:700}
+@media (max-width:700px){.topnav{top:62px;left:16px}.topright{top:62px;right:16px}.dpanel{top:auto;bottom:70px}}
+.dpanel{display:none!important}@media (max-width:700px){.topright{top:16px!important;right:66px!important}.topright a{padding:8px 12px;font-size:14px}.pause{top:16px!important;right:16px!important;padding:9px 11px}.pause span{display:none}.tag{top:auto!important;bottom:60px}}</style>
+</head>
+<body>
+<div class="dpanel" id="dpanel"><b>How to reach Discover (prototype only)</b>
+<button data-d="a">A. Third button: Browse rewards</button><button data-d="b">B. Browse rewards replaces Sign in; Sign in moves top right</button><button data-d="c">C. Text link under the buttons</button><button data-d="d">D. "Discover" link next to the name</button></div>
+<div class="tag">PROTOTYPE v8</div>
+<section class="stage">
+  <div class="wave" id="wave" aria-hidden="true"></div>
+  <div class="logo">The Birthday Run</div>
+  <nav class="topnav dl-only dl-d-show"><a href="11-discover-all-options.html">Discover</a></nav>
+  <div class="topright dl-only dl-b-show"><a href="8-sign-in-locked.html?mode=in">Sign in</a></div>
+  <div class="tunnel" id="tunnel" aria-hidden="true"></div>
+  <button class="pause" id="pause" aria-pressed="false"><svg viewBox="0 0 16 16" fill="currentColor"><rect x="3" y="2" width="3.5" height="12" rx="1"/><rect x="9.5" y="2" width="3.5" height="12" rx="1"/></svg><span>Pause motion</span></button>
+  <div class="hero">
+    <div class="card">
+      <h1>Every birthday freebie, <span class="hl">one run.</span></h1>
+      <p class="sub">See which brands treat you on your birthday, sign up in time, and plan the stops so nothing expires.</p>
+      <div class="mg">
+        <div class="mg-hud"><span>Catch the prizes</span><span>Score<b id="g-score">0</b> &nbsp; Time<b id="g-time">30</b> &nbsp; Best<b id="g-best">0</b></span></div>
+        <div class="mg-board"><canvas id="cv"></canvas><div class="mg-start" id="g-start"><button id="g-go">Play 30 seconds</button><span>Mouse, touch or arrow keys</span></div></div>
+      </div>
+      <button class="mg-open" id="mg-open">Play a 30-second game while you're here</button>
+      <div class="ctas"><a class="btn" href="8-sign-in-locked.html" style="text-decoration:none">Get started</a><a class="btn ghost dl-only dl-a-show dl-b-show" href="12-discover-locked.html" style="text-decoration:none">Browse rewards</a><button class="btn ghost dl-b-hide">Sign in</button></div>
+      <a class="textlink dl-only dl-c-show" href="11-discover-all-options.html">Or browse all 100 rewards first</a>
+      <p class="count"><span id="n"></span> brands waiting</p>
+    </div>
+  </div>
+</section>
+
+<div class="sheet" id="sheet"><button class="sheet-tab" id="sheet-tab">Catch the prizes &#9650;</button><div class="sheet-body" id="sheet-body"></div></div>
+<div class="panel" id="panel">
+  <div class="top"><b>Background (prototype only)</b><button id="min">Hide</button></div>
+  <div class="rows">
+    <div class="row"><span>Motion</span><div class="presets" id="modes" style="margin:0"><button data-m="still">Still</button><button data-m="glow">Flowing glow</button><button data-m="waves">Rolling waves</button></div></div>
+    <div class="row"><span>Speed</span><div class="presets" id="speeds" style="margin:0"><button data-s="2">Slow</button><button data-s="1">Medium</button><button data-s="0.5">Fast</button></div></div>
+    <div class="now">Colours locked: pastel mix (pink #FFD6E5, blue #D6EBFF, green #D3F5E1 on cream #FFFCF7), navy text #1F2A5C, bubblegum "one run" #FF9EC4, sky blue button #8EC5FF, spring green logo hover #8FE3B0.<br>"Pause motion" stops the background too.</div>
+  </div>
+</div>
+<script>
+const LOGO_DIR="../../../public/retailers/";
+const R=window.RETAILERS;document.getElementById("n").textContent=R.length;
+const shuffle=a=>a.map(v=>[Math.random(),v]).sort((x,y)=>x[0]-y[0]).map(v=>v[1]);
+
+/* tunnel */
+const t=document.getElementById("tunnel");const set=shuffle(R).slice(0,48);
+set.forEach((r,i)=>{const el=document.createElement("div");el.className="tile";
+  el.innerHTML=`<img src="${LOGO_DIR+r.l}" alt=""><span class="tip"><b>${r.n}</b>${r.r}</span>`;
+  const a=(i*137.5)*Math.PI/180,rad=430+((i*53)%160);
+  el.style.setProperty("--x",Math.cos(a)*rad+"px");el.style.setProperty("--y",Math.sin(a)*rad*.72+"px");el.style.setProperty("--dl",(-14*i/set.length)+"s");t.appendChild(el)});
+
+/* pause: starts paused if the device asks for reduced motion */
+const pb=document.getElementById("pause");
+function setPaused(p){document.body.classList.toggle("paused",p);pb.setAttribute("aria-pressed",p);pb.querySelector("span").textContent=p?"Play motion":"Pause motion";
+  pb.querySelector("svg").innerHTML=p?'<path d="M4 2.5v11l9-5.5z"/>':'<rect x="3" y="2" width="3.5" height="12" rx="1"/><rect x="9.5" y="2" width="3.5" height="12" rx="1"/>'}
+pb.onclick=()=>setPaused(!document.body.classList.contains("paused"));
+setPaused(matchMedia("(prefers-reduced-motion: reduce)").matches);
+
+/* background modes */
+const s=document.documentElement.style;
+for(const[k,v]of Object.entries({ink:"#1F2A5C",hl:"#FF9EC4",btn:"#8EC5FF",hover:"#8FE3B0"}))s.setProperty("--"+k,v);
+const wave=document.getElementById("wave");const st={m:"glow",s:"2"};
+new URLSearchParams(location.search).forEach((v,k)=>{if(k in st)st[k]=v});
+function wavePath(amp,len,h){let d=`M0 ${h/2}`;for(let x=0;x<=2400;x+=20)d+=` L${x} ${h/2+Math.sin(x/len*2*Math.PI)*amp}`;return d+` L2400 ${h} L0 ${h}Z`}
+function draw(){s.setProperty("--k",st.s);wave.className="wave "+st.m;
+  if(st.m==="glow")wave.innerHTML='<div class="blob p"></div><div class="blob b"></div><div class="blob g"></div>';
+  else if(st.m==="waves")wave.innerHTML=[["w1","#FFD6E5",40,600],["w2","#D6EBFF",50,800],["w3","#D3F5E1",45,600]].map(([c,col,a,l])=>`<svg class="${c}" viewBox="0 0 2400 400" preserveAspectRatio="none"><path d="${wavePath(a,l,400)}" fill="${col}" opacity=".85"/></svg>`).join("");
+  else wave.innerHTML="";
+  document.querySelectorAll("#modes button").forEach(b=>b.classList.toggle("on",b.dataset.m===st.m));
+  document.querySelectorAll("#speeds button").forEach(b=>b.classList.toggle("on",b.dataset.s===st.s));
+  {const q=new URLSearchParams(location.search);for(const k in st)q.set(k,st[k]);history.replaceState(null,"","?"+q)}}
+document.querySelectorAll("#modes button").forEach(b=>b.onclick=()=>{st.m=b.dataset.m;draw()});
+document.querySelectorAll("#speeds button").forEach(b=>b.onclick=()=>{st.s=b.dataset.s;draw()});
+document.getElementById("min").onclick=e=>{const p=document.getElementById("panel");p.classList.toggle("min");e.target.textContent=p.classList.contains("min")?"Show":"Hide"};
+draw();
+
+/* v7: Discover link options */
+const dq=new URLSearchParams(location.search).get("dl");let dl="b";
+function setDl(v){dl=v;document.body.classList.remove("dl-a","dl-b","dl-c","dl-d");document.body.classList.add("dl-"+v);document.querySelectorAll("#dpanel button").forEach(b=>b.classList.toggle("on",b.dataset.d===v));const q=new URLSearchParams(location.search);q.set("dl",v);history.replaceState(null,"","?"+q)}
+document.querySelectorAll("#dpanel button").forEach(b=>b.onclick=()=>setDl(b.dataset.d));setDl(dl);
+
+/* phone variant from ?pv= (a,b,c,d) */
+const pv=new URLSearchParams(location.search).get("pv")||"a";document.body.classList.add("pv-"+(/^[abcd]$/.test(pv)?pv:"a"));
+if(new URLSearchParams(location.search).get("panel")==="0")document.body.classList.add("nopanel");
+document.getElementById("mg-open").onclick=()=>{document.body.classList.add("mg-on");document.getElementById("g-go").click()};
+if(true){document.getElementById("sheet-body").appendChild(document.querySelector(".card .mg"))}
+document.getElementById("sheet-tab").onclick=()=>{const sh=document.getElementById("sheet");sh.classList.toggle("open");document.getElementById("sheet-tab").innerHTML=sh.classList.contains("open")?"Close &#9660;":"Catch the prizes &#9650;"};
+
+
+/* the doll: her reference (afro, purple party hat, pink tee, blue shorts, white socks and shoes) */
+function drawDoll(c,x,y,now,face,S){
+  const C={afro:"#2A0C0D",afroHi:"#4A2420",skin:"#D3874A",blush:"#E07A5A",hat:"#9B6E9E",hatHi:"#C6A4CB",pom:"#DCC6E6",shirt:"#C04350",collar:"#E58A93",shorts:"#437893",shortsSh:"#23546C",sock:"#F2F4EF",shoe:"#ECEAE0",line:"#3B2320"};
+  const ph=now/95,bob=Math.abs(Math.sin(ph))*-3,look=face*1.6;
+  c.save();c.translate(x,y+bob*S);c.scale(S,S);c.lineJoin="round";c.lineCap="round";
+  // legs + socks + shoes (alternate knee lift)
+  [-1,1].forEach((sd,i)=>{const lift=Math.max(0,Math.sin(ph+i*Math.PI))*9;
+    c.fillStyle=C.skin;c.fillRect(sd*5-3,-30,6,24-lift);
+    c.fillStyle=C.sock;c.fillRect(sd*5-3.2,-12-lift,6.4,6);
+    c.fillStyle=C.shoe;c.strokeStyle="#9A9486";c.lineWidth=1.2;c.beginPath();c.ellipse(sd*6,-4-lift,6.5,3.6,0,0,7);c.fill();c.stroke()});
+  // shorts
+  c.fillStyle=C.shorts;c.beginPath();c.roundRect(-13,-44,26,17,4);c.fill();c.strokeStyle=C.shortsSh;c.lineWidth=1.4;c.beginPath();c.moveTo(0,-38);c.lineTo(0,-28);c.stroke();
+  // afro: back volume, sides reach the shoulders, face left open
+  c.fillStyle=C.afro;c.beginPath();c.arc(0,-92,18,0,7);c.fill();
+  for(let k=0;k<14;k++){const a=k/14*Math.PI*2,sx=Math.cos(a),sy=Math.sin(a);if(sy>.55&&Math.abs(sx)<.6)continue;c.beginPath();c.arc(sx*19,-90+sy*17,8,0,7);c.fill()}
+  // neck + shirt
+  c.fillStyle=C.skin;c.fillRect(-3.5,-72,7,7);
+  c.fillStyle=C.shirt;c.beginPath();c.roundRect(-14,-66,28,25,7);c.fill();
+  c.strokeStyle=C.collar;c.lineWidth=2;c.beginPath();c.ellipse(0,-66,5,2.6,0,0,Math.PI);c.stroke();
+  // arms swing opposite to legs, drawn over the shirt
+  [-1,1].forEach((sd,i)=>{const a=-sd*(.25+.22*Math.sin(ph+i*Math.PI));c.save();c.translate(sd*13,-61);c.rotate(a);
+    c.strokeStyle=C.skin;c.lineWidth=5.5;c.beginPath();c.moveTo(0,3);c.lineTo(0,20);c.stroke();c.fillStyle=C.skin;c.beginPath();c.arc(0,21.5,3.4,0,7);c.fill();
+    c.fillStyle=C.shirt;c.beginPath();c.roundRect(-4.5,-3,9,10,3);c.fill();c.restore()});
+  // head + face
+  c.fillStyle=C.skin;c.beginPath();c.arc(0,-82,12,0,7);c.fill();
+  c.fillStyle=C.blush;c.globalAlpha=.5;c.beginPath();c.arc(-6.5+look,-78,2.6,0,7);c.arc(6.5+look,-78,2.6,0,7);c.fill();c.globalAlpha=1;
+  c.fillStyle=C.line;c.beginPath();c.arc(-4.2+look,-83,1.9,0,7);c.arc(4.2+look,-83,1.9,0,7);c.fill();
+  c.fillStyle="#fff";c.beginPath();c.arc(-3.6+look,-83.7,.6,0,7);c.arc(4.8+look,-83.7,.6,0,7);c.fill();
+  c.fillStyle="#7A2418";c.beginPath();c.arc(look,-78.5,3.4,0,Math.PI);c.fill();
+  // fringe curls along the hairline
+  c.fillStyle=C.afro;[[-9,-92,5],[-3,-94.5,5.5],[4,-94,5.5],[10,-91,4.5]].forEach(([fx,fy,r])=>{c.beginPath();c.arc(fx,fy,r,0,7);c.fill()});
+  // purple party hat, tilted, sitting in the afro
+  c.save();c.translate(-4,-106);c.rotate(-.22);c.fillStyle=C.hat;c.beginPath();c.moveTo(-8,0);c.lineTo(8,0);c.lineTo(0,-24);c.closePath();c.fill();
+  c.strokeStyle=C.hatHi;c.lineWidth=2;c.beginPath();c.moveTo(-5,-6);c.lineTo(5,-6);c.moveTo(-2.6,-13);c.lineTo(2.6,-13);c.stroke();
+  c.fillStyle=C.pom;c.beginPath();c.arc(0,-25,3.8,0,7);c.fill();c.restore();
+  c.restore()}
+/* mini game */
+(()=>{const cv=document.getElementById("cv"),ctx=cv.getContext("2d");let W,H;
+  const imgs={};R.forEach(r=>{const i=new Image();i.src=LOGO_DIR+r.l;imgs[r.l]=i});
+  const fit=()=>{const d=devicePixelRatio||1;W=cv.clientWidth;H=cv.clientHeight;cv.width=W*d;cv.height=H*d;ctx.setTransform(d,0,0,d,0,0)};fit();addEventListener("resize",fit);
+  let t0,last,items=[],bursts=[],floats=[],px=0,tx=0,face=1,score=0,best=+localStorage.tbrBest4||0,keys={},acc=0;
+  document.getElementById("g-best").textContent=best;
+  const css=v=>getComputedStyle(document.documentElement).getPropertyValue(v).trim();
+  const setX=e=>{const b=cv.getBoundingClientRect();tx=(e.touches?e.touches[0].clientX:e.clientX)-b.left};
+  cv.addEventListener("mousemove",setX);cv.addEventListener("touchmove",e=>{setX(e);e.preventDefault()},{passive:false});
+  addEventListener("keydown",e=>{keys[e.key]=1});addEventListener("keyup",e=>{keys[e.key]=0});
+  let wasPaused=false;
+  document.getElementById("g-go").onclick=()=>{wasPaused=document.body.classList.contains("paused");setPaused(true);fit();t0=last=performance.now();items=[];bursts=[];floats=[];score=0;acc=0;px=tx=W/2;
+    document.getElementById("g-start").style.display="none";requestAnimationFrame(step)};
+  function spawn(el){const star=Math.random()<.1;items.push({r:R[Math.floor(Math.random()*R.length)],star,x:30+Math.random()*(W-60),y:-30,vy:(45+Math.random()*30)*(1+el/30)*(star?1.7:1),sw:Math.random()*6.28,rot:0,vr:(Math.random()-.5)*1.2})}
+  function step(now){const dt=Math.min(.05,(now-last)/1000);last=now;const el=(now-t0)/1000,left=Math.max(0,30-el);
+    acc+=dt;const rate=.9-el/30*.45;while(acc>rate){acc-=rate;spawn(el)}
+    if(keys.ArrowLeft)tx-=400*dt;if(keys.ArrowRight)tx+=400*dt;tx=Math.max(20,Math.min(W-20,tx));
+    const old=px;px+=(tx-px)*Math.min(1,dt*10);if(Math.abs(px-old)>.5)face=px>old?1:-1;
+    ctx.clearRect(0,0,W,H);const ink=css("--ink"),hl=css("--hl"),btn=css("--btn"),hov=css("--hover");
+    items.forEach(o=>{o.y+=o.vy*dt;o.sw+=dt*2;o.rot+=o.vr*dt;o.cx=o.x+Math.sin(o.sw)*12;
+      ctx.save();ctx.translate(o.cx,o.y);ctx.rotate(o.rot);ctx.fillStyle="#fff";ctx.strokeStyle=o.star?hl:"rgba(31,42,92,.15)";ctx.lineWidth=1.5;
+      ctx.beginPath();ctx.roundRect(-20,-14,40,28,7);ctx.fill();ctx.stroke();
+      if(o.star){ctx.fillStyle=hl;ctx.font="800 18px Plus Jakarta Sans";ctx.textAlign="center";ctx.textBaseline="middle";ctx.fillText("★",0,1)}
+      else{const im=imgs[o.r.l];if(im.complete&&im.naturalWidth){const k=Math.min(34/im.naturalWidth,22/im.naturalHeight);ctx.drawImage(im,-im.naturalWidth*k/2,-im.naturalHeight*k/2,im.naturalWidth*k,im.naturalHeight*k)}}
+      ctx.restore()});
+    const ry=H-6,S=.62;
+    items=items.filter(o=>{if(o.y>ry-118*S&&o.y<ry-30*S&&Math.abs(o.cx-px)<32){const p=o.star?50:15;score+=p;floats.push({x:o.cx,y:o.y,t:0,s:"+"+p});
+      for(let i=0;i<12;i++)bursts.push({x:o.cx,y:o.y,vx:(Math.random()-.5)*200,vy:-Math.random()*200,t:0,c:[hl,btn,hov][i%3]});return false}return o.y<H+40});
+    bursts.forEach(b=>{b.t+=dt;b.vy+=500*dt;b.x+=b.vx*dt;b.y+=b.vy*dt;ctx.globalAlpha=Math.max(0,1-b.t);ctx.fillStyle=b.c;ctx.beginPath();ctx.arc(b.x,b.y,3,0,7);ctx.fill()});bursts=bursts.filter(b=>b.t<1);
+    floats.forEach(f=>{f.t+=dt;ctx.globalAlpha=Math.max(0,1-f.t);ctx.fillStyle=ink;ctx.font="800 15px Plus Jakarta Sans";ctx.textAlign="center";ctx.fillText(f.s,f.x,f.y-f.t*40)});floats=floats.filter(f=>f.t<1);ctx.globalAlpha=1;
+    drawDoll(ctx,px,ry,now,face,S);
+    document.getElementById("g-score").textContent=score;document.getElementById("g-time").textContent=Math.ceil(left);
+    if(left>0)requestAnimationFrame(step);else{if(score>best){best=score;localStorage.tbrBest4=best;document.getElementById("g-best").textContent=best}
+      document.getElementById("g-start").style.display="flex";document.getElementById("g-go").textContent="Play again ("+score+" pts)";if(!wasPaused)setPaused(false)}}
+})();
+</script>
+</body>
+</html>
