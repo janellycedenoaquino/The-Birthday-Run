@@ -1,0 +1,274 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>PROTOTYPE · TBR sign in / sign up (locked picks)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<script src="retailers.js"></script>
+<style>
+/* Throwaway prototype: what should sign in / sign up (Template S-4, S-5) look like in the locked landing look (decision 0016)? */
+:root{--bg:#FFFCF7;--ink:#1F2A5C;--muted:#4C557D;--hl:#FF9EC4;--btn:#8EC5FF;--hover:#8FE3B0;--line:color-mix(in srgb,var(--ink) 18%,transparent)}
+*{box-sizing:border-box;margin:0}
+body{font-family:"Plus Jakarta Sans",system-ui,sans-serif;background:var(--bg);color:var(--ink)}
+.stage{position:relative;min-height:100vh;overflow:hidden;isolation:isolate}
+.glow{position:absolute;inset:0;z-index:0;overflow:hidden}
+.blob{position:absolute;width:70vw;height:70vw;border-radius:50%;filter:blur(40px)}
+.blob.p{background:radial-gradient(circle,#FFD6E5 0%,transparent 65%);left:-25vw;top:-30vw;animation:b1 44s ease-in-out infinite alternate}
+.blob.b{background:radial-gradient(circle,#D6EBFF 0%,transparent 65%);right:-25vw;top:-25vw;animation:b2 52s ease-in-out infinite alternate}
+.blob.g{background:radial-gradient(circle,#D3F5E1 0%,transparent 65%);left:15vw;bottom:-45vw;animation:b3 60s ease-in-out infinite alternate}
+@keyframes b1{to{transform:translate(45vw,35vh) scale(1.2)}}
+@keyframes b2{to{transform:translate(-50vw,40vh) scale(.9)}}
+@keyframes b3{to{transform:translate(-20vw,-45vh) scale(1.15)}}
+#bg{position:absolute;inset:0;z-index:1}
+
+/* logo cards (own colours, green border + info on hover) */
+.tile{position:relative;flex:none;width:150px;height:96px;border-radius:16px;background:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;padding:10px 12px;box-shadow:0 0 0 1.5px var(--line);transition:box-shadow .2s,transform .2s;cursor:pointer}
+.tile img{max-width:100%;max-height:48px;object-fit:contain}
+.tile .rw{font-size:11px;font-weight:700;color:var(--muted);max-width:100%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.tile .tip{position:absolute;left:50%;bottom:calc(100% + 10px);transform:translateX(-50%);background:#fff;color:var(--ink);font-size:13px;line-height:1.35;padding:8px 12px;border-radius:10px;white-space:nowrap;opacity:0;pointer-events:none;transition:opacity .2s;box-shadow:0 0 0 2px var(--hover),0 10px 24px -10px rgba(0,0,0,.25)}
+.tile .tip b{display:block;font-weight:800}
+.tile:hover{box-shadow:0 0 0 4px var(--hover),0 18px 34px -14px rgba(0,0,0,.3);z-index:10}
+.tile:hover .tip{opacity:1}
+/* hover anywhere on a logo, or Pause, freezes everything */
+.stage:has(.tile:hover) *,body.paused *{animation-play-state:paused!important}
+
+.wall{position:absolute;inset:-30%;transform:rotate(-8deg);display:flex;flex-direction:column;justify-content:center;gap:18px}
+.row{display:flex;gap:18px;width:max-content;animation:slide var(--d) linear infinite}
+.row.rev{animation-direction:reverse}
+@keyframes slide{to{transform:translateX(-50%)}}
+.tunnel{position:absolute;inset:0;perspective:700px;overflow:hidden}
+.tunnel .tile{position:absolute;left:50%;top:50%;margin:-48px 0 0 -75px;animation:fly 14s linear infinite;animation-delay:var(--dl);opacity:0}
+@keyframes fly{0%{transform:translate3d(var(--x),var(--y),-2600px);opacity:0}15%{opacity:1}85%{opacity:1}100%{transform:translate3d(var(--x),var(--y),600px);opacity:0}}
+.marquee{position:absolute;left:0;right:0;bottom:6vh;display:flex;flex-direction:column;gap:16px;-webkit-mask-image:linear-gradient(90deg,transparent,#000 12%,#000 88%,transparent);mask-image:linear-gradient(90deg,transparent,#000 12%,#000 88%,transparent)}
+
+/* layout */
+.wrap{position:relative;z-index:2;min-height:100vh;display:flex;align-items:center;justify-content:center;gap:56px;padding:90px 24px 40px;pointer-events:none}
+.wrap>*{pointer-events:auto}
+.side{max-width:430px;display:none}
+body.ly-split .side{display:block}
+.side h2{font-weight:800;font-size:clamp(34px,4.4vw,52px);line-height:1.06;letter-spacing:-.035em}
+.side h2 .hl{background:var(--hl);padding:0 .14em;border-radius:6px;display:inline-block;transform:rotate(-2deg)}
+.side>p{margin-top:14px;font-size:17px;line-height:1.5;color:var(--muted)}
+body.ly-split .side,body.ly-split .card{background:rgba(255,252,247,.58);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border-radius:28px;padding:30px 32px;box-shadow:0 0 0 1.5px color-mix(in srgb,var(--ink) 12%,transparent)}
+.card{width:100%;max-width:430px;background:rgba(255,252,247,.58);backdrop-filter:blur(14px) saturate(1.2);-webkit-backdrop-filter:blur(14px);border-radius:28px;padding:34px 32px;box-shadow:0 0 0 1.5px color-mix(in srgb,var(--ink) 12%,transparent),0 20px 60px -30px rgba(0,0,0,.25)}
+body.ly-strip .wrap{flex-direction:column;gap:18px}
+.strip{display:none;width:100%;max-width:430px}
+body.ly-strip .strip{display:block}
+
+.card h1{font-weight:800;font-size:30px;line-height:1.1;letter-spacing:-.03em}
+.card h1 .hl{background:var(--hl);padding:0 .14em;border-radius:6px;display:inline-block;transform:rotate(-2deg)}
+.card .lead{margin-top:8px;color:var(--muted);font-size:15px;line-height:1.45}
+.tabs{display:flex;gap:4px;background:rgba(255,255,255,.6);border-radius:12px;padding:4px;margin-bottom:20px;box-shadow:inset 0 0 0 1.5px var(--line)}
+.tabs button{flex:1;font-family:inherit;font-weight:700;font-size:14px;padding:10px;border:0;border-radius:9px;background:none;color:var(--muted);cursor:pointer}
+.tabs button.on{background:#fff;color:var(--ink);box-shadow:0 0 0 1.5px var(--ink)}
+body:not(.sw-tabs) .tabs.main{display:none}
+.g{margin-top:20px;width:100%;display:flex;align-items:center;justify-content:center;gap:10px;font-family:inherit;font-weight:700;font-size:15px;padding:13px;border-radius:12px;background:#fff;color:#1f1f1f;border:0;box-shadow:inset 0 0 0 1.5px var(--line);cursor:pointer}
+.or{display:flex;align-items:center;gap:12px;color:var(--muted);font-size:13px;margin:16px 0}
+.or:before,.or:after{content:"";flex:1;height:1.5px;background:var(--line)}
+label{display:flex;justify-content:space-between;font-size:14px;font-weight:700;margin:12px 0 6px}
+label a{font-weight:600;color:var(--muted)}
+input{width:100%;font-family:inherit;font-weight:500;font-size:16px;padding:13px 14px;border-radius:12px;border:0;background:#fff;color:var(--ink);box-shadow:inset 0 0 0 1.5px var(--line)}
+input:focus{outline:none;box-shadow:inset 0 0 0 2px var(--ink),0 0 0 4px color-mix(in srgb,var(--btn) 45%,transparent)}
+.note{font-size:13px;color:var(--muted);margin-top:8px;line-height:1.45}
+.ts{margin-top:14px;height:58px;border-radius:10px;background:#fff;box-shadow:inset 0 0 0 1.5px var(--line);display:flex;align-items:center;gap:10px;padding:0 14px;font-size:13px;color:var(--muted)}
+.ts i{width:22px;height:22px;border-radius:5px;box-shadow:inset 0 0 0 2px var(--hover);background:color-mix(in srgb,var(--hover) 30%,#fff)}
+.go{margin-top:16px;width:100%;font-family:inherit;font-weight:800;font-size:16px;padding:15px;border-radius:12px;border:0;background:var(--btn);color:var(--ink);box-shadow:0 0 0 1.5px var(--ink);cursor:pointer}
+.go:hover{box-shadow:3px 3px 0 var(--ink),0 0 0 1.5px var(--ink)}
+.small{margin-top:14px;font-size:13px;color:var(--muted);text-align:center;line-height:1.5}
+.small a,.switch a{color:var(--ink);font-weight:700;text-decoration:underline;text-decoration-color:var(--hl);text-decoration-thickness:3px;text-underline-offset:3px;cursor:pointer}
+.switch{margin-top:16px;text-align:center;font-size:14px;color:var(--muted)}
+body.sw-tabs .switch{display:none}
+.subtabs{margin:16px 0 0}
+.hide{display:none!important}
+
+/* reminder of what you get (her rule) */
+.remind{margin-top:22px}
+.card .remind{margin:0 0 18px;padding-bottom:16px;border-bottom:1.5px solid var(--line)}
+.rm-count{display:flex;align-items:baseline;gap:10px}
+.rm-count b{font-size:44px;font-weight:800;letter-spacing:-.04em}
+.card .rm-count b{font-size:30px}
+.rm-cats{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
+.rm-cats span{font-size:13px;font-weight:700;padding:6px 10px;border-radius:8px;background:#fff;box-shadow:inset 0 0 0 1.5px var(--line)}
+.rm-cats span:nth-child(3n+1){background:#FFD6E5}.rm-cats span:nth-child(3n+2){background:#D6EBFF}.rm-cats span:nth-child(3n){background:#D3F5E1}
+.rm-tick{display:flex;align-items:center;gap:14px;background:#fff;border-radius:16px;padding:12px 14px;box-shadow:0 0 0 1.5px var(--line);overflow:hidden}
+.rm-tick img{width:64px;height:40px;object-fit:contain;flex:none}
+.rm-tick small{display:block;font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);font-weight:700}
+.rm-tick strong{font-size:16px;font-weight:800;display:block}
+.rm-tick .in{animation:tin .5s ease}
+@keyframes tin{from{opacity:0;transform:translateY(10px)}}
+.rm-list{display:flex;flex-direction:column;gap:8px}
+.rm-list div{display:flex;align-items:center;gap:12px;background:#fff;border-radius:12px;padding:8px 12px;box-shadow:0 0 0 1.5px var(--line);font-size:14px;font-weight:700}
+.rm-list img{width:44px;height:28px;object-fit:contain}
+.rm-list em{margin-left:auto;width:22px;height:22px;border-radius:6px;box-shadow:inset 0 0 0 2px var(--line);font-style:normal;display:grid;place-items:center;font-size:14px;transition:background .3s}
+.rm-list div.on em{background:var(--hover);box-shadow:inset 0 0 0 2px var(--ink)}
+.rm-list span{font-weight:500;color:var(--muted);font-size:12px;display:block}
+
+/* sent panel */
+.sent h1{font-size:28px}
+.sent .lead{margin-top:10px}
+.prev{margin-top:20px}
+.prev h3{font-size:13px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:10px}
+.prev .rm-list div{cursor:pointer}
+.prev .bar{height:10px;border-radius:6px;background:#fff;box-shadow:inset 0 0 0 1.5px var(--line);margin:12px 0 4px;overflow:hidden}
+.prev .bar i{display:block;height:100%;width:0;background:var(--hl);transition:width .4s}
+canvas#conf{position:fixed;inset:0;z-index:40;pointer-events:none}
+
+.pause{position:absolute;z-index:3;right:20px;top:20px;display:flex;align-items:center;gap:8px;font:600 14px "Plus Jakarta Sans",sans-serif;color:var(--ink);background:#fff;border:0;border-radius:12px;padding:10px 14px;cursor:pointer;box-shadow:0 0 0 1.5px color-mix(in srgb,var(--ink) 25%,transparent)}
+.pause svg{width:16px;height:16px}
+.logo{position:absolute;z-index:3;left:24px;top:20px;font-weight:800;font-size:18px;letter-spacing:-.02em;background:rgba(255,252,247,.7);padding:8px 12px;border-radius:12px}
+
+/* option panel */
+.panel{position:fixed;left:16px;bottom:16px;z-index:50;background:#111;color:#ddd;border-radius:16px;padding:12px 14px;font:500 12px/1.2 system-ui,sans-serif;box-shadow:0 20px 50px -10px rgba(0,0,0,.5);max-width:calc(100vw - 32px);width:560px}
+.panel.min .rows{display:none}
+.panel .top{display:flex;justify-content:space-between;align-items:center}
+.panel .top b{color:#fff;font-size:13px}
+.panel button{font:inherit;background:#222;color:#ddd;border:0;border-radius:8px;padding:6px 9px;cursor:pointer}
+.panel button.on{background:#fff;color:#111;font-weight:700}
+.prow{display:grid;grid-template-columns:110px 1fr;gap:8px;align-items:center;margin-top:8px}
+.prow>span{color:#999}
+.prow div{display:flex;flex-wrap:wrap;gap:4px}
+.now{margin-top:10px;color:#aaa;line-height:1.5}.now b{color:#fff}
+.tag{position:fixed;top:10px;left:50%;transform:translateX(-50%);z-index:50;font:700 10px system-ui;letter-spacing:.15em;background:#111;color:#fff;padding:5px 8px;border-radius:6px}
+@media (max-width:900px){.wrap{flex-direction:column;gap:18px}body.ly-split .side{padding:22px}.side h2{font-size:32px}}
+.panel{display:none}</style>
+</head>
+<body class="ly-center sw-tabs">
+<div class="tag">PROTOTYPE · SIGN IN / SIGN UP · LOCKED</div>
+<section class="stage">
+  <div class="glow"><div class="blob p"></div><div class="blob b"></div><div class="blob g"></div></div>
+  <div id="bg" aria-hidden="true"></div>
+  <div class="logo">The Birthday Run</div>
+  <button class="pause" id="pause" aria-pressed="false"><svg viewBox="0 0 16 16" fill="currentColor"></svg><span></span></button>
+
+  <div class="wrap">
+    <aside class="side">
+      <h2>Your birthday rewards are <span class="hl">waiting.</span></h2>
+      <p>Sign up once, and we'll show you every treat you can claim, when to join, and the best order to pick them up.</p>
+      <div class="remind" data-slot="side"></div>
+    </aside>
+
+    <div class="card" id="card">
+      <div class="form" id="form">
+        <div class="tabs main"><button data-t="up">Create account</button><button data-t="in">Sign in</button></div>
+        <div class="remind" data-slot="card"></div>
+        <div data-mode="up"><h1>Create your <span class="hl">account</span></h1><p class="lead">Free, and it takes a minute.</p></div>
+        <div data-mode="in"><h1>Welcome <span class="hl">back</span></h1><p class="lead">Your rewards are right where you left them.</p></div>
+        <button class="g"><svg width="18" height="18" viewBox="0 0 48 48"><path fill="#FFC107" d="M43.6 20.5H42V20H24v8h11.3C33.7 32.7 29.2 36 24 36c-6.6 0-12-5.4-12-12s5.4-12 12-12c3 0 5.8 1.1 7.9 3l5.7-5.7C34 6.1 29.3 4 24 4 12.9 4 4 12.9 4 24s8.9 20 20 20 20-8.9 20-20c0-1.3-.1-2.4-.4-3.5z"/><path fill="#FF3D00" d="M6.3 14.7l6.6 4.8C14.7 15.1 19 12 24 12c3 0 5.8 1.1 7.9 3l5.7-5.7C34 6.1 29.3 4 24 4 16.3 4 9.7 8.3 6.3 14.7z"/><path fill="#4CAF50" d="M24 44c5.2 0 9.9-2 13.4-5.2l-6.2-5.2C29.2 35.1 26.7 36 24 36c-5.2 0-9.6-3.3-11.3-8l-6.5 5C9.5 39.6 16.2 44 24 44z"/><path fill="#1976D2" d="M43.6 20.5H42V20H24v8h11.3c-.8 2.2-2.2 4.2-4.1 5.6l6.2 5.2C37 39.2 44 34 44 24c0-1.3-.1-2.4-.4-3.5z"/></svg>Continue with Google</button>
+        <div class="or">or</div>
+        <div data-mode="up">
+          <label for="e1">Email</label><input id="e1" type="email" autocomplete="email" placeholder="you@example.com">
+          <p class="note">We'll email you a link to confirm it's yours. You'll choose a password next.</p>
+        </div>
+        <div data-mode="in">
+          <div class="tabs subtabs"><button data-s="pw" class="on">Password</button><button data-s="link">Email link</button></div>
+          <div data-sub="pw"><label for="e2">Email</label><input id="e2" type="email" autocomplete="email"><label for="p2">Password <a>Forgot password?</a></label><input id="p2" type="password"></div>
+          <div data-sub="link" class="hide"><p class="note" style="margin-top:12px">We'll email you a link that signs you in. No password needed.</p><label for="e3">Email</label><input id="e3" type="email" autocomplete="email"></div>
+        </div>
+        <div class="ts"><i></i>Bot check (Turnstile) sits here</div>
+        <button class="go" id="go"></button>
+        <p class="small" data-mode="up">By continuing, you agree to our <a>Terms</a> and <a>Privacy Policy</a>.</p>
+        <p class="switch" data-mode="up">Already have an account? <a data-to="in">Sign in</a></p>
+        <p class="switch" data-mode="in">New here? <a data-to="up">Create an account</a></p>
+      </div>
+
+      <div class="sent hide" id="sent">
+        <h1>Check your <span class="hl">email</span></h1>
+        <p class="lead">If that email can be used, we've sent a link to it. Open it on this device to continue.</p>
+        <div class="prev" id="prev">
+          <h3>While you wait: your birthday run</h3>
+          <div class="rm-list" id="prev-list"></div>
+          <div class="bar"><i id="prev-bar"></i></div>
+          <p class="note" id="prev-note">Tap a reward to tick it off.</p>
+        </div>
+        <p class="switch" style="display:block">Didn't get it? <a id="again">Try again</a></p>
+      </div>
+    </div>
+
+    <div class="strip remind" data-slot="strip"></div>
+  </div>
+</section>
+<canvas id="conf"></canvas>
+
+<div class="panel" id="panel">
+  <div class="top"><b>Sign in / sign up options (prototype only)</b><button id="min">Hide</button></div>
+  <div class="rows">
+    <div class="prow"><span>1 Background</span><div data-k="bg"><button data-v="wall">Tilted wall</button><button data-v="tunnel">3D tunnel</button><button data-v="marquee">Two-row marquee</button><button data-v="glow">Glow only</button></div></div>
+    <div class="prow"><span>2 Layout</span><div data-k="ly"><button data-v="center">One card</button><button data-v="split">Card + reminder side</button><button data-v="strip">Card + reminder under</button></div></div>
+    <div class="prow"><span>3 What you get</span><div data-k="rm"><button data-v="count">Brand count</button><button data-v="ticker">Rotating reward</button><button data-v="list">Sample checklist</button><button data-v="none">Nothing extra</button></div></div>
+    <div class="prow"><span>4 Switching</span><div data-k="sw"><button data-v="tabs">Tabs in one card</button><button data-v="link">Link at the bottom</button></div></div>
+    <div class="prow"><span>5 After Continue</span><div data-k="af"><button data-v="preview">Preview + confetti</button><button data-v="plain">Plain message</button></div></div>
+    <div class="now" id="now"></div>
+  </div>
+</div>
+
+<script>
+const LOGO_DIR="../../../public/retailers/";
+const R=window.RETAILERS;
+const shuffle=a=>a.map(v=>[Math.random(),v]).sort((x,y)=>x[0]-y[0]).map(v=>v[1]);
+const esc=t=>String(t).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+function tile(r,reward){const d=document.createElement("div");d.className="tile";d.innerHTML=`<img src="${LOGO_DIR+esc(r.l)}" alt="">${reward?`<span class="rw">${esc(r.r)}</span>`:""}<span class="tip"><b>${esc(r.n)}</b>${esc(r.r)}</span>`;return d}
+
+const W={bg:{wall:"Tilted wall",tunnel:"3D tunnel",marquee:"Two-row marquee",glow:"Glow only"},ly:{center:"one card",split:"card + reminder at the side",strip:"card + reminder under it"},
+  rm:{count:"brand count",ticker:"rotating reward",list:"sample checklist",none:"nothing extra"},sw:{tabs:"tabs in one card",link:"link at the bottom"},af:{preview:"preview + confetti after Continue",plain:"plain message after Continue",plainconf:"plain message + confetti after Continue"}};
+const st={bg:"wall",ly:"center",rm:"ticker",sw:"tabs",af:"plainconf",mode:"up"};
+new URLSearchParams(location.search).forEach((v,k)=>{if(W[k]&&W[k][v])st[k]=v});
+
+/* background */
+function buildBg(){const bg=document.getElementById("bg");bg.innerHTML="";
+  if(st.bg==="wall"){const w=document.createElement("div");w.className="wall";for(let i=0;i<7;i++){const row=document.createElement("div");row.className="row"+(i%2?" rev":"");row.style.setProperty("--d",(44+i*2.3)+"s");const s=shuffle(R).slice(0,16);[...s,...s].forEach(r=>row.appendChild(tile(r,true)));w.appendChild(row)}bg.appendChild(w)}
+  else if(st.bg==="tunnel"){const t=document.createElement("div");t.className="tunnel";const s=shuffle(R).slice(0,40);s.forEach((r,i)=>{const el=tile(r,false);const a=(i*137.5)*Math.PI/180,rad=430+((i*53)%160);el.style.setProperty("--x",Math.cos(a)*rad+"px");el.style.setProperty("--y",Math.sin(a)*rad*.72+"px");el.style.setProperty("--dl",(-14*i/s.length)+"s");t.appendChild(el)});bg.appendChild(t)}
+  else if(st.bg==="marquee"){const m=document.createElement("div");m.className="marquee";for(let i=0;i<2;i++){const row=document.createElement("div");row.className="row"+(i?" rev":"");row.style.setProperty("--d","56s");const s=shuffle(R).slice(0,20);[...s,...s].forEach(r=>row.appendChild(tile(r,false)));m.appendChild(row)}bg.appendChild(m)}}
+
+/* reminder of what you get */
+let tickTimer=null,listTimer=null;
+const cats=(()=>{const n={food_drink:"Food & drink",beauty:"Beauty",retail:"Shopping",entertainment:"Fun & movies"};const c={};R.forEach(r=>{const k=n[r.c]||"Other";c[k]=(c[k]||0)+1});return Object.entries(c).sort((a,b)=>b[1]-a[1])})();
+function buildRemind(){clearInterval(tickTimer);clearInterval(listTimer);
+  document.querySelectorAll("[data-slot]").forEach(s=>s.innerHTML="");
+  if(st.rm==="none")return;
+  const slot=document.querySelector(`[data-slot="${st.ly==="split"?"side":st.ly==="strip"?"strip":"card"}"]`);
+  if(st.rm==="count"){slot.innerHTML=`<div class="rm-count"><b>${R.length}</b><span>brands with a birthday treat</span></div><div class="rm-cats">${cats.map(([k,v])=>`<span>${esc(k)} ${v}</span>`).join("")}</div>`}
+  else if(st.rm==="ticker"){slot.innerHTML=`<div class="rm-tick"><div class="in" id="tk"></div></div>`;const show=()=>{const r=R[Math.floor(Math.random()*R.length)];const el=document.getElementById("tk");if(!el)return;el.parentNode.innerHTML=`<img src="${LOGO_DIR+esc(r.l)}" alt=""><div class="in"><small>Waiting for you</small><strong>${esc(r.r)}</strong><span style="font-size:13px;color:var(--muted)">${esc(r.n)}</span></div><div id="tk" hidden></div>`};show();tickTimer=setInterval(()=>{if(!document.body.classList.contains("paused"))show()},2600)}
+  else{const s=shuffle(R).slice(0,3);slot.innerHTML=`<div class="rm-list">${s.map(r=>`<div><img src="${LOGO_DIR+esc(r.l)}" alt=""><p>${esc(r.n)}<span>${esc(r.r)}</span></p><em></em></div>`).join("")}</div>`;
+    let i=0;listTimer=setInterval(()=>{if(document.body.classList.contains("paused"))return;const rows=slot.querySelectorAll(".rm-list div");rows.forEach((d,j)=>{d.classList.toggle("on",j<=i%4&&i%4<3);d.querySelector("em").textContent=j<=i%4&&i%4<3?"✓":""});i++},1100)}}
+
+/* form */
+function setMode(m){st.mode=m;document.querySelectorAll("[data-mode]").forEach(e=>e.classList.toggle("hide",e.dataset.mode!==m));
+  document.querySelectorAll(".tabs.main button").forEach(b=>b.classList.toggle("on",b.dataset.t===m));
+  const link=!document.querySelector('[data-sub="link"]').classList.contains("hide");document.getElementById("go").textContent=m==="up"?"Continue":link?"Email me a link":"Sign in"}
+document.querySelectorAll(".tabs.main button").forEach(b=>b.onclick=()=>setMode(b.dataset.t));
+document.querySelectorAll("[data-to]").forEach(a=>a.onclick=()=>setMode(a.dataset.to));
+document.querySelectorAll(".subtabs button").forEach(b=>b.onclick=()=>{document.querySelectorAll(".subtabs button").forEach(x=>x.classList.toggle("on",x===b));document.querySelectorAll("[data-sub]").forEach(d=>d.classList.toggle("hide",d.dataset.sub!==b.dataset.s));setMode(st.mode)});
+document.getElementById("go").onclick=()=>{if(st.mode==="in"&&document.querySelector('[data-sub="pw"]').classList.contains("hide")===false){document.getElementById("go").textContent="Signed in (prototype stops here)";return}
+  document.getElementById("form").classList.add("hide");document.getElementById("sent").classList.remove("hide");
+  document.getElementById("prev").classList.toggle("hide",st.af!=="preview");
+  if(st.af==="preview"){const s=shuffle(R).slice(0,4);const L=document.getElementById("prev-list");L.innerHTML=s.map(r=>`<div><img src="${LOGO_DIR+esc(r.l)}" alt=""><p>${esc(r.n)}<span>${esc(r.r)}</span></p><em></em></div>`).join("");
+    const upd=()=>{const n=L.querySelectorAll(".on").length;document.getElementById("prev-bar").style.width=(n/4*100)+"%";document.getElementById("prev-note").textContent=n===4?"All 4 claimed. That's a birthday run.":`${n} of 4 claimed. Tap a reward to tick it off.`;if(n===4)confetti()};
+    L.querySelectorAll("div").forEach(d=>d.onclick=()=>{d.classList.toggle("on");d.querySelector("em").textContent=d.classList.contains("on")?"✓":"";upd()});upd();confetti()}else if(st.af==="plainconf")confetti()};
+document.getElementById("again").onclick=()=>{document.getElementById("sent").classList.add("hide");document.getElementById("form").classList.remove("hide")};
+
+/* confetti in the locked colours */
+function confetti(){if(document.body.classList.contains("paused"))return;const c=document.getElementById("conf"),x=c.getContext("2d");c.width=innerWidth;c.height=innerHeight;
+  const ps=Array.from({length:120},()=>({x:innerWidth/2+(Math.random()-.5)*200,y:innerHeight*.45,vx:(Math.random()-.5)*14,vy:-Math.random()*14-4,r:Math.random()*6.28,vr:(Math.random()-.5)*.3,c:["#FF9EC4","#8EC5FF","#8FE3B0","#FFD6E5","#D6EBFF"][Math.floor(Math.random()*5)],w:6+Math.random()*6}));
+  let t=0;(function f(){t++;x.clearRect(0,0,c.width,c.height);ps.forEach(p=>{p.vy+=.35;p.x+=p.vx;p.y+=p.vy;p.vx*=.99;p.r+=p.vr;x.save();x.translate(p.x,p.y);x.rotate(p.r);x.fillStyle=p.c;x.fillRect(-p.w/2,-p.w/4,p.w,p.w/2);x.restore()});if(t<110)requestAnimationFrame(f);else x.clearRect(0,0,c.width,c.height)})()}
+
+/* pause: starts paused under reduced motion */
+const pb=document.getElementById("pause");
+function setPaused(p){document.body.classList.toggle("paused",p);pb.setAttribute("aria-pressed",p);pb.querySelector("span").textContent=p?"Play motion":"Pause motion";
+  pb.querySelector("svg").innerHTML=p?'<path d="M4 2.5v11l9-5.5z"/>':'<rect x="3" y="2" width="3.5" height="12" rx="1"/><rect x="9.5" y="2" width="3.5" height="12" rx="1"/>'}
+pb.onclick=()=>setPaused(!document.body.classList.contains("paused"));setPaused(matchMedia("(prefers-reduced-motion: reduce)").matches);
+
+/* panel */
+function apply(changed){document.body.className=document.body.className.replace(/\b(ly|sw)-\w+/g,"").trim()+` ly-${st.ly} sw-${st.sw}`;
+  document.querySelectorAll(".panel [data-k]").forEach(g=>g.querySelectorAll("button").forEach(b=>b.classList.toggle("on",b.dataset.v===st[g.dataset.k])));
+  document.getElementById("now").innerHTML=`Showing: <b>${W.bg[st.bg]}</b> · ${W.ly[st.ly]} · ${W.rm[st.rm]} · ${W.sw[st.sw]} · ${W.af[st.af]}`;
+  if(!changed||changed==="bg")buildBg();if(!changed||changed==="rm"||changed==="ly")buildRemind();setMode(st.mode);
+  const q=new URLSearchParams();for(const k in W)q.set(k,st[k]);history.replaceState(null,"","?"+q)}
+document.querySelectorAll(".panel [data-k]").forEach(g=>g.onclick=e=>{const b=e.target.closest("button");if(!b)return;st[g.dataset.k]=b.dataset.v;apply(g.dataset.k)});
+document.getElementById("min").onclick=e=>{const p=document.getElementById("panel");p.classList.toggle("min");e.target.textContent=p.classList.contains("min")?"Show":"Hide"};
+if(innerWidth<700){document.getElementById("panel").classList.add("min");document.getElementById("min").textContent="Show"}
+apply();
+</script>
+</body>
+</html>

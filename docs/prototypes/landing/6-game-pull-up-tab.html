@@ -93,7 +93,7 @@ body.paused .wave *,.stage:has(.tile:hover) .wave *{animation-play-state:paused}
 .mg-hud{display:flex;justify-content:space-between;align-items:baseline;font-size:12px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:6px;padding:0 4px}
 .mg-hud b{color:var(--ink);font-size:15px;letter-spacing:0;margin-left:4px}
 .mg-board{position:relative;border-radius:16px;overflow:hidden;background:rgba(255,255,255,.55);box-shadow:inset 0 0 0 1.5px color-mix(in srgb,var(--ink) 15%,transparent)}
-.mg-board canvas{display:block;width:100%;height:170px;cursor:none}
+.mg-board canvas{display:block;width:100%;height:190px;cursor:none}
 .mg-start{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;gap:10px;flex-direction:column}
 .mg-start button{font-family:inherit;font-weight:700;font-size:14px;padding:10px 16px;border-radius:10px;border:0;cursor:pointer;background:var(--hl);color:var(--ink);box-shadow:0 0 0 1.5px var(--ink)}
 .mg-start span{font-size:12px;color:var(--muted)}
@@ -226,6 +226,43 @@ document.getElementById("mg-open").onclick=()=>{document.body.classList.add("mg-
 if(true){document.getElementById("sheet-body").appendChild(document.querySelector(".card .mg"))}
 document.getElementById("sheet-tab").onclick=()=>{const sh=document.getElementById("sheet");sh.classList.toggle("open");document.getElementById("sheet-tab").innerHTML=sh.classList.contains("open")?"Close &#9660;":"Catch the prizes &#9650;"};
 
+
+/* the doll: her reference (afro, purple party hat, pink tee, blue shorts, white socks and shoes) */
+function drawDoll(c,x,y,now,face,S){
+  const C={afro:"#2A0C0D",afroHi:"#4A2420",skin:"#D3874A",blush:"#E07A5A",hat:"#9B6E9E",hatHi:"#C6A4CB",pom:"#DCC6E6",shirt:"#C04350",collar:"#E58A93",shorts:"#437893",shortsSh:"#23546C",sock:"#F2F4EF",shoe:"#ECEAE0",line:"#3B2320"};
+  const ph=now/95,bob=Math.abs(Math.sin(ph))*-3,look=face*1.6;
+  c.save();c.translate(x,y+bob*S);c.scale(S,S);c.lineJoin="round";c.lineCap="round";
+  // legs + socks + shoes (alternate knee lift)
+  [-1,1].forEach((sd,i)=>{const lift=Math.max(0,Math.sin(ph+i*Math.PI))*9;
+    c.fillStyle=C.skin;c.fillRect(sd*5-3,-30,6,24-lift);
+    c.fillStyle=C.sock;c.fillRect(sd*5-3.2,-12-lift,6.4,6);
+    c.fillStyle=C.shoe;c.strokeStyle="#9A9486";c.lineWidth=1.2;c.beginPath();c.ellipse(sd*6,-4-lift,6.5,3.6,0,0,7);c.fill();c.stroke()});
+  // shorts
+  c.fillStyle=C.shorts;c.beginPath();c.roundRect(-13,-44,26,17,4);c.fill();c.strokeStyle=C.shortsSh;c.lineWidth=1.4;c.beginPath();c.moveTo(0,-38);c.lineTo(0,-28);c.stroke();
+  // afro: back volume, sides reach the shoulders, face left open
+  c.fillStyle=C.afro;c.beginPath();c.arc(0,-92,18,0,7);c.fill();
+  for(let k=0;k<14;k++){const a=k/14*Math.PI*2,sx=Math.cos(a),sy=Math.sin(a);if(sy>.55&&Math.abs(sx)<.6)continue;c.beginPath();c.arc(sx*19,-90+sy*17,8,0,7);c.fill()}
+  // neck + shirt
+  c.fillStyle=C.skin;c.fillRect(-3.5,-72,7,7);
+  c.fillStyle=C.shirt;c.beginPath();c.roundRect(-14,-66,28,25,7);c.fill();
+  c.strokeStyle=C.collar;c.lineWidth=2;c.beginPath();c.ellipse(0,-66,5,2.6,0,0,Math.PI);c.stroke();
+  // arms swing opposite to legs, drawn over the shirt
+  [-1,1].forEach((sd,i)=>{const a=-sd*(.25+.22*Math.sin(ph+i*Math.PI));c.save();c.translate(sd*13,-61);c.rotate(a);
+    c.strokeStyle=C.skin;c.lineWidth=5.5;c.beginPath();c.moveTo(0,3);c.lineTo(0,20);c.stroke();c.fillStyle=C.skin;c.beginPath();c.arc(0,21.5,3.4,0,7);c.fill();
+    c.fillStyle=C.shirt;c.beginPath();c.roundRect(-4.5,-3,9,10,3);c.fill();c.restore()});
+  // head + face
+  c.fillStyle=C.skin;c.beginPath();c.arc(0,-82,12,0,7);c.fill();
+  c.fillStyle=C.blush;c.globalAlpha=.5;c.beginPath();c.arc(-6.5+look,-78,2.6,0,7);c.arc(6.5+look,-78,2.6,0,7);c.fill();c.globalAlpha=1;
+  c.fillStyle=C.line;c.beginPath();c.arc(-4.2+look,-83,1.9,0,7);c.arc(4.2+look,-83,1.9,0,7);c.fill();
+  c.fillStyle="#fff";c.beginPath();c.arc(-3.6+look,-83.7,.6,0,7);c.arc(4.8+look,-83.7,.6,0,7);c.fill();
+  c.fillStyle="#7A2418";c.beginPath();c.arc(look,-78.5,3.4,0,Math.PI);c.fill();
+  // fringe curls along the hairline
+  c.fillStyle=C.afro;[[-9,-92,5],[-3,-94.5,5.5],[4,-94,5.5],[10,-91,4.5]].forEach(([fx,fy,r])=>{c.beginPath();c.arc(fx,fy,r,0,7);c.fill()});
+  // purple party hat, tilted, sitting in the afro
+  c.save();c.translate(-4,-106);c.rotate(-.22);c.fillStyle=C.hat;c.beginPath();c.moveTo(-8,0);c.lineTo(8,0);c.lineTo(0,-24);c.closePath();c.fill();
+  c.strokeStyle=C.hatHi;c.lineWidth=2;c.beginPath();c.moveTo(-5,-6);c.lineTo(5,-6);c.moveTo(-2.6,-13);c.lineTo(2.6,-13);c.stroke();
+  c.fillStyle=C.pom;c.beginPath();c.arc(0,-25,3.8,0,7);c.fill();c.restore();
+  c.restore()}
 /* mini game */
 (()=>{const cv=document.getElementById("cv"),ctx=cv.getContext("2d");let W,H;
   const imgs={};R.forEach(r=>{const i=new Image();i.src=LOGO_DIR+r.l;imgs[r.l]=i});
@@ -251,16 +288,12 @@ document.getElementById("sheet-tab").onclick=()=>{const sh=document.getElementBy
       if(o.star){ctx.fillStyle=hl;ctx.font="800 18px Plus Jakarta Sans";ctx.textAlign="center";ctx.textBaseline="middle";ctx.fillText("★",0,1)}
       else{const im=imgs[o.r.l];if(im.complete&&im.naturalWidth){const k=Math.min(34/im.naturalWidth,22/im.naturalHeight);ctx.drawImage(im,-im.naturalWidth*k/2,-im.naturalHeight*k/2,im.naturalWidth*k,im.naturalHeight*k)}}
       ctx.restore()});
-    const ry=H-34;
-    items=items.filter(o=>{if(o.y>ry-12&&o.y<ry+20&&Math.abs(o.cx-px)<30){const p=o.star?50:15;score+=p;floats.push({x:o.cx,y:o.y,t:0,s:"+"+p});
+    const ry=H-6,S=.62;
+    items=items.filter(o=>{if(o.y>ry-118*S&&o.y<ry-30*S&&Math.abs(o.cx-px)<32){const p=o.star?50:15;score+=p;floats.push({x:o.cx,y:o.y,t:0,s:"+"+p});
       for(let i=0;i<12;i++)bursts.push({x:o.cx,y:o.y,vx:(Math.random()-.5)*200,vy:-Math.random()*200,t:0,c:[hl,btn,hov][i%3]});return false}return o.y<H+40});
     bursts.forEach(b=>{b.t+=dt;b.vy+=500*dt;b.x+=b.vx*dt;b.y+=b.vy*dt;ctx.globalAlpha=Math.max(0,1-b.t);ctx.fillStyle=b.c;ctx.beginPath();ctx.arc(b.x,b.y,3,0,7);ctx.fill()});bursts=bursts.filter(b=>b.t<1);
     floats.forEach(f=>{f.t+=dt;ctx.globalAlpha=Math.max(0,1-f.t);ctx.fillStyle=ink;ctx.font="800 15px Plus Jakarta Sans";ctx.textAlign="center";ctx.fillText(f.s,f.x,f.y-f.t*40)});floats=floats.filter(f=>f.t<1);ctx.globalAlpha=1;
-    const bob=Math.sin(now/70)*2,leg=Math.sin(now/80)*7;ctx.save();ctx.translate(px,ry+bob);ctx.scale(face,1);
-    ctx.strokeStyle=ink;ctx.lineWidth=3.5;ctx.lineCap="round";ctx.beginPath();ctx.moveTo(-3,14);ctx.lineTo(-3-leg*.6,26);ctx.moveTo(3,14);ctx.lineTo(3+leg*.6,26);ctx.stroke();
-    ctx.fillStyle=btn;ctx.beginPath();ctx.roundRect(-10,-3,20,20,7);ctx.fill();
-    ctx.fillStyle="#F6D2B8";ctx.beginPath();ctx.arc(0,-11,9,0,7);ctx.fill();ctx.fillStyle=ink;ctx.beginPath();ctx.arc(3.5,-12,1.5,0,7);ctx.fill();
-    ctx.fillStyle=hl;ctx.beginPath();ctx.moveTo(-7,-18);ctx.lineTo(6,-18);ctx.lineTo(-1,-34);ctx.fill();ctx.fillStyle=hov;ctx.beginPath();ctx.arc(-1,-35,3,0,7);ctx.fill();ctx.restore();
+    drawDoll(ctx,px,ry,now,face,S);
     document.getElementById("g-score").textContent=score;document.getElementById("g-time").textContent=Math.ceil(left);
     if(left>0)requestAnimationFrame(step);else{if(score>best){best=score;localStorage.tbrBest4=best;document.getElementById("g-best").textContent=best}
       document.getElementById("g-start").style.display="flex";document.getElementById("g-go").textContent="Play again ("+score+" pts)";if(!wasPaused)setPaused(false)}}
