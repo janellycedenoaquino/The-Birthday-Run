@@ -63,6 +63,20 @@ isOneToOne: false
       referencedColumns: ["id"]
     }
                   ]
+                },"premium_grants": {
+                  Row: {
+                    "granted_at": string,"revoked_at": string | null,"updated_at": string,"user_id": string
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "granted_at"?: string,"revoked_at"?: string | null,"updated_at"?: string,"user_id": string
+                  }
+                  Update: {
+                    "granted_at"?: string,"revoked_at"?: string | null,"updated_at"?: string,"user_id"?: string
+                  }
+                  Relationships: [
+                    
+                  ]
                 },"profiles": {
                   Row: {
                     "birth_day": number | null,"birth_month": number | null,"created_at": string,"display_name": string | null,"id": string,"onboarded_at": string | null,"password_set_at": string | null,"reminders_enabled": boolean,"time_zone": string | null,"updated_at": string,"welcome_email_sent_at": string | null
@@ -131,6 +145,20 @@ isOneToOne: false
                   Relationships: [
                     
                   ]
+                },"subscriptions": {
+                  Row: {
+                    "cancel_at_period_end": boolean,"current_period_end": string | null,"status": string | null,"stripe_customer_id": string,"stripe_subscription_id": string | null,"synced_at": string,"user_id": string
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "cancel_at_period_end"?: boolean,"current_period_end"?: string | null,"status"?: string | null,"stripe_customer_id": string,"stripe_subscription_id"?: string | null,"synced_at"?: string,"user_id": string
+                  }
+                  Update: {
+                    "cancel_at_period_end"?: boolean,"current_period_end"?: string | null,"status"?: string | null,"stripe_customer_id"?: string,"stripe_subscription_id"?: string | null,"synced_at"?: string,"user_id"?: string
+                  }
+                  Relationships: [
+                    
+                  ]
                 }
           }
           Views: {
@@ -142,6 +170,9 @@ isOneToOne: false
                            },
 "create_pickup":
 { Args: { "p_location_label": string,"p_note": string,"p_picked_up_on": string,"p_retailer_id": string }; Returns: string
+                           },
+"is_premium":
+{ Args: Record<PropertyKey, never>; Returns: boolean
                            },
 "mark_password_set":
 { Args: Record<PropertyKey, never>; Returns: boolean

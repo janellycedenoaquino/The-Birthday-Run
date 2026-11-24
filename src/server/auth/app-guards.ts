@@ -2,6 +2,7 @@ import "server-only";
 import { cache } from "react";
 import type { Birthday } from "@/lib/birthday/timing";
 import { fail, requireUser } from "@/server/auth/guards";
+import { getEntitlement } from "@/server/premium/entitlement";
 
 // The app's access levels on top of the Template guards (BUILD §0.2, F-2; decision 0009).
 
@@ -42,3 +43,14 @@ export const requireOnboarded = cache(async () => {
   };
   return { ...session, profile };
 });
+
+/**
+ * Premium actions only (BUILD F-7): `requireOnboarded()` plus FR-35's answer; free → BR-2. Pages
+ * never call this: they branch on getEntitlement and render C-104, with no premium data.
+ */
+export async function requirePremium() {
+  const session = await requireOnboarded();
+  const { premium } = await getEntitlement(session.supabase);
+  if (!premium) return fail("not_premium");
+  return session;
+}

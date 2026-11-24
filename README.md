@@ -60,6 +60,7 @@ The rest of this README is the Template's: what the foundations include, local s
 ### Operations
 - **Error monitoring** with Sentry (free Developer plan: 5,000 errors/month, 1 user, 30-day history ([pricing](https://sentry.io/pricing/))). Alerts go to email; no personal data or secrets in error reports.
 - **Backups:** Supabase's free plan has **no automatic backups** ([Supabase docs](https://supabase.com/docs/guides/platform/backups)), so the template includes a backup script (`supabase db dump`, including accounts) that runs daily in each app's GitHub Actions, **encrypted with age** to a key only you hold, kept **30 days**, plus a tested restore.
+- **Premium by hand (FR-36):** `npm run grant-premium -- grant <email>` or `-- revoke <email>` (local). For production, put `SUPABASE_DB_URL` in your shell first and add `--target=production`. It prints `granted`, `already granted`, `revoked` or `no active grant` and the account id; it never touches a subscription.
 - **Rollback:** how to roll back a bad deploy on Vercel, and the rule that database migrations only move forward (a fix is a new migration).
 - A generic **launch checklist** (`docs/LAUNCH_CHECKLIST.md`) that every app tailors before real users arrive.
 
@@ -148,6 +149,7 @@ Names and rules: BUILD §0.6 and F-2. Real values go only in `.env.local` (and i
 | `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET` | **secret** | Google sign-in; read by `supabase config push`, not set on Vercel | Google Cloud → APIs & Services → Credentials |
 | `SUPABASE_DB_URL` | **secret**, scripts only | Session-pooler DB URL for backups (a GitHub secret in the app repo) | Supabase → Connect → Session pooler |
 | `BACKUP_AGE_RECIPIENT` | scripts only | `age` public key for backups (a GitHub variable) | `age-keygen` (keep the private key offline) |
+| `PAYMENTS_ENABLED` | server | `true` turns Stripe checkout on (FR-38); unset or `false` keeps payments off. Keep `false` | Your choice |
 | `E2E_TARGET` | tests only | Empty = local; `deployed` for the deployed e2e run | Your choice |
 | `E2E_EMAIL` | tests only | Resend account owner's address, for the deployed run | Your Resend login email |
 

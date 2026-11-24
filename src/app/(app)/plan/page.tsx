@@ -17,6 +17,8 @@ import {
   updateGroup,
 } from "@/server/actions/groups";
 import { requireOnboarded } from "@/server/auth/app-guards";
+import { getEntitlement } from "@/server/premium/entitlement";
+import { UpgradePrompt } from "@/components/billing/upgrade-prompt";
 import { loadPlanContext } from "@/server/rewards/plan-context";
 
 // S-106 Plan (SPEC §3.3, BUILD F-6: FR-22–FR-27, FR-9, FR-40). `onboarded` level. Smart Grouping
@@ -28,6 +30,7 @@ export const metadata: Metadata = {
 
 const FREE_GROUPS = 3; // FR-24
 const FREE_ITEMS = 5; // FR-25
+const PREMIUM_ITEMS = 10; // FR-25
 
 const searchSchema = z.object({
   deleteGroup: z.uuid().optional().catch(undefined),
@@ -44,6 +47,7 @@ export default async function PlanPage({ searchParams }: PageProps<"/plan">) {
   const { supabase, profile } = await requireOnboarded();
   const { deleteGroup: confirming } = searchSchema.parse(await searchParams);
   const ctx = await loadPlanContext(supabase, profile);
+  const { premium } = await getEntitlement(supabase);
   const { data: groups, error } = await supabase
     .from("reward_groups")
     .select(
@@ -83,14 +87,19 @@ export default async function PlanPage({ searchParams }: PageProps<"/plan">) {
         name: names.get(i.retailer_id) ?? i.retailer_id,
       })),
   }));
-  // FR-40: more than the free plan allows (after premium ends; nobody is premium yet).
+  // FR-40: more than the free plan allows (after premium ends).
   // FR-24 counts only this birthday year's groups (from today's cycle start), as the trigger does.
   const thisYear = groups.filter(
     (g) => g.pickup_date >= ctx.window.current.cycleStart,
   );
   const overLimit =
-    thisYear.length > FREE_GROUPS ||
-    groups.some((g) => g.reward_group_items.length > FREE_ITEMS);
+    !premium &&
+    (thisYear.length > FREE_GROUPS ||
+      groups.some((g) => g.reward_group_items.length > FREE_ITEMS));
+  // C-104 where the free limits bite (FR-39): at the group limit, and at a full group.
+  const groupsFull = !premium && thisYear.length >= FREE_GROUPS;
+  const groupFull =
+    !premium && groups.some((g) => g.reward_group_items.length >= FREE_ITEMS);
   const confirmGroup = confirming
     ? groups.find((g) => g.id === confirming)
     : undefined;
@@ -107,6 +116,26 @@ export default async function PlanPage({ searchParams }: PageProps<"/plan">) {
         <p className="mt-4 rounded-lg border border-border/70 p-4">
           {msg("M-222")}
         </p>
+      ) : null}
+      {groupsFull || groupFull ? (
+        <div className="mt-4 grid gap-2">
+          {groupsFull ? (
+            <UpgradePrompt
+              supabase={supabase}
+              feature="M-133"
+              limit={FREE_GROUPS}
+              compact
+            />
+          ) : null}
+          {groupFull ? (
+            <UpgradePrompt
+              supabase={supabase}
+              feature="M-134"
+              limit={PREMIUM_ITEMS}
+              compact
+            />
+          ) : null}
+        </div>
       ) : null}
 
       {confirmGroup ? (

@@ -5,11 +5,14 @@ import {
   RetailerCard,
   type CardRetailer,
 } from "@/components/retailers/retailer-card";
+import { UpgradePrompt } from "@/components/billing/upgrade-prompt";
 import { Button } from "@/components/ui/button";
+import { today, windowFor, type LocalDate } from "@/lib/birthday/timing";
 import { msg } from "@/lib/messages";
 import { filterRetailers, type FilterRow } from "@/lib/retailers/filter";
 import { CATEGORIES, CATEGORY_LABELS } from "@/lib/retailers/labels";
 import { enroll, unenroll } from "@/server/actions/enrollments";
+import { getEntitlement } from "@/server/premium/entitlement";
 import { createClient } from "@/server/supabase/server";
 
 // S-103 Discover (SPEC §3.3, BUILD F-3: FR-2, FR-3). Public. RLS decides the data (D3): signed
@@ -22,15 +25,17 @@ export const metadata: Metadata = {
 const CARD_COLUMNS =
   "id, name, category, reward_description, reward_type, logo_file, timing_type, days_before, days_after, states_scope, state_codes";
 
-// BUILD F-3: bad values are dropped, never an error. The premium filters (length, early, state;
-// FR-5, FR-45) wait for the entitlement check (F-7, Phase 4): until then everyone gets the free
-// view, and those parameters aren't read at all ("the server ignores the filter").
+// BUILD F-3: bad values are dropped, never an error. The premium filters (FR-45: length and
+// "starts early") are read only for premium users; free users' URLs with them get the plain list
+// and C-104 (FR-39, metric 2). The state filter (FR-5) needs the start location (Phase 5).
 const searchSchema = z.object({
   q: z.string().trim().max(100).optional().catch(undefined),
   category: z
     .enum(["food_drink", "entertainment", "retail", "beauty"])
     .optional()
     .catch(undefined),
+  length: z.enum(["day", "week", "longer"]).optional().catch(undefined),
+  early: z.literal("1").optional().catch(undefined),
 });
 
 type Row = CardRetailer & FilterRow;
@@ -81,12 +86,42 @@ export default async function DiscoverPage({
       cause: enrollError,
     });
   const enrolledIds = new Set(enrolled.map((e) => e.retailer_id));
-  const { shown, total } = filterRetailers(rows as Row[], filters, {});
-  const filtered = Boolean(filters.q || filters.category);
+  // Premium filters are read only for premium users, measured for their next birthday (FR-45).
+  const { premium } = await getEntitlement(supabase);
+  let occurrence: LocalDate | undefined;
+  if (premium) {
+    const { data: profile } = await supabase
+      .from("profiles")
+      .select("birth_month, birth_day, time_zone")
+      .eq("id", user.id)
+      .maybeSingle();
+    if (profile?.birth_month && profile.birth_day && profile.time_zone)
+      occurrence = windowFor(
+        { month: profile.birth_month, day: profile.birth_day },
+        [],
+        today(profile.time_zone, new Date()),
+      ).planning.birthday;
+  }
+  const { shown, total } = filterRetailers(
+    rows as Row[],
+    premium
+      ? { ...filters, early: filters.early === "1" }
+      : { q: filters.q, category: filters.category },
+    { occurrence },
+  );
+  const filtered = Boolean(
+    filters.q ||
+    filters.category ||
+    // Length/early only filter with a birthday to measure from (filterRetailers ignores them).
+    (premium && occurrence && (filters.length || filters.early)),
+  );
   const href = (category?: string) => {
     const p = new URLSearchParams();
     if (filters.q) p.set("q", filters.q);
     if (category) p.set("category", category);
+    if (premium && occurrence && filters.length)
+      p.set("length", filters.length);
+    if (premium && occurrence && filters.early) p.set("early", "1");
     const s = p.toString();
     return s ? `/discover?${s}` : "/discover";
   };
@@ -112,7 +147,40 @@ export default async function DiscoverPage({
         <Button type="submit" size="lg" variant="outline">
           Search
         </Button>
+        {premium ? (
+          <>
+            <label htmlFor="discover-length" className="sr-only">
+              Length
+            </label>
+            <select
+              id="discover-length"
+              name="length"
+              defaultValue={filters.length ?? ""}
+              className="h-11 rounded-md border border-input bg-background px-3 text-base"
+            >
+              <option value="">{msg("M-174")}</option>
+              <option value="day">{msg("M-175")}</option>
+              <option value="week">{msg("M-176")}</option>
+              <option value="longer">{msg("M-177")}</option>
+            </select>
+            <label className="flex items-center gap-2 text-sm">
+              <input
+                type="checkbox"
+                name="early"
+                value="1"
+                defaultChecked={filters.early === "1"}
+                className="size-4"
+              />
+              {msg("M-177a")}
+            </label>
+          </>
+        ) : null}
       </form>
+      {premium ? null : (
+        <div className="mt-4">
+          <UpgradePrompt supabase={supabase} feature="M-131" compact />
+        </div>
+      )}
       <nav aria-label="Categories" className="mt-4">
         <ul className="flex flex-wrap gap-2 text-sm">
           {[undefined, ...CATEGORIES].map((c) => {

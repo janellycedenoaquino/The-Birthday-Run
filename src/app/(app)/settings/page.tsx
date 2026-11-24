@@ -24,6 +24,8 @@ import {
   startMfaEnrollment,
 } from "@/server/actions/mfa";
 import { isRecentSignIn, requireUser } from "@/server/auth/guards";
+import { getEntitlement } from "@/server/premium/entitlement";
+import { UpgradePrompt } from "@/components/billing/upgrade-prompt";
 
 // S-13 Settings (SPEC §3.3, BUILD F-11, FR-19): one card per section, each with its own form.
 export const metadata: Metadata = {
@@ -86,7 +88,11 @@ async function loadSettings() {
   const mfaEnabled = (user.factors ?? []).some(
     (f) => f.factor_type === "totp" && f.status === "verified",
   );
+  // S-110 (FR-35): grant states only until F-8 adds the paid ones.
+  const { premium } = await getEntitlement(supabase);
   return {
+    premium,
+    supabase,
     user,
     profile,
     mfaEnabled,
@@ -103,7 +109,8 @@ const exportError = z
 export default async function SettingsPage({
   searchParams,
 }: PageProps<"/settings">) {
-  const { user, profile, recent, mfaEnabled } = await loadSettings();
+  const { user, profile, recent, mfaEnabled, premium, supabase } =
+    await loadSettings();
   const exportState = exportError.parse((await searchParams).export);
   const hasPassword = Boolean(profile.password_set_at);
   const sections = [
@@ -111,6 +118,7 @@ export default async function SettingsPage({
     { id: "birthday", title: "Birthday" },
     ...(hasPassword ? [{ id: "password", title: "Password" }] : []),
     { id: "two-step", title: "Two-step sign-in" },
+    { id: "premium", title: "Premium" },
     { id: "your-data", title: "Your data" },
     { id: "delete-account", title: "Delete account" },
   ];
@@ -185,6 +193,13 @@ export default async function SettingsPage({
               </p>
               <ReauthGate />
             </div>
+          )}
+        </Card>
+        <Card id="premium" title="Premium">
+          {premium ? (
+            <p>{msg("M-261")}</p>
+          ) : (
+            <UpgradePrompt supabase={supabase} feature="M-138" />
           )}
         </Card>
         <Card id="your-data" title="Your data">

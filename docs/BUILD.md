@@ -986,6 +986,8 @@ stateDiagram-v2
 - Revoked grant + active subscription: still premium (FR-35); revoke prints `revoked` and the user stays premium.
 - Account deletion: both rows go by cascade; cancelling at Stripe first is F-8's.
 
+- **As built (Phase 4):** the migration replaces F-6's stand-in `private.is_premium` with `create or replace` (decision 0012). `paymentsEnabled()` exists, but C-104 shows only M-139 until F-8 builds checkout, so no payment control can render before then. The grant script keeps its own copy of the email rule (`scripts/` can't import `@/` paths under Node's type stripping), and reads `SUPABASE_DB_URL` only with `--target=production`. Discover reads `length` and `early` only for premium users; free users get the plain list and C-104 (M-131); the state filter waits for Phase 5's start location. Plan shows C-104 M-133/M-134 at the free limits; S-110 shows M-261 or C-104 (M-138).
+
 ### Tests
 | What | Type | Through | Proves |
 | --- | --- | --- | --- |

@@ -412,7 +412,7 @@ flowchart TD
 - **Premium:** switch "Birthday reminder emails" with M-258 helper; F-12 set reminders → toast M-259 / M-260. **Free:** C-104 (M-137). **States:** M-5, M-7.
 
 #### S-110 Settings › Premium (`#premium`) · FR-35, FR-37
-- Free: C-104 (M-138). Premium by grant: M-261. Paid: M-262 (`{date}` renews or M-263 ends), button M-143 → F-8 portal ("Opening…"). Errors: BR-15, M-5, M-7.
+- Free: C-104 (M-138), with no title of its own: the card's "Premium" heading is the title, never M-130's "Premium is part of Premium" (owner, 2026-11-24). Premium by grant: M-261. Paid: M-262 (`{date}` renews or M-263 ends), button M-143 → F-8 portal ("Opening…"). Errors: BR-15, M-5, M-7.
 
 #### S-111 Payment return (`/billing/return`) · FR-37, NFR-8
 - **Shows:** h1 M-264; M-265; "Check again" (reloads) and "Go to dashboard". Never turns premium on; once the server reports premium, the page shows M-266 instead. **States:** payments off: M-139 text.
@@ -535,7 +535,7 @@ Template M-, API-, E- texts apply unchanged. Placeholders in `{braces}` are fill
 | Code | Message |
 | --- | --- |
 | BR-1 | "Add your birthday first." with link → S-101 |
-| BR-2 | C-104 for that spot (M-130 + M-139 or M-140) |
+| BR-2 | C-104 for that spot (M-130 + M-139 or M-140); as an action's text: "That's part of Premium." |
 | BR-3 | "That program is no longer listed." |
 | BR-4 | "You've reached the free limit of {limit} groups." + C-104 (M-133) |
 | BR-5 | "A group can hold up to {limit} rewards. Choose fewer or remove some first." (+ C-104 M-134 for free users) |

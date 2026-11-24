@@ -18,7 +18,8 @@ export type GuardFailure =
   | "mfa_required"
   | "password_required"
   | "reauth_required"
-  | "not_onboarded"; // the app's onboarded level (app-guards.ts, decision 0009)
+  | "not_onboarded" // the app's onboarded level (app-guards.ts, decision 0009)
+  | "not_premium"; // the app's premium level: actions only (app-guards.ts, BUILD F-7)
 
 export class GuardError extends Error {
   constructor(readonly code: GuardFailure) {
@@ -75,6 +76,8 @@ const PAGE_TARGETS: Record<GuardFailure, string> = {
   password_required: "/auth/set-password",
   reauth_required: "/auth/reauthenticate",
   not_onboarded: "/onboarding",
+  // Pages never call requirePremium (they render C-104 instead); a page that did lands home.
+  not_premium: "/dashboard",
 };
 
 /** Throws GuardError in refuse mode; otherwise redirects the page per §0.2. */
