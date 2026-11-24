@@ -465,7 +465,7 @@ Template M-, API-, E- texts apply unchanged. Placeholders in `{braces}` are fill
 **Discover and retailer details**
 - M-170 (categories): "All" · "Food and drink" · "Entertainment" · "Retail" · "Beauty"
 - M-171: "No programs match that search." · M-171a: "Discover" · M-171b: "Free birthday rewards from popular loyalty programs." · M-171c: "Back to Discover"
-- M-172: "Showing rewards available in {state}. {hidden} hidden." · M-173: "Show all"
+- M-172: "Showing rewards available in {state}. {hidden} hidden." · M-172b (a start is already set; applies the filter): "Show only my state" · M-173: "Show all"
 - M-174–M-177 (duration select): "Any length" · "Birthday only" · "Up to a week" · "Up to a month" · M-177a (checkbox beside it): "Can start before my birthday"
 - M-178: "Showing {shown} of {total}"
 - M-179: "Nothing matches these filters." with "Clear filters"

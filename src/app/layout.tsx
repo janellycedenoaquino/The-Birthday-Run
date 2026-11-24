@@ -9,6 +9,7 @@ import { SiteFooter } from "@/components/layout/site-footer";
 import { NoticeToast } from "@/components/layout/notice-toast";
 import { SiteHeader } from "@/components/layout/site-header";
 import { ThemeProvider } from "@/components/layout/theme-provider";
+import { StartLocationProvider } from "@/components/location/start-location";
 import { Toaster } from "@/components/ui/sonner";
 import { signOut } from "@/server/actions/auth";
 import { createClient } from "@/server/supabase/server";
@@ -57,7 +58,11 @@ export default async function RootLayout({ children }: LayoutProps<"/">) {
           </a>
           <SiteHeader account={account} />
           <main id="content" tabIndex={-1} className="flex-1 outline-none">
-            {children}
+            {/* The start location (D10): memory only, shared by My Rewards, Plan and Discover's
+                state filter. Keyed on signed in/out, so signing out forgets it at once. */}
+            <StartLocationProvider key={account ? "in" : "out"}>
+              {children}
+            </StartLocationProvider>
           </main>
           <SiteFooter />
           <Toaster position="top-center" />

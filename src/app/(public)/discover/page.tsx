@@ -13,6 +13,9 @@ import { filterRetailers, type FilterRow } from "@/lib/retailers/filter";
 import { CATEGORIES, CATEGORY_LABELS } from "@/lib/retailers/labels";
 import { enroll, unenroll } from "@/server/actions/enrollments";
 import { getEntitlement } from "@/server/premium/entitlement";
+import { StateFilter } from "@/components/location/state-filter";
+import { US_STATE_CODES } from "@/lib/retailers/csv-schema";
+import { lookupZip } from "@/server/actions/route";
 import { createClient } from "@/server/supabase/server";
 
 // S-103 Discover (SPEC §3.3, BUILD F-3: FR-2, FR-3). Public. RLS decides the data (D3): signed
@@ -27,7 +30,7 @@ const CARD_COLUMNS =
 
 // BUILD F-3: bad values are dropped, never an error. The premium filters (FR-45: length and
 // "starts early") are read only for premium users; free users' URLs with them get the plain list
-// and C-104 (FR-39, metric 2). The state filter (FR-5) needs the start location (Phase 5).
+// and C-104 (FR-39, metric 2). So is the state filter (FR-5), set through C-105 (BUILD F-10).
 const searchSchema = z.object({
   q: z.string().trim().max(100).optional().catch(undefined),
   category: z
@@ -36,6 +39,11 @@ const searchSchema = z.object({
     .catch(undefined),
   length: z.enum(["day", "week", "longer"]).optional().catch(undefined),
   early: z.literal("1").optional().catch(undefined),
+  // FR-5: a two-letter code from the start's ZIP (never the start itself, D10).
+  state: z
+    .enum(US_STATE_CODES as unknown as [string, ...string[]])
+    .optional()
+    .catch(undefined),
 });
 
 type Row = CardRetailer & FilterRow;
@@ -102,7 +110,7 @@ export default async function DiscoverPage({
         today(profile.time_zone, new Date()),
       ).planning.birthday;
   }
-  const { shown, total } = filterRetailers(
+  const { shown, total, hiddenByState } = filterRetailers(
     rows as Row[],
     premium
       ? { ...filters, early: filters.early === "1" }
@@ -113,24 +121,33 @@ export default async function DiscoverPage({
     filters.q ||
     filters.category ||
     // Length/early only filter with a birthday to measure from (filterRetailers ignores them).
-    (premium && occurrence && (filters.length || filters.early)),
+    (premium && occurrence && (filters.length || filters.early)) ||
+    (premium && filters.state),
   );
-  const href = (category?: string) => {
+  /** The current filters as a query, `over` replacing some (premium ones only for premium). */
+  const query = (over: { category?: string; state?: string | null }) => {
     const p = new URLSearchParams();
     if (filters.q) p.set("q", filters.q);
+    const category = "category" in over ? over.category : filters.category;
     if (category) p.set("category", category);
     if (premium && occurrence && filters.length)
       p.set("length", filters.length);
     if (premium && occurrence && filters.early) p.set("early", "1");
+    const state = "state" in over ? over.state : filters.state;
+    if (premium && state) p.set("state", state);
     const s = p.toString();
     return s ? `/discover?${s}` : "/discover";
   };
+  const href = (category?: string) => query({ category });
 
   return (
     <Shell>
       <form method="get" className="mt-6 flex gap-2" role="search">
         {filters.category ? (
           <input type="hidden" name="category" value={filters.category} />
+        ) : null}
+        {premium && filters.state ? (
+          <input type="hidden" name="state" value={filters.state} />
         ) : null}
         <label htmlFor="discover-q" className="sr-only">
           Search by name
@@ -176,7 +193,27 @@ export default async function DiscoverPage({
           </>
         ) : null}
       </form>
-      {premium ? null : (
+      {premium ? (
+        <section aria-label="Your state" className="mt-4">
+          {filters.state ? (
+            <p className="flex flex-wrap items-center gap-2 text-sm">
+              <span>
+                {msg("M-172")
+                  .replace("{state}", filters.state)
+                  .replace("{hidden}", String(hiddenByState))}
+              </span>
+              <Link
+                href={query({ state: null })}
+                className="underline underline-offset-4"
+              >
+                {msg("M-173")}
+              </Link>
+            </p>
+          ) : (
+            <StateFilter lookupZip={lookupZip} />
+          )}
+        </section>
+      ) : (
         <div className="mt-4">
           <UpgradePrompt supabase={supabase} feature="M-131" compact />
         </div>

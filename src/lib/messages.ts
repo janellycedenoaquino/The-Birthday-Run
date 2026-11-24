@@ -185,6 +185,9 @@ export const M = {
   "BR-8": "Choose a date and time between {start} and {end}.",
   "BR-17":
     "This group changed in another tab. Refresh to see the latest order.",
+  "M-172": "Showing rewards available in {state}. {hidden} hidden.",
+  "M-172b": "Show only my state",
+  "M-173": "Show all",
   "M-174": "Any length",
   "M-175": "Birthday only",
   "M-176": "Up to a week",
