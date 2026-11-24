@@ -49,7 +49,8 @@ Two launches (ROADMAP): **v1** after phase 4 and **v2 sign-off** after phase 7 (
 - [ ] Store coverage report saved in RESEARCH.md (metric 6)
 - [ ] Map works with tiles blocked (NFR-7); OpenStreetMap credit shows
 - [ ] Vercel Production has `CRON_SECRET` and `REMINDER_UNSUBSCRIBE_SECRET` (Sensitive; `openssl rand -hex 32` each), and Vercel → Cron Jobs lists `/api/cron/reminders` (decision 0015: without them no reminder is sent)
-- [ ] Reward reports (F-13, D16): the same new `REPORTS_EXPORT_SECRET` in Vercel Production (Sensitive) and in GitHub → Settings → Secrets → Actions; repo **variable** `SITE_URL` set to the live site; then run "Forward reward reports" and "Stale retailers" once by hand (Actions → Run workflow) and check both succeed
+- [x] Reward reports (F-13, D16): the same new `REPORTS_EXPORT_SECRET` in Vercel Production (Sensitive) and in GitHub → Settings → Secrets → Actions; repo **variable** `SITE_URL` = `https://www.thebirthdayrun.com` (done 2026-11-24)
+- [ ] Once the app replaces the "Back soon" page: `gh workflow enable forward-reports.yml` (disabled 2026-11-24, since every path served the placeholder and the daily run would fail), then `gh workflow run forward-reports.yml --ref main` and check it succeeds ("0 retailers" with no reports yet)
 - [ ] The Hermes checker holds a GitHub credential for this repo only and no database, Supabase, Vercel or Stripe key; record its first three runs (BUILD F-13 checker contract, NFR-11)
 - [ ] Reminder emails: a doubled run sends once; one-click turn-off works from Gmail's button; send budget respected (D15)
 - [ ] In Gmail's "Show original" of a real reminder, Resend's DKIM signature covers `List-Unsubscribe` and `List-Unsubscribe-Post` (RFC 8058; BUILD F-12 "Unverified")
