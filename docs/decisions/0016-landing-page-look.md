@@ -57,7 +57,7 @@ Why these colours: research on colour and emotion finds that brightness and satu
 - A bottom tab bar on every signed-in page on phones: Home (Dashboard), Discover, My Rewards, Plan, History, each with an icon and a label; the current tab sits on the pink block with a navy outline. The account menu stays on the round initial at the top right. Laptops keep the links in the top bar. The tab bar is hidden on onboarding, like the rest of C-101.
 
 **Onboarding (S-101):**
-- One frosted card on the glow (no logos behind it), "Step 1 of 2" text, month and day menus, then "Which programs are you in?" as a logo grid with checkboxes, search and category chips. The Save button's count ("Save 4 programs") is the only feedback when picking.
+- One frosted card on a still glow: no logos behind it and no drifting, so there is no "Pause motion" control (WCAG 2.2.2 covers only motion that starts by itself; the flip runs only when the user presses a button). Floating logos were dropped because onboarding is a form, and motion at the edge of vision pulls attention away from the task (NN/g, "The Role of Animation and Motion in UX"). "Step 1 of 2" text, month and day menus, then "Which programs are you in?" as a logo grid with checkboxes, search and category chips. The Save button's count ("Save 4 programs") is the only feedback when picking.
 - **The card turns around:** Continue flips the card on its vertical axis (about 0.8 s, from the rotating gradient cards, pick 3), and its back is step 2. "← Change birthday" flips it back; Save or Skip flips it to the finish screen with confetti. Focus moves to the new heading. When motion is paused or reduced, the step changes with no flip.
 
 **Retailer page (S-104), timing split:**

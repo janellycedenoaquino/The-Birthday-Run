@@ -364,7 +364,7 @@ flowchart TD
 - **Look:** decision 0016: the tilted wall of retailer cards behind one frosted card with "Create account" / "Sign in" tabs (links between the two routes, keeping `next`), a rotating "waiting for you" reward under the tabs, and a confetti burst with the "Check your email" panel. Everything else as Template S-4 and S-5.
 
 #### S-101 Onboarding (`/onboarding`) · FR-6, FR-7, FR-10
-- **Look (decision 0016):** one frosted card on the glow, step text M-118. Continue turns the card around (a 3D flip) and its back is step 2; "Change birthday" turns it back. Step 2 is a logo grid with checkboxes; the Save button's count is the only pick feedback. No flip when motion is paused or reduced.
+- **Look (decision 0016):** one frosted card on a still glow (nothing moves on its own, so no pause control), step text M-118. Continue turns the card around (a 3D flip) and its back is step 2; "Change birthday" turns it back. Step 2 is a logo grid with checkboxes; the Save button's count is the only pick feedback. No flip when motion is paused or reduced.
 - **Who:** signed in, no birthday (onboarded users go to S-102).
 - **Shows:** M-118 step label; h1 M-105.
   1. **Birthday:** text M-106; "Month" select and "Day" select (days follow the month; Feb 29 listed; picking it shows M-278, FR-49); no year field. Detected time zone shown as M-107 (changed in S-108); if detection fails, S-108's time-zone picker shows inline here and is required. Button "Continue" (M-108).
