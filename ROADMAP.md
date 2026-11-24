@@ -61,6 +61,7 @@ Eight phases. v1 (everyone's features, premium by grant) goes live on thebirthda
 
 ### Phase 8: Redesign
 Page by page with the owner, from their visuals; hours estimated when they're ready.
+- **Started 2026-11-24 (in parallel with phase 5–7 logic work):** landing page look picked (decision 0016; prototypes on the `prototype/landing` branch). Building it, and the other pages' looks, are not estimated yet.
 
 ## Totals
 - **Phases 0–7:** 71–110 hrs → about 3 weeks at 6 hrs/day, with buffer.

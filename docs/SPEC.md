@@ -29,7 +29,7 @@ Last updated: 2026-10-06 · Mode: app (built from the Template) · Status: §1 a
 - **Legal/money:** Vercel Hobby is non-commercial only. Turning payments on means moving to Vercel Pro first (an owner decision when there are enough users).
 - **Supabase:** both free project slots are in use (WishJar and thebirthdayrun). The restored `thebirthdayrun` project gets wiped and reused, so there's no slot for a staging project.
 
-**Look and feel:** plain for now, built from the Template's components (shadcn/ui), with no old "childish" styling carried over. A modern redesign comes at the end of the project, page by page with the owner, from visuals they make.
+**Look and feel:** plain for now, built from the Template's components (shadcn/ui), with no old "childish" styling carried over. A modern redesign comes at the end of the project, page by page with the owner, from visuals they make. It started on 2026-11-24 with the landing page, whose look every other page follows (decision 0016).
 
 **Time:** about 6 hrs/day, every day (≈42 hrs/week) from 2026-10-06. WishJar gets another equal 6 hrs/day, and the two run in parallel. No deadline: complete and secure over fast. Grace (Hermes) can build safe tickets overnight.
 
@@ -356,6 +356,7 @@ flowchart TD
 
 #### Template S-1 Landing (changed body) · FR-2
 - Hero h1 `appConfig.name`, `appConfig.description`; primary "Get started" → Template S-5; secondary M-102 → S-103. Signed in: Template behaviour. No feature grid.
+- **Look:** decision 0016: a 3D tunnel of retailer logos behind a frosted card, a "Pause motion" control, hovering a logo shows its name and reward and freezes the motion, and nothing below the hero (one screen).
 
 #### S-101 Onboarding (`/onboarding`) · FR-6, FR-7, FR-10
 - **Who:** signed in, no birthday (onboarded users go to S-102).
@@ -610,8 +611,9 @@ Template §3.6 unchanged: shadcn/ui defaults, neutral base, light and dark, `app
 - **Urgency colours (C-103):** shadcn-style tokens `--urgent`, `--soon`, `--relaxed` (each with a `-foreground`), defined in `globals.css` for light and dark, used only by C-103 and the route pins; contrast per §3.7.
 - **Feel:** plain and adult. One primary button per screen (S-105: none outside dialogs; the per-card action is outline). No emoji in UI or emails.
 - **Map:** OpenFreeMap's style as served (D11); pins use `--primary` with white numbers.
+- **Brand look:** decision 0016 sets the brand colours, the headline font and the motion rules. Pages move to it one at a time with the owner; until then they keep the Template look.
 
-**Patterns to reject** (whole app): Template §3.6's list, plus the old app's look: gradients, bouncing or pulsing animation, emoji as icons or headings, rounded "pill" badges with shadows, exclamation-heavy copy. **Exception** to the Template list: deleting a pickup or a group uses C-108, because FR-20 and FR-27 require asking first.
+**Patterns to reject** (whole app): Template §3.6's list, plus the old app's look: bouncing or pulsing animation, motion that can't be paused, emoji as icons or headings, rounded "pill" badges with shadows, exclamation-heavy copy. **Exception** to the Template list: deleting a pickup or a group uses C-108, because FR-20 and FR-27 require asking first.
 
 **Redesign later revisits** (SPEC §1, with the owner's visuals): brand colours and a display font; card layout for Discover and My Rewards; the birthday header; the dashboard; logo treatment; map style and pins; email layout.
 
@@ -621,6 +623,7 @@ Template §3.7 applies (NFR-23). App additions (NFR-6, NFR-7):
 - **Map:** the stop list, "no map pin" list and Google links are the content; the map is a supplement with `role="img"` and M-161, out of the tab order except MapLibre's own zoom controls. Pins are numbered to match the list.
 - **Reorder:** each item's drag handle is a real button (M-236) operable by keyboard (D13); announcements M-237 go through a live region; a "remove" button stays available as a non-drag alternative.
 - **Dialogs:** C-107, C-108, C-109 trap focus, return it to the trigger, close on Escape; C-107's reasons are a labelled `radiogroup`.
+- **Motion:** every moving background has a visible pause control and starts paused when the device asks for reduced motion (WCAG 2.2.2); anything it shows is also reachable without it (decision 0016).
 - **Location:** the browser prompt only appears after M-150 is pressed (NFR-3); the ZIP path never needs it.
 - **Undo (C-109):** the undo row stays for FR-18's full period and is announced; it isn't a toast, so it isn't lost to auto-dismiss.
 - **External links** (Google Maps, store finders, websites) say they open a new tab (icon with "opens in a new tab" visually hidden text).
