@@ -8,7 +8,7 @@ Two launches (ROADMAP): **v1** after phase 4 and **v2 sign-off** after phase 7 (
 - [ ] Google sign-in tried by hand: new account, existing account, cancel
 - [ ] Tested on a real phone (iPhone and Android if possible) and one desktop browser
 - [ ] Empty, error and loading states look right (SPEC §3.3)
-- [ ] **F-14 done:** every retailer checked, with source and date; unverifiable ones held back (BUILD F-14); count recorded here: ___
+- [ ] **F-14 done:** every retailer checked, with source and date; unverifiable ones held back (BUILD F-14); count recorded here: 100 live, 87 held back in `data/retailers-unverified.csv`, 4 removed (Golden Corral, Red Robin, Francesca's, Joann); checked 2026-11-23, PRs #31–#41. Most held-back rows state a reward but not its dates (app check: #21)
 - [ ] Signed-out Discover shows popular retailers only, and the "+N more" count is right (FR-2)
 - [ ] Owner and both sisters granted premium on production (metric 4)
 
