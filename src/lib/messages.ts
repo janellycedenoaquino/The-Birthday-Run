@@ -89,7 +89,7 @@ export const M = {
   "M-109": "Which programs are you in?",
   "M-110": "Save {count} programs",
   "M-111":
-    "Sign up free to track the rewards you're in, see how long each lasts and plan your run.",
+    "Sign up free to get a countdown for your own birthday and plan your run.",
   "M-111b": "Choose programs to continue",
   "M-111c": "Skip for now",
   "M-118": "Step {step} of 2",

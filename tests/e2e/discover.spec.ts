@@ -27,7 +27,7 @@ test("signed out: every non-retired retailer, the sign-up prompt, and a 404 for 
   await expect(page.getByRole("heading", { level: 3 })).toHaveCount(total);
   await expect(page.getByRole("heading", { name: "Starbucks" })).toBeVisible();
   await expect(
-    page.getByText("Sign up free to track the rewards you're in", {
+    page.getByText("Sign up free to get a countdown for your own birthday", {
       exact: false,
     }),
   ).toBeVisible();

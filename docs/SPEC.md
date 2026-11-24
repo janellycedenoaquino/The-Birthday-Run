@@ -436,7 +436,7 @@ Template M-, API-, E- texts apply unchanged. Placeholders in `{braces}` are fill
 - M-109 (S-101 h1, step 2): "Which programs are you in?"
 - M-110: "Save {count} programs" (one: "Save 1 program") · M-111b: "Choose programs to continue" (disabled) · M-111c: "Skip for now"
 - M-118: "Step {step} of 2"
-- M-111 (S-103 / S-104 sign-up prompt): "Sign up free to track the rewards you're in, see how long each lasts and plan your run."
+- M-111 (S-103 / S-104 sign-up prompt): "Sign up free to get a countdown for your own birthday and plan your run."
 
 **Rewards and pickups**
 - M-112 (C-109 title): "Mark {retailer} picked up"
