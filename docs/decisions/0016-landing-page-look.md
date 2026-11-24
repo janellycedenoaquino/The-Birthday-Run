@@ -53,6 +53,13 @@ Why these colours: research on colour and emotion finds that brightness and satu
 - **Details open as a pop-up card** over Discover (a bottom sheet on phones), in stacked sections: logo, name, description and category; "Your birthday gift" (full reward and its type explained); "Add to My Rewards" and "Visit website" (new tab); When (the general rule plus "Your dates"); a "Join early" warning when the brand has a lead time (FR-49); What you need (purchase, membership, other); the checked date, the source and "Something wrong? Report it" (C-107).
 - **Build note:** each brand keeps its own URL (`/discover/[retailerId]`). Clicking a card on Discover opens it as the pop-up (an intercepted route, so the URL changes and Back closes it); opening the URL directly, or refreshing, shows the full page, which is what search engines and shared links get. Focus moves into the pop-up, Escape and the close button return focus to the card.
 
+**Phone menu (C-101 on phones):**
+- A bottom tab bar on every signed-in page on phones: Home (Dashboard), Discover, My Rewards, Plan, History, each with an icon and a label; the current tab sits on the pink block with a navy outline. The account menu stays on the round initial at the top right. Laptops keep the links in the top bar. The tab bar is hidden on onboarding, like the rest of C-101.
+
+**Onboarding (S-101):**
+- One frosted card on the glow (no logos behind it), "Step 1 of 2" text, month and day menus, then "Which programs are you in?" as a logo grid with checkboxes, search and category chips. The Save button's count ("Save 4 programs") is the only feedback when picking.
+- **The card turns around:** Continue flips the card on its vertical axis (about 0.8 s, from the rotating gradient cards, pick 3), and its back is step 2. "← Change birthday" flips it back; Save or Skip flips it to the finish screen with confetti. Focus moves to the new heading. When motion is paused or reduced, the step changes with no flip.
+
 **Retailer page (S-104), timing split:**
 - **Public:** the general rule (for example "30 days from your birthday"). That fact is what people search for, so it stays readable (decision 0017).
 - **Behind sign-up:** "Sign up to see your exact dates." Signed in, the page shows the user's own dates and days left (for example "Jan 3 – Feb 2 · 12 days left"). Only an account knows the birthday, so this is the honest reason to sign up.
@@ -66,6 +73,8 @@ Why these colours: research on colour and emotion finds that brightness and satu
 - **Game inside the card** (between the text and the buttons): fits a laptop, but on a phone it pushes "Get started" off the first screen. Phone layouts tried: tap-to-play link, buttons first, compact (no subtext); the pull-up tab won and is used on the laptop too.
 - **Rolling waves, still background:** flowing glow at slow speed picked.
 - **Discover:** tilting cards (pick 4), flip cards, colour-band cards, shelves by category, a list, category chips or tabs, a compact header with search, a sliding logo band. Also four ways to reach Discover from the landing page: a third button, a text link, a "Discover" link by the name, and the pick.
+- **Phone menu:** a ☰ button with a full-screen menu, a floating navy dock, and scrollable tabs under the name.
+- **Onboarding:** logos floating or the tilted wall behind the card, step tabs or a pink progress bar, tapping a month then a day, a list with rewards, and picked logos flying into a tray or spinning in a 3D ring.
 - **Brand details as a side drawer or a full page only; a gift-ticket or two-column details layout; a green check or green outline for "added"; the add button only inside the details.**
 - **Timing on the cards,** and **hiding the timing behind sign-up:** dropped. Cards stay clean, and hiding the fact would cost search traffic.
 - **Sign in / sign up:** 3D tunnel, two-row marquee and glow-only backgrounds; the card with the reminder at its side or under it; a brand count by category or a sample checklist as the reminder; a link at the bottom to switch (the Template's way); and pick 8's "your birthday run" preview checklist after Continue. The owner kept the confetti from that preview but not the checklist.
