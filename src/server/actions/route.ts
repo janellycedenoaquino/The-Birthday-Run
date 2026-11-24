@@ -26,6 +26,7 @@ import {
   type StartLocation,
 } from "@/lib/validation/route";
 import { requirePremium } from "@/server/auth/app-guards";
+import { loadPlanContext } from "@/server/rewards/plan-context";
 import { runAction } from "@/server/run-action";
 import { rateLimit } from "@/server/security/rate-limit";
 import {
@@ -247,7 +248,7 @@ export async function getGroupRoute(
   if (!parsed.success) return bad(parsed);
   return runAction("getGroupRoute", () =>
     premiumOnly(async () => {
-      const { supabase, user } = await requirePremium();
+      const { supabase, user, profile } = await requirePremium();
       const limit = await rateLimit("getGroupRoute", { userId: user.id });
       if (!limit.ok) return limit;
       const { start, groupId } = parsed.data;
@@ -264,10 +265,16 @@ export async function getGroupRoute(
       if (!group) return { ok: false, error: "BR-11" };
       const resolved = await resolveStart(supabase, start);
       if (!resolved) return unknownZip;
-      // F-6's order: position, then item ID (as S-106 shows it).
+      // F-6's order: position, then item ID (as S-106 shows it). Rewards already picked up this
+      // cycle are left out: no stop to make (owner, 2026-11-24).
+      const ctx = await loadPlanContext(supabase, profile);
+      const pickedUp = new Set(
+        ctx.all.filter((r) => r.pickedUp).map((r) => r.id),
+      );
       const order = [...group.items]
         .sort((a, b) => a.position - b.position || a.id.localeCompare(b.id))
-        .map((i) => i.retailer_id);
+        .map((i) => i.retailer_id)
+        .filter((id) => !pickedUp.has(id));
       const { data: retailers, error: rError } = order.length
         ? await supabase
             .from("retailers")

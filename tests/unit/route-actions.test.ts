@@ -377,7 +377,8 @@ describe("getGroupRoute (FR-33)", () => {
     });
   });
 
-  it("keeps the group's order even when another order is shorter", async () => {
+  /** A group of "far" (position 1) then "near", each with one store; the start is near "near". */
+  const farThenNear = () => {
     db.tables.reward_groups = {
       data: {
         id: groupId,
@@ -403,8 +404,26 @@ describe("getGroupRoute (FR-33)", () => {
           }
         : { data: [], error: null },
     );
+  };
+
+  it("keeps the group's order even when another order is shorter", async () => {
+    farThenNear();
     const r = await getGroupRoute({ start: coords, groupId });
     if (!r.ok) throw new Error(r.error);
     expect(r.data!.stops.map((s) => s.retailerName)).toEqual(["Far", "Near"]);
+  });
+
+  it("leaves out a reward already picked up this cycle (owner, 2026-11-24)", async () => {
+    farThenNear();
+    enrollIn(retailer("near", "Near"), retailer("far", "Far"));
+    db.tables.pickups = {
+      data: [{ retailer_id: "far", picked_up_on: "2026-06-15" }],
+      error: null,
+    };
+    const r = await getGroupRoute({ start: coords, groupId });
+    if (!r.ok) throw new Error(r.error);
+    expect(r.data!.stops.map((s) => s.retailerName)).toEqual(["Near"]);
+    const asked = db.rpc.mock.calls.find(([fn]) => fn === "nearby_stores")![1];
+    expect(asked.p_retailer_ids).toEqual(["near"]);
   });
 });

@@ -1323,7 +1323,7 @@ type RouteResult = {
 9. `noPin` entries carry `store_finder_url`, else `website_url` (FR-31).
 10. Return `RouteResult`. C-106 renders the list, no-pin list and links from it as plain HTML (no map dependency), then mounts the map with `start` and `stops`.
 
-**`getGroupRoute`** (S-106, groups with ≥ 2 rewards): same, but step 6 reads the group's items in F-6's order through RLS (none → BR-11) and step 8 uses `chooseStops(…, { order })` and no `orderStops`.
+**`getGroupRoute`** (S-106, groups with ≥ 2 rewards): same, but step 6 reads the group's items in F-6's order through RLS (none → BR-11), leaving out rewards already picked up this cycle (owner, 2026-11-24) and step 8 uses `chooseStops(…, { order })` and no `orderStops`.
 
 ### States and edge cases
 - No start yet: only C-105 (C-106 rule). Start cleared on reload (D10).
