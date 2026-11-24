@@ -377,6 +377,7 @@ flowchart TD
 #### S-103 Discover (`/discover`) · FR-2, FR-3, FR-5, FR-45
 - **Who:** anyone. Data by role (D3).
 - **Look (decision 0016):** big centred headline, logo-only cards in a grid that show the brand and reward on hover or keyboard focus (always shown on touch screens), no timing and no category tags on the cards, glow background.
+- **Signed-in look (decision 0016):** the same logo cards with a "+" add button on each and a pink "Added" ribbon on enrolled ones; clicking a card opens S-104 as a pop-up card over Discover (bottom sheet on phones), with its own URL.
 - **Signed out shows:** h1 M-171a; text M-171b; every non-retired C-102 card (no toggle, no filters; decision 0017); at the end, card M-111 with "Sign up free" → Template S-5 (`next=/discover`) and "Sign in".
 - **Signed in shows:** h1 M-171a; search "Search by name"; category tabs (M-170); premium filters row: state filter (FR-5: needs C-105; on → M-172 with `{state}`, `{hidden}` and "Show all" M-173) and duration select (M-174–M-177) and checkbox M-177a (FR-45). Free users see one C-104 (M-131) in place of both. Then the grid of C-102 with M-178 (`{shown}` of `{total}`).
 - **Main action:** open S-104; toggle enrollment.
