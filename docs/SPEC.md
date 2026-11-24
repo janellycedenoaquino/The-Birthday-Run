@@ -400,6 +400,7 @@ flowchart TD
 - **States:** no enrollments: M-211 with links to S-103 and S-106 (in or out of the window) · all picked up or expired: M-212 · no match: M-179 · loading: skeleton · error: Template S-20.
 
 #### S-106 Plan (`/plan`) · FR-22–FR-29, FR-33, FR-40
+- **Look (decision 0016):** wide screens show "Rewards to plan" and "Your groups" side by side (the rewards list stays in view while scrolling groups); phones and narrow tablets (up to 860 px) show two tabs, "To plan" and "My groups ({count})". Each group is a pink ticket: a date stamp (month and day), name, pickup line, a dashed tear line, then the numbered stops. Selecting rewards opens the sticky bar from item 3.
 - **Shows, in order:**
   1. h1 M-220; M-221 (which window is being planned, `{start}`–`{end}`).
   2. Over-limit notice (FR-40), when the user has more than the free limits: M-222.

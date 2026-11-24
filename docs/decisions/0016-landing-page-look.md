@@ -67,6 +67,11 @@ Why these colours: research on colour and emotion finds that brightness and satu
 - **Route for free users (C-104):** the upgrade card sits over a blurred preview of a route map, so people see what Premium adds. The preview is a static picture with no real stores or location. Premium users get C-106: the map, numbered stops and Google Maps links.
 - **Special states:** outside the window, a card with a calendar tile showing the start date, "Your next run starts {date}", and the S-105 links. With everything picked up, M-212 with confetti and links to History and Discover.
 
+**Plan (S-106):**
+- **Layout:** side by side on wide screens: "Rewards to plan" on the left (stays in view), "Your groups" on the right. On phones and narrow tablets (up to 860 px) the two become tabs, "To plan" and "My groups (N)", so neither list is a long scroll away.
+- **Groups:** pink tickets: a white date stamp (month and day), the name, "Pickup: {date} at {time}", a dashed tear line, then numbered stops in pink circles with a drag handle (keyboard: Space, arrows, Space) and a remove ×. The ⋯ menu holds Edit, Duplicate (premium) and Delete (C-108). Premium groups with 2+ stops get "Show route" with a small map.
+- **Adding:** tick rewards (picked-up ones are greyed and can't be ticked), then a navy bar "N selected · Clear · Add to group" sits above the tab bar; the dialog has "New group" / "Existing group" tabs and warns when a reward ends before the pickup. Free users see their limits ("2 of 3 groups", "3 of 5 rewards"); Smart Grouping shows as a pink-blue banner, or its upgrade text for free users.
+
 **Retailer page (S-104), timing split:**
 - **Public:** the general rule (for example "30 days from your birthday"). That fact is what people search for, so it stays readable (decision 0017).
 - **Behind sign-up:** "Sign up to see your exact dates." Signed in, the page shows the user's own dates and days left (for example "Jan 3 – Feb 2 · 12 days left"). Only an account knows the birthday, so this is the honest reason to sign up.
@@ -84,6 +89,7 @@ Why these colours: research on colour and emotion finds that brightness and satu
 - **Onboarding:** logos floating or the tilted wall behind the card, step tabs or a pink progress bar, tapping a month then a day, a list with rewards, and picked logos flying into a tray or spinning in a 3D ring.
 - **Brand details as a side drawer or a full page only; a gift-ticket or two-column details layout; a green check or green outline for "added"; the add button only inside the details.**
 - **My Rewards:** one tap to mark picked up (with an undo bar or a "Claimed!" stamp); filters as a select or behind a Filter button; a "Report a problem" link under every card; a plain upgrade card for the route.
+- **Plan:** the list above the groups on every screen; two tabs on every screen; plain group cards; a "route line" group look; a "+ Group" button on each reward.
 - **Timing on the cards,** and **hiding the timing behind sign-up:** dropped. Cards stay clean, and hiding the fact would cost search traffic.
 - **Sign in / sign up:** 3D tunnel, two-row marquee and glow-only backgrounds; the card with the reminder at its side or under it; a brand count by category or a sample checklist as the reminder; a link at the bottom to switch (the Template's way); and pick 8's "your birthday run" preview checklist after Continue. The owner kept the confetti from that preview but not the checklist.
 
