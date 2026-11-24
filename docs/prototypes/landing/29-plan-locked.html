@@ -1,0 +1,307 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>PROTOTYPE · TBR Plan (locked)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<script src="retailers-detail.js"></script>
+<style>
+/* Throwaway prototype: Plan (S-106) in the locked look (decision 0016). Sample: Dec 9, day 4 of the run. */
+:root{--bg:#FFFCF7;--ink:#1F2A5C;--muted:#4C557D;--hl:#FF9EC4;--btn:#8EC5FF;--hover:#8FE3B0;--line:color-mix(in srgb,var(--ink) 16%,transparent)}
+*{box-sizing:border-box;margin:0}
+body{font-family:"Plus Jakarta Sans",system-ui,sans-serif;background:var(--bg);color:var(--ink);min-height:100vh;overflow-x:hidden}
+.glow{position:fixed;inset:0;z-index:-1;overflow:hidden}
+.blob{position:absolute;width:70vw;height:70vw;border-radius:50%;filter:blur(40px)}
+.blob.p{background:radial-gradient(circle,#FFD6E5 0%,transparent 65%);left:-25vw;top:-30vw}.blob.b{background:radial-gradient(circle,#D6EBFF 0%,transparent 65%);right:-25vw;top:-25vw}.blob.g{background:radial-gradient(circle,#D3F5E1 0%,transparent 65%);left:15vw;bottom:-45vw}
+a{color:inherit}
+.hl{background:var(--hl);padding:0 .14em;border-radius:6px;display:inline-block;transform:rotate(-2deg)}
+.btn{font-family:inherit;font-weight:800;font-size:15px;line-height:1;padding:12px 16px;border-radius:12px;border:0;cursor:pointer;background:var(--btn);color:var(--ink);box-shadow:0 0 0 1.5px var(--ink);text-decoration:none;display:inline-flex;gap:6px;align-items:center;justify-content:center}
+.btn:hover{box-shadow:3px 3px 0 var(--ink),0 0 0 1.5px var(--ink)}.btn.sm{font-size:13px;padding:9px 12px}.btn.ghost{background:#fff}.btn.pink{background:var(--hl)}
+.lnk{font-family:inherit;font-weight:700;font-size:14px;background:none;border:0;color:var(--ink);cursor:pointer;text-decoration:underline;text-decoration-color:var(--hl);text-decoration-thickness:3px;text-underline-offset:4px}
+.top{display:flex;align-items:center;gap:14px;padding:16px 24px}
+.logo{font-weight:800;font-size:18px;letter-spacing:-.02em;background:rgba(255,252,247,.7);padding:8px 12px;border-radius:12px}
+.top nav{display:flex;gap:4px;margin-left:8px}.top nav a{font-weight:700;font-size:15px;text-decoration:none;padding:9px 12px;border-radius:10px}
+.top nav a[aria-current]{background:#fff;box-shadow:0 0 0 1.5px var(--ink)}
+.me{margin-left:auto;width:40px;height:40px;border-radius:50%;background:#FFD6E5;display:grid;place-items:center;font-weight:800;box-shadow:0 0 0 1.5px var(--ink)}
+.tabbar{display:none}
+main{max-width:1180px;margin:0 auto;padding:8px 24px 170px}
+.head{display:flex;justify-content:space-between;align-items:flex-end;gap:16px;flex-wrap:wrap}
+.head h1{font-size:42px;font-weight:800;letter-spacing:-.035em;line-height:1.08}
+.head p{color:var(--muted);margin-top:8px}
+.limit{font-size:13px;font-weight:700;padding:8px 12px;border-radius:10px;background:rgba(255,255,255,.75);box-shadow:inset 0 0 0 1.5px var(--line)}
+.limit b{color:var(--ink)}
+.notice{margin-top:14px;padding:12px 14px;border-radius:14px;background:#FFF0E6;box-shadow:inset 0 0 0 1.5px #FFB996;font-size:14px}
+/* layout options */
+.wrap{margin-top:22px;display:grid;gap:22px}
+body.ly-board .wrap{grid-template-columns:minmax(0,1fr) minmax(0,1.25fr);align-items:start}
+body.ly-board .left{position:sticky;top:12px}
+.ptabs{display:none;gap:6px;margin-top:20px;background:rgba(255,255,255,.6);padding:5px;border-radius:14px;box-shadow:inset 0 0 0 1.5px var(--line);width:max-content}
+.ptabs button{font-family:inherit;font-weight:800;font-size:15px;padding:10px 16px;border-radius:10px;border:0;background:none;color:var(--muted);cursor:pointer}
+.ptabs button.on{background:#fff;color:var(--ink);box-shadow:0 0 0 1.5px var(--ink)}
+body.ly-tabs .ptabs{display:flex}
+body.ly-tabs.tab-groups .left,body.ly-tabs.tab-plan .right{display:none}
+.panelbox{border-radius:24px;padding:18px;background:rgba(255,252,247,.62);backdrop-filter:blur(14px);box-shadow:0 0 0 1.5px color-mix(in srgb,var(--ink) 12%,transparent)}
+.sec h2{font-size:22px;font-weight:800;letter-spacing:-.02em;display:flex;align-items:center;gap:10px;justify-content:space-between}
+.sec h2 small{font-size:14px;color:var(--muted);font-weight:700}
+.tools{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin:12px 0}
+.tools input[type=search]{font-family:inherit;font-size:15px;padding:10px 12px;border-radius:12px;border:0;flex:1;min-width:160px;background:#fff;color:var(--ink);box-shadow:inset 0 0 0 1.5px var(--line)}
+.tools label{font-size:14px;font-weight:700;display:flex;gap:6px;align-items:center}
+.list{display:grid;gap:8px}
+.it{display:grid;grid-template-columns:auto 54px 1fr auto;gap:12px;align-items:center;background:#fff;border-radius:14px;padding:8px 12px;box-shadow:0 0 0 1.5px var(--line)}
+.it .lg{height:36px;display:grid;place-items:center}.it img{max-width:52px;max-height:32px;object-fit:contain}
+.it .nm{font-weight:800;font-size:15px}.it .in{font-size:12.5px;color:var(--muted);margin-top:2px}
+.it .in b{background:#E6DEFF;color:var(--ink);padding:1px 6px;border-radius:6px;font-weight:700;margin-right:4px}
+.it.sel{box-shadow:0 0 0 2.5px var(--ink);background:#FFF5F9}
+.it.off{opacity:.6}
+.ck{width:24px;height:24px;border-radius:7px;box-shadow:inset 0 0 0 2px var(--line);display:grid;place-items:center;font-weight:800;font-size:14px;background:#fff;border:0;cursor:pointer;color:var(--ink)}
+.it.sel .ck{background:var(--hover);box-shadow:inset 0 0 0 2px var(--ink)}
+body.ad-plus .ck{display:none}
+body.ad-plus .it{grid-template-columns:54px 1fr auto}
+.badge{display:flex;align-items:center;gap:5px;font-size:12px;font-weight:800;padding:5px 8px;border-radius:9px;white-space:nowrap}
+.b-urgent{background:#FFDCDC;box-shadow:inset 0 0 0 1.5px #D64545}.b-soon{background:#FFE3D3;box-shadow:inset 0 0 0 1.5px #E07A3F}.b-relax{background:#D3F5E1;box-shadow:inset 0 0 0 1.5px #2E9E6A}.b-done{background:#EEF1FA;box-shadow:inset 0 0 0 1.5px var(--line)}
+.addbtn{display:none}
+body.ad-plus .addbtn{display:inline-flex}
+body.ad-plus .it .badge{display:none}
+.sticky{position:fixed;left:50%;bottom:22px;transform:translateX(-50%);z-index:30;background:var(--ink);color:#fff;border-radius:16px;padding:10px 12px 10px 18px;display:flex;gap:14px;align-items:center;font-weight:800;box-shadow:0 16px 40px -12px rgba(0,0,0,.45)}
+.sticky .btn{box-shadow:none;background:var(--hl)}
+.sticky .lnk{color:#fff}
+.smart{margin-top:14px;display:flex;gap:12px;align-items:center;justify-content:space-between;border-radius:16px;padding:14px 16px;background:linear-gradient(90deg,#FFE8F0,#EAF4FF);box-shadow:inset 0 0 0 1.5px var(--line)}
+.smart p{font-size:14px;color:var(--muted)}.smart b{font-size:16px;display:block;color:var(--ink)}
+.up{border-radius:14px;padding:12px 14px;background:rgba(255,252,247,.85);box-shadow:inset 0 0 0 2px var(--hl);font-size:14px}
+.up b{display:block}
+/* groups */
+.groups{display:grid;gap:16px;margin-top:12px}
+.gc{border-radius:22px;background:rgba(255,255,255,.9);box-shadow:0 0 0 1.5px var(--line);overflow:hidden}
+.gh{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:14px 16px}
+.gh h3{font-size:20px;font-weight:800;letter-spacing:-.02em}
+.gh .when{font-size:13.5px;color:var(--muted);margin-top:3px;display:flex;gap:6px;align-items:center}
+.gh .when svg{width:15px;height:15px}
+.gmenu{position:relative}
+.dots{width:36px;height:36px;border-radius:10px;border:0;background:#fff;box-shadow:0 0 0 1.5px var(--line);cursor:pointer;font-size:18px;font-weight:800;color:var(--ink)}
+.mm{position:absolute;right:0;top:42px;z-index:20;background:#fff;border-radius:14px;padding:6px;box-shadow:0 0 0 1.5px var(--ink),0 16px 30px -12px rgba(0,0,0,.3);min-width:170px}
+.mm button{display:block;width:100%;text-align:left;font-family:inherit;font-weight:700;font-size:14px;padding:10px;border:0;background:none;border-radius:9px;cursor:pointer;color:var(--ink)}
+.mm button:hover{background:#FFD6E5}.mm .del{color:#B02A2A}
+.stops{display:grid;gap:6px;padding:0 12px 12px}
+.st{display:grid;grid-template-columns:30px 26px 44px 1fr auto;gap:10px;align-items:center;background:#FFFCF7;border-radius:12px;padding:7px 10px;box-shadow:inset 0 0 0 1.5px var(--line)}
+.st.drag{opacity:.4}.st.over{box-shadow:inset 0 0 0 2px var(--ink)}
+.st .num{width:26px;height:26px;border-radius:50%;background:var(--hl);display:grid;place-items:center;font-weight:800;font-size:13px;box-shadow:0 0 0 1.5px var(--ink)}
+.st .hd{border:0;background:none;cursor:grab;color:var(--muted);font-size:18px;line-height:1;padding:4px}
+.st img{max-width:42px;max-height:26px;object-fit:contain}
+.st .nm{font-weight:700;font-size:14px}.st .nm span{display:block;font-size:12px;color:var(--muted);font-weight:600}
+.st .rm{border:0;background:none;cursor:pointer;color:var(--muted);font-size:18px}
+.gf{display:flex;justify-content:space-between;align-items:center;padding:0 16px 14px;font-size:13px;color:var(--muted)}
+.warn{margin:0 12px 10px;padding:8px 10px;border-radius:10px;background:#FFF0E6;box-shadow:inset 0 0 0 1.5px #FFB996;font-size:13px}
+/* group styles */
+body.gc-ticket .gh{background:#FFD6E5;border-bottom:2px dashed var(--ink);position:relative}
+body.gc-ticket .gc{box-shadow:0 0 0 1.5px var(--ink)}
+body.gc-ticket .datestamp{display:flex}
+.datestamp{display:none;flex-direction:column;align-items:center;justify-content:center;width:58px;height:58px;border-radius:14px;background:#fff;box-shadow:0 0 0 1.5px var(--ink);flex:none}
+.datestamp small{font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.08em}.datestamp b{font-size:22px;font-weight:800;line-height:1}
+.ghl{display:flex;gap:12px;align-items:center}
+body.gc-timeline .stops{padding-left:28px;position:relative;gap:10px}
+body.gc-timeline .stops:before{content:"";position:absolute;left:41px;top:8px;bottom:22px;border-left:3px dotted var(--hl)}
+body.gc-timeline .st{background:none;box-shadow:none;padding:4px 6px;grid-template-columns:26px 26px 44px 1fr auto}
+body.gc-timeline .st .num{position:relative;z-index:1}
+body.gc-timeline .gh{padding-bottom:6px}
+.empty{color:var(--muted);padding:14px 4px}
+.estate{border-radius:24px;padding:28px;text-align:center;background:rgba(255,252,247,.75);box-shadow:inset 0 0 0 2px var(--hl);margin-top:12px}
+.estate h3{font-size:22px;font-weight:800}.estate p{color:var(--muted);margin:8px auto 14px;max-width:460px}
+.routebar{margin:0 12px 12px}
+.minimap{border-radius:14px;overflow:hidden;box-shadow:0 0 0 1.5px var(--ink);margin-top:8px;height:160px;background:#EAF4FF}
+.minimap svg{width:100%;height:100%;display:block}
+/* dialogs */
+.ov{position:fixed;inset:0;z-index:40;background:rgba(31,42,92,.28);display:grid;place-items:center;padding:16px}
+.dlg{width:min(520px,100%);max-height:calc(100vh - 32px);overflow:auto;background:var(--bg);border-radius:24px;padding:24px;box-shadow:0 0 0 1.5px var(--ink),0 30px 80px -20px rgba(0,0,0,.35)}
+.dlg h2{font-size:22px;font-weight:800;letter-spacing:-.02em}
+.dlg .sub{color:var(--muted);margin-top:4px;font-size:14px}
+.dlg .tabs{display:flex;gap:4px;background:rgba(255,255,255,.6);border-radius:12px;padding:4px;margin:16px 0 6px;box-shadow:inset 0 0 0 1.5px var(--line)}
+.dlg .tabs button{flex:1;font-family:inherit;font-weight:700;font-size:14px;padding:9px;border:0;border-radius:9px;background:none;color:var(--muted);cursor:pointer}
+.dlg .tabs button.on{background:#fff;color:var(--ink);box-shadow:0 0 0 1.5px var(--ink)}
+.dlg label{display:block;font-weight:700;font-size:14px;margin:12px 0 6px}
+.dlg input[type=text],.dlg input[type=date],.dlg input[type=time]{width:100%;font-family:inherit;font-size:16px;padding:11px 12px;border-radius:12px;border:0;background:#fff;color:var(--ink);box-shadow:inset 0 0 0 1.5px var(--line)}
+.dlg .two{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.dlg .rad{display:grid;gap:8px;margin-top:10px}
+.dlg .rad label{display:flex;gap:10px;align-items:center;margin:0;padding:11px 12px;border-radius:12px;background:#fff;box-shadow:inset 0 0 0 1.5px var(--line);cursor:pointer;font-weight:600}
+.dlg .rad label:has(input:checked){box-shadow:inset 0 0 0 2px var(--ink);background:#FFE8F0}
+.dlg .rad small{margin-left:auto;color:var(--muted)}
+.dlg .acts{display:flex;justify-content:flex-end;gap:10px;margin-top:18px}
+.dlg .warnd{margin-top:12px;padding:10px 12px;border-radius:10px;background:#FFF0E6;box-shadow:inset 0 0 0 1.5px #FFB996;font-size:13px}
+.sugg{display:grid;gap:10px;margin-top:14px}
+.sg{border-radius:16px;background:#fff;box-shadow:0 0 0 1.5px var(--line);padding:12px 14px}
+.sg b{font-size:16px}.sg p{font-size:13px;color:var(--muted);margin-top:4px}
+.sg .lgs{display:flex;gap:6px;margin-top:8px}.sg .lgs span{width:46px;height:30px;border-radius:8px;background:#FFFCF7;display:grid;place-items:center;box-shadow:inset 0 0 0 1.5px var(--line)}.sg .lgs img{max-width:38px;max-height:22px;object-fit:contain}
+.toastbar{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);z-index:45;background:var(--ink);color:#fff;border-radius:14px;padding:12px 16px;font-weight:700}
+/* panel */
+.panel{position:fixed;left:16px;bottom:16px;z-index:50;background:#111;color:#ddd;border-radius:16px;padding:12px 14px;font:500 12px/1.2 system-ui,sans-serif;box-shadow:0 20px 50px -10px rgba(0,0,0,.5);max-width:calc(100vw - 32px);width:600px}
+.panel.min .rws{display:none}
+.panel .tp{display:flex;justify-content:space-between;align-items:center}.panel .tp b{color:#fff;font-size:13px}
+.panel button{font:inherit;background:#222;color:#ddd;border:0;border-radius:8px;padding:6px 9px;cursor:pointer}
+.panel button.on{background:#fff;color:#111;font-weight:700}
+.prow{display:grid;grid-template-columns:110px 1fr;gap:8px;align-items:center;margin-top:8px}.prow>span{color:#999}.prow div{display:flex;flex-wrap:wrap;gap:4px}
+.now{margin-top:10px;color:#aaa;line-height:1.5}.now b{color:#fff}
+.ptag{position:fixed;top:10px;left:50%;transform:translateX(-50%);z-index:60;font:700 10px system-ui;letter-spacing:.15em;background:#111;color:#fff;padding:5px 8px;border-radius:6px}
+@media (max-width:860px){body.ly-board .wrap{grid-template-columns:1fr}body.ly-board .left{position:static}}
+@media (max-width:700px){
+  .top nav{display:none}.ptag{top:auto;bottom:130px}
+  .tabbar{display:grid;grid-template-columns:repeat(4,1fr);position:fixed;left:0;right:0;bottom:0;z-index:25;background:rgba(255,252,247,.94);backdrop-filter:blur(14px);border-top:1.5px solid var(--line);padding:8px 4px}
+  .tabbar a{display:flex;flex-direction:column;align-items:center;gap:3px;text-decoration:none;font-size:10.5px;font-weight:700;color:var(--muted)}
+  .tabbar i{width:42px;height:30px;border-radius:10px;display:grid;place-items:center}.tabbar svg{width:20px;height:20px}
+  .tabbar a[aria-current]{color:var(--ink)}.tabbar a[aria-current] i{background:var(--hl);box-shadow:0 0 0 1.5px var(--ink)}
+  main{padding:4px 14px 160px}.head h1{font-size:32px}.panelbox{padding:14px}
+  .it{grid-template-columns:auto 44px 1fr}.it .badge,.it .addbtn{grid-column:3;justify-self:start}
+  body.ad-plus .it{grid-template-columns:44px 1fr}body.ad-plus .it .addbtn{grid-column:2}
+  .st{grid-template-columns:26px 24px 36px 1fr auto;gap:8px}.sticky{bottom:84px;width:calc(100% - 28px);justify-content:space-between}.panel{bottom:76px}.dlg .two{grid-template-columns:1fr}.smart{flex-direction:column;align-items:flex-start}}
+
+/* locked: side by side on wide screens, two tabs on phones and narrow tablets */
+@media (max-width:860px){.ptabs{display:flex}body.tab-groups .left,body.tab-plan .right{display:none}}
+.panel{display:none!important}
+</style>
+</head>
+<body>
+<div class="ptag">PROTOTYPE · PLAN · LOCKED</div>
+<div class="glow" aria-hidden="true"><div class="blob p"></div><div class="blob b"></div><div class="blob g"></div></div>
+<header class="top"><span class="logo">The Birthday Run</span><nav><a href="#">Discover</a><a href="#">My Rewards</a><a href="#" aria-current="page">Plan</a><a href="#">History</a></nav><div class="me">J</div></header>
+<main id="main"></main>
+<nav class="tabbar" id="tabbar" aria-label="Main"></nav>
+<div id="layer"></div>
+
+<div class="panel" id="panel">
+  <div class="tp"><b>Plan options (prototype only)</b><button id="min">Hide</button></div>
+  <div class="rws">
+    <div class="prow"><span>1 Layout</span><div data-k="ly"><button data-v="stack">Rewards, then groups</button><button data-v="board">Side by side</button><button data-v="tabs">Two tabs</button></div></div>
+    <div class="prow"><span>2 Group look</span><div data-k="gc"><button data-v="card">Plain card</button><button data-v="ticket">Pink ticket + date stamp</button><button data-v="timeline">Route line</button></div></div>
+    <div class="prow"><span>3 Adding</span><div data-k="ad"><button data-v="select">Tick + "Add to group" bar</button><button data-v="plus">"+ Group" on each reward</button></div></div>
+    <div class="prow"><span>Sample</span><div data-k="tier"><button data-v="free">Free user</button><button data-v="premium">Premium user</button></div></div>
+    <div class="prow"><span>State</span><div data-k="sd"><button data-v="normal">2 groups</button><button data-v="nogroups">No groups yet</button><button data-v="nothing">Nothing to plan</button></div></div>
+    <div class="now" id="now"></div>
+  </div>
+</div>
+
+<script>
+const LOGO_DIR="../../../public/retailers/";
+const ALL=window.RETAILERS;
+const esc=t=>String(t??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const IDS=["panera-bread","olive-garden","cheesecake-factory","red-lobster","chipotle","alamo-drafthouse","ulta-beauty","chick-fil-a","bath-and-body-works","sephora","starbucks"];
+const MINE=IDS.map(id=>ALL.find(r=>r.id===id)).filter(Boolean);
+const PICKED=new Set(["sephora","starbucks"]);
+const TODAY=new Date(2026,11,9),BD=new Date(2026,11,6),day=86400000;
+const fmt=d=>d.toLocaleDateString("en-US",{month:"short",day:"numeric"});const fmtL=d=>d.toLocaleDateString("en-US",{weekday:"short",month:"short",day:"numeric"});
+const add=(d,n)=>new Date(d.getFullYear(),d.getMonth(),d.getDate()+n);
+function win(r){const w=r.w;if(w[0]==="m")return[new Date(2026,11,1),new Date(2026,11,31)];if(w[0]==="ms")return[new Date(2026,11,1),add(new Date(2026,11,1),w[1]-1)];if(w[0]==="me")return[BD,new Date(2026,11,31)];return[add(BD,w[0]),add(BD,w[1])]}
+const left=r=>Math.round((win(r)[1]-TODAY)/day)+1;
+const badge=r=>{const l=left(r);const [c,w]=l<4?["b-urgent","Ends soon"]:l<=10?["b-soon","Coming up"]:["b-relax","Plenty of time"];return `<span class="badge ${c}">${l===1?"Last day":l+" days left"}</span>`};
+const lgo=r=>r.l?`<img src="${LOGO_DIR+esc(r.l)}" alt="">`:`<b>${esc(r.n[0])}</b>`;
+const W={ly:{stack:"rewards, then groups",board:"side by side",tabs:"two tabs"},gc:{card:"plain card",ticket:"pink ticket",timeline:"route line"},ad:{select:"tick + bar",plus:"+ Group on each"},tier:{free:"free user",premium:"premium user"},sd:{normal:"2 groups",nogroups:"no groups yet",nothing:"nothing to plan"}};
+const st={ly:"board",gc:"ticket",ad:"select",tier:"premium",sd:"normal",q:"",hide:false,tab:"plan"};
+new URLSearchParams(location.search).forEach((v,k)=>{if(W[k]&&W[k][v])st[k]=v});
+const demo=new URLSearchParams(location.search).get("demo");
+let groups=[];const sel=new Set();
+function seed(){groups=st.sd==="normal"?[{id:1,name:"Saturday food run",date:new Date(2026,11,12),time:"11:00",items:["panera-bread","olive-garden","cheesecake-factory"]},{id:2,name:"Mall trip",date:new Date(2026,11,14),time:"14:30",items:["ulta-beauty","bath-and-body-works"]}]:[]}
+seed();
+const plannable=()=>st.sd==="nothing"?[]:MINE.filter(r=>left(r)>0&&Math.round((win(r)[0]-TODAY)/day)<=0||PICKED.has(r.id));
+const inG=id=>groups.filter(g=>g.items.includes(id)).map(g=>g.name);
+const LIM={groups:3,items:5};
+
+function rewardsBox(){const q=st.q.toLowerCase();const rows=plannable().filter(r=>(!q||r.n.toLowerCase().includes(q))&&(!st.hide||!inG(r.id).length));
+  const list=rows.map(r=>{const pk=PICKED.has(r.id),g=inG(r.id);return `<div class="it ${sel.has(r.id)?"sel":""} ${pk?"off":""}"><button class="ck" ${pk?"disabled":""} data-sel="${esc(r.id)}" role="checkbox" aria-checked="${sel.has(r.id)}" aria-label="Select ${esc(r.n)}">${sel.has(r.id)?"✓":""}</button><div class="lg">${lgo(r)}</div><div><p class="nm">${esc(r.n)}</p><p class="in">${pk?"Picked up":g.length?g.map(n=>`<b>${esc(n)}</b>`).join(""):esc(r.r)}</p></div>${pk?'<span class="badge b-done">Picked up</span>':`${badge(r)}<button class="btn sm ghost addbtn" data-add1="${esc(r.id)}">+ Group</button>`}</div>`}).join("");
+  const smart=st.tier==="premium"?`<div class="smart"><div><b>Smart Grouping</b><p>Let us group your rewards by which stores are close together.</p></div><button class="btn sm pink" id="smart">Suggest groups</button></div>`:`<div class="smart"><div><b>Smart Grouping is part of Premium</b><p>Premium is coming soon. Everything else in the app stays free.</p></div></div>`;
+  return `<section class="sec panelbox left"><h2>Rewards to plan <small>${rows.filter(r=>!PICKED.has(r.id)).length}</small></h2>
+   ${plannable().length?`<div class="tools"><input type="search" id="q" placeholder="Search" aria-label="Search rewards to plan" value="${esc(st.q)}"><label><input type="checkbox" id="hide" ${st.hide?"checked":""}> Hide grouped</label></div><div class="list">${list}</div>${smart}`:`<div class="estate"><h3>Nothing to plan yet</h3><p>Nothing to plan yet. Add programs in Discover.</p><a class="btn" href="#">Go to Discover</a></div>`}</section>`}
+
+const cal='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><rect x="4" y="5" width="16" height="15" rx="2"/><path d="M4 10h16M9 3v4M15 3v4"/></svg>';
+function groupsBox(){const lim=st.tier==="free"?`<span class="limit">Free plan: <b>${groups.length} of ${LIM.groups}</b> groups · up to ${LIM.items} rewards each</span>`:"";
+  const cards=groups.map(g=>{const items=g.items.map(id=>MINE.find(r=>r.id===id));const late=items.filter(r=>win(r)[1]<g.date);
+    const mapp=st.tier==="premium"&&items.length>=2?`<div class="routebar"><button class="lnk" data-route="${g.id}">${g.showRoute?"Hide route":"Show route"}</button>${g.showRoute?`<div class="minimap"><svg viewBox="0 0 400 160" preserveAspectRatio="xMidYMid slice"><rect width="400" height="160" fill="#EAF4FF"/><path d="M0 50 400 70M0 120 400 100M120 0 140 160M280 0 260 160" stroke="#fff" stroke-width="10"/><path d="M40 130 C110 110 130 60 180 50 S300 60 340 110" fill="none" stroke="#1F2A5C" stroke-width="3" stroke-dasharray="6 6"/>${[[180,50],[300,70],[340,110]].slice(0,items.length).map(([x,y],i)=>`<circle cx="${x}" cy="${y}" r="12" fill="#FF9EC4" stroke="#1F2A5C" stroke-width="2"/><text x="${x}" y="${y+4}" text-anchor="middle" font-size="12" font-weight="800" fill="#1F2A5C">${i+1}</text>`).join("")}<circle cx="40" cy="130" r="10" fill="#1F2A5C"/></svg></div><p style="font-size:12.5px;margin-top:6px"><a href="#">Open in Google Maps ↗</a></p>`:""}</div>`:"";
+    return `<article class="gc"><div class="gh"><div class="ghl"><div class="datestamp"><small>${g.date.toLocaleDateString("en-US",{month:"short"})}</small><b>${g.date.getDate()}</b></div><div><h3>${esc(g.name)}</h3><p class="when">${cal}Pickup: ${fmtL(g.date)} at ${(([h,m])=>`${(h%12)||12}:${String(m).padStart(2,"0")} ${h<12?"am":"pm"}`)(g.time.split(":").map(Number))}</p></div></div>
+      <div class="gmenu"><button class="dots" data-gm="${g.id}" aria-label="Menu for ${esc(g.name)}" aria-haspopup="menu">⋯</button></div></div>
+      ${late.length?`<p class="warn">These end before your pickup: ${late.map(r=>esc(r.n)).join(", ")}.</p>`:""}
+      <ol class="stops" data-g="${g.id}">${items.length?items.map((r,i)=>`<li class="st" draggable="true" data-id="${esc(r.id)}"><button class="hd" aria-label="Move ${esc(r.n)}" title="Drag, or press Space then arrows">⠿</button><span class="num">${i+1}</span>${lgo(r)}<span class="nm">${esc(r.n)}<span>${esc(r.r)}</span></span><button class="rm" data-rm="${esc(r.id)}" aria-label="Remove ${esc(r.n)}">×</button></li>`).join(""):`<li class="empty">No rewards in this group yet.</li>`}</ol>
+      ${mapp}<div class="gf"><span>${items.length}${st.tier==="free"?` of ${LIM.items}`:""} rewards</span></div></article>`}).join("");
+  return `<section class="sec right"><h2>Your groups <span style="display:flex;gap:8px;align-items:center">${lim}</span></h2>${groups.length?`<div class="groups">${cards}</div>`:`<div class="estate"><h3>No groups yet</h3><p>No groups yet. Select rewards above and add them to a group.</p></div>`}</section>`}
+
+function render(){const M=document.getElementById("main");
+  M.innerHTML=`<section class="head"><div><h1>Plan your <span class="hl">run</span></h1><p>Planning for Dec 1 to Jan 5</p></div></section>
+  <div class="ptabs" role="tablist"><button class="${st.tab==="plan"?"on":""}" data-tab="plan">To plan</button><button class="${st.tab==="groups"?"on":""}" data-tab="groups">My groups (${groups.length})</button></div>
+  <div class="wrap">${rewardsBox()}${groupsBox()}</div>`;
+  document.body.classList.toggle("tab-plan",st.tab==="plan");document.body.classList.toggle("tab-groups",st.tab==="groups");
+  stickyBar();wire()}
+
+function stickyBar(){const L=document.getElementById("layer");if(document.getElementById("ov"))return;
+  L.innerHTML=sel.size&&st.ad==="select"?`<div class="sticky" role="region" aria-label="Selection">${sel.size} selected <button class="lnk" id="clrsel">Clear</button><button class="btn" id="addg">Add to group</button></div>`:"";
+  const a=document.getElementById("addg");if(a){a.onclick=()=>addDialog([...sel]);document.getElementById("clrsel").onclick=()=>{sel.clear();render()}}}
+
+function wire(){const M=document.getElementById("main");
+  const q=document.getElementById("q");if(q)q.oninput=e=>{st.q=e.target.value;render();const n=document.getElementById("q");n.focus();n.setSelectionRange(n.value.length,n.value.length)};
+  const h=document.getElementById("hide");if(h)h.onchange=e=>{st.hide=e.target.checked;render()};
+  M.querySelectorAll("[data-tab]").forEach(b=>b.onclick=()=>{st.tab=b.dataset.tab;render()});
+  M.querySelectorAll("[data-sel]").forEach(b=>b.onclick=()=>{const id=b.dataset.sel;sel.has(id)?sel.delete(id):sel.add(id);render()});
+  M.querySelectorAll("[data-add1]").forEach(b=>b.onclick=()=>addDialog([b.dataset.add1]));
+  M.querySelectorAll("[data-rm]").forEach(b=>b.onclick=()=>{const g=groups.find(g=>g.id==b.closest("[data-g]").dataset.g);g.items=g.items.filter(x=>x!==b.dataset.rm);render()});
+  M.querySelectorAll("[data-route]").forEach(b=>b.onclick=()=>{const g=groups.find(g=>g.id==b.dataset.route);g.showRoute=!g.showRoute;render()});
+  const sm=document.getElementById("smart");if(sm)sm.onclick=smartDialog;
+  M.querySelectorAll("[data-gm]").forEach(b=>b.onclick=e=>{e.stopPropagation();closeMenus();const g=groups.find(x=>x.id==b.dataset.gm);
+    b.parentNode.insertAdjacentHTML("beforeend",`<div class="mm" role="menu"><button role="menuitem" data-ed>Edit name and time</button>${st.tier==="premium"?"<button role=\"menuitem\" data-dup>Duplicate</button>":""}<button role="menuitem" class="del" data-del>Delete</button></div>`);
+    const mm=b.parentNode.querySelector(".mm");mm.querySelector("[data-ed]").onclick=()=>editDialog(g);const d=mm.querySelector("[data-dup]");if(d)d.onclick=()=>{groups.push({...g,id:Date.now(),name:g.name+" (Copy)",items:[...g.items]});render();toast("Group duplicated.")};
+    mm.querySelector("[data-del]").onclick=()=>delDialog(g)});
+  // drag to reorder, plus keyboard: Space on the handle lifts, arrows move, Space drops
+  let dragId=null;
+  M.querySelectorAll(".st[draggable]").forEach(li=>{li.ondragstart=()=>{dragId=li.dataset.id;li.classList.add("drag")};li.ondragend=()=>li.classList.remove("drag");
+    li.ondragover=e=>{e.preventDefault();li.classList.add("over")};li.ondragleave=()=>li.classList.remove("over");
+    li.ondrop=e=>{e.preventDefault();const g=groups.find(g=>g.id==li.closest("[data-g]").dataset.g);const a=g.items.indexOf(dragId),b=g.items.indexOf(li.dataset.id);if(a<0||b<0)return;g.items.splice(b,0,g.items.splice(a,1)[0]);render()}});
+  M.querySelectorAll(".st .hd").forEach(h=>h.onkeydown=e=>{const li=h.closest(".st"),g=groups.find(g=>g.id==li.closest("[data-g]").dataset.g),i=g.items.indexOf(li.dataset.id);
+    if(e.key===" "){e.preventDefault();h.dataset.lift=h.dataset.lift?"":"1";toast(h.dataset.lift?"Picked up. Use the arrow keys to move, Space to drop.":"Dropped.")}
+    if(h.dataset.lift&&(e.key==="ArrowUp"||e.key==="ArrowDown")){e.preventDefault();const j=i+(e.key==="ArrowUp"?-1:1);if(j<0||j>=g.items.length)return;g.items.splice(j,0,g.items.splice(i,1)[0]);render();const nh=document.querySelector(`[data-g="${g.id}"] [data-id="${li.dataset.id}"] .hd`);nh.dataset.lift="1";nh.focus()}})}
+function closeMenus(){document.querySelectorAll(".mm").forEach(m=>m.remove())}
+addEventListener("click",closeMenus);
+
+let lastFocus=null;
+function openDlg(html){lastFocus=document.activeElement;document.getElementById("layer").innerHTML=`<div class="ov" id="ov"><div class="dlg" role="dialog" aria-modal="true" aria-labelledby="dt">${html}</div></div>`;
+  document.getElementById("ov").onclick=e=>{if(e.target.id==="ov")closeDlg()};const f=document.querySelector(".dlg input,.dlg button");if(f)f.focus()}
+function closeDlg(){document.getElementById("layer").innerHTML="";stickyBar();if(lastFocus&&lastFocus.isConnected)lastFocus.focus()}
+addEventListener("keydown",e=>{if(e.key==="Escape"&&document.getElementById("ov"))closeDlg()});
+function toast(t){const d=document.createElement("div");d.className="toastbar";d.setAttribute("role","status");d.textContent=t;document.body.appendChild(d);setTimeout(()=>d.remove(),2200)}
+
+function addDialog(ids){const names=ids.map(id=>MINE.find(r=>r.id===id).n);let tab=groups.length?"existing":"new";
+  const draw=()=>{openDlg(`<h2 id="dt">Add to group</h2><p class="sub">${esc(names.join(", "))}</p>
+   <div class="tabs" role="tablist"><button class="${tab==="new"?"on":""}" data-t="new">New group</button><button class="${tab==="existing"?"on":""}" data-t="existing" ${groups.length?"":"disabled"}>Existing group</button></div>
+   ${tab==="new"?`<label for="gn">Group name</label><input type="text" id="gn" placeholder="Run ${groups.length+1}" maxlength="60"><div class="two"><div><label for="gd">Pickup date</label><input type="date" id="gd" value="2026-12-13" min="2026-12-09" max="2027-01-05"></div><div><label for="gt">Time</label><input type="time" id="gt" value="12:00"></div></div><div id="wn"></div>${st.tier==="free"&&groups.length>=LIM.groups?`<p class="warnd"><b>You've used your 3 free groups.</b> More than 3 groups is part of Premium. Premium is coming soon.</p>`:""}`
+     :`<div class="rad" role="radiogroup">${groups.map((g,i)=>`<label><input type="radio" name="eg" value="${g.id}" ${i?"":"checked"}>${esc(g.name)}<small>${g.items.length}${st.tier==="free"?" of 5":""} · ${fmt(g.date)}</small></label>`).join("")}</div>`}
+   <div class="acts"><button class="btn ghost" id="dc">Cancel</button><button class="btn" id="ds">Add to group</button></div>`);
+   document.querySelectorAll(".dlg [data-t]").forEach(b=>b.onclick=()=>{tab=b.dataset.t;draw()});
+   const gd=document.getElementById("gd");const chk=()=>{if(!gd)return;const d=new Date(gd.value+"T12:00");const late=ids.map(id=>MINE.find(r=>r.id===id)).filter(r=>win(r)[1]<d);document.getElementById("wn").innerHTML=late.length?`<p class="warnd">These end before your pickup: ${late.map(r=>esc(r.n)).join(", ")}. You can still save.</p>`:""};if(gd){gd.oninput=chk;chk()}
+   document.getElementById("dc").onclick=closeDlg;
+   document.getElementById("ds").onclick=()=>{if(tab==="new"){if(st.tier==="free"&&groups.length>=LIM.groups)return;const n=document.getElementById("gn").value.trim()||`Run ${groups.length+1}`;groups.push({id:Date.now(),name:n,date:new Date(gd.value+"T12:00"),time:document.getElementById("gt").value,items:[...ids]})}
+     else{const g=groups.find(g=>g.id==document.querySelector("input[name=eg]:checked").value);const nw=ids.filter(i=>!g.items.includes(i));if(st.tier==="free"&&g.items.length+nw.length>LIM.items){toast("A group holds up to 5 rewards on the free plan.");return}g.items.push(...nw)}
+     sel.clear();closeDlg();render();toast("Added to your group.")}};draw()}
+function editDialog(g){openDlg(`<h2 id="dt">Edit ${esc(g.name)}</h2><label for="en">Group name</label><input type="text" id="en" value="${esc(g.name)}"><div class="two"><div><label for="ed">Pickup date</label><input type="date" id="ed" value="${g.date.toISOString().slice(0,10)}"></div><div><label for="et">Time</label><input type="time" id="et" value="${g.time}"></div></div><div class="acts"><button class="btn ghost" id="dc">Cancel</button><button class="btn" id="ds">Save</button></div>`);
+  document.getElementById("dc").onclick=closeDlg;document.getElementById("ds").onclick=()=>{g.name=document.getElementById("en").value||g.name;g.date=new Date(document.getElementById("ed").value+"T12:00");g.time=document.getElementById("et").value;closeDlg();render()}}
+function delDialog(g){openDlg(`<h2 id="dt">Delete ${esc(g.name)}?</h2><p class="sub">The group is deleted. Its rewards go back to your list to plan.</p><div class="acts"><button class="btn ghost" id="dc">Cancel</button><button class="btn" style="background:#FFDCDC" id="ds">Delete</button></div>`);
+  document.getElementById("dc").focus();document.getElementById("dc").onclick=closeDlg;document.getElementById("ds").onclick=()=>{groups=groups.filter(x=>x!==g);closeDlg();render()}}
+function smartDialog(){const free=plannable().filter(r=>!PICKED.has(r.id)&&!inG(r.id).length);const sug=[free.slice(0,3),free.slice(3,5)].filter(a=>a.length>=2);
+  openDlg(`<h2 id="dt">Suggested groups</h2><p class="sub">Grouped by which stores are close together. You can edit them after.</p><div class="sugg">${sug.map((a,i)=>`<div class="sg"><b>Run ${groups.length+i+1}</b><p>Pickup ${fmtL(add(TODAY,4+i))} at 12:00 pm · ${a.length} stops</p><div class="lgs">${a.map(r=>`<span>${lgo(r)}</span>`).join("")}</div></div>`).join("")||'<p class="sub">Smart Grouping needs at least 4 rewards with store locations that aren\'t in a group yet.</p>'}</div>
+  <p class="sub" style="margin-top:10px">Left out (no store location): Alamo Drafthouse</p><div class="acts"><button class="btn ghost" id="dc">Cancel</button>${sug.length?'<button class="btn" id="ds">Apply all</button>':""}</div>`);
+  document.getElementById("dc").onclick=closeDlg;const ds=document.getElementById("ds");if(ds)ds.onclick=()=>{sug.forEach((a,i)=>groups.push({id:Date.now()+i,name:`Run ${groups.length+1}`,date:add(TODAY,4+i),time:"12:00",items:a.map(r=>r.id)}));closeDlg();render();toast("Groups added.")}}
+
+const ICN={d:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="m15.5 8.5-2 5-5 2 2-5z"/></svg>',r:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="8" width="18" height="13" rx="2"/><path d="M12 8v13M3 12h18M12 8c-2-4-6-4-6-1s4 1 6 1c2 0 6 2 6-1s-4-3-6 1"/></svg>',p:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="6" cy="18" r="2.5"/><circle cx="18" cy="6" r="2.5"/><path d="M8.5 18H15a3 3 0 0 0 0-6H9a3 3 0 0 1 0-6h6.5"/></svg>',h:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5M12 7v5l3 2"/></svg>'};
+document.getElementById("tabbar").innerHTML=[["d","Discover"],["r","My Rewards"],["p","Plan",1],["h","History"]].map(([k,t,c])=>`<a href="#" ${c?'aria-current="page"':""}><i>${ICN[k]}</i>${t}</a>`).join("");
+
+function apply(changed){document.body.className=`ly-${st.ly} gc-${st.gc} ad-${st.ad}`;if(changed==="sd")seed();if(changed==="ad")sel.clear();
+  document.querySelectorAll(".panel [data-k]").forEach(g=>g.querySelectorAll("button").forEach(b=>b.classList.toggle("on",b.dataset.v===st[g.dataset.k])));
+  document.getElementById("now").innerHTML=`Showing: <b>${W.ly[st.ly]}</b> · ${W.gc[st.gc]} · ${W.ad[st.ad]} · ${W.tier[st.tier]} · ${W.sd[st.sd]}. Tick rewards, drag stops, open ⋯.`;
+  render();const q=new URLSearchParams();for(const k in W)q.set(k,st[k]);history.replaceState(null,"","?"+q)}
+document.querySelectorAll(".panel [data-k]").forEach(g=>g.onclick=e=>{const b=e.target.closest("button");if(!b)return;st[g.dataset.k]=b.dataset.v;apply(g.dataset.k)});
+document.getElementById("min").onclick=e=>{const p=document.getElementById("panel");p.classList.toggle("min");e.target.textContent=p.classList.contains("min")?"Show":"Hide"};
+if(innerWidth<700||window.self!==window.top){document.getElementById("panel").classList.add("min");document.getElementById("min").textContent="Show"}
+apply();
+if(demo==="groups"&&false){}
+if(demo==="select"){sel.add("chipotle");sel.add("red-lobster");render()}
+if(demo==="add"){addDialog(["chipotle","red-lobster"])}
+if(demo==="smart"){document.getElementById("smart")&&smartDialog()}
+if(window.self!==window.top){document.getElementById("panel").style.display="none";document.querySelector(".ptag").style.display="none"}
+if(demo==="groups"){st.tab="groups";render()}
+if(demo==="down"){const g=document.querySelector(".right");scrollTo(0,g.getBoundingClientRect().top+scrollY-20)}
+</script>
+</body>
+</html>

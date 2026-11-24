@@ -292,6 +292,12 @@ document.getElementById("min").onclick=e=>{const p=document.getElementById("pane
 if(innerWidth<700){document.getElementById("panel").classList.add("min");document.getElementById("min").textContent="Show"}
 const demo=new URLSearchParams(location.search).get("demo");
 apply();
+if(window.self!==window.top){document.getElementById("panel").style.display="none";document.querySelector(".ptag").style.display="none"}
+const toY=el=>scrollTo(0,el.getBoundingClientRect().top+scrollY-60);
+if(demo==="route")toY(document.querySelector(".route"));
+if(demo==="menu"){const b=document.querySelector("[data-mm]");toY(b.closest(".rw"));setTimeout(()=>b.click(),50)}
+if(demo==="chips"){st.within="7";render();toY(document.querySelector(".flt"))}
+if(demo==="next"){st.sd="outside";render()}
 if(demo==="dialog")pickDialog("panera-bread");if(demo==="undo")markPicked("panera-bread","Dec 9");if(demo==="report")reportDialog("olive-garden");
 </script>
 </body>
