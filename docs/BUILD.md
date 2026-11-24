@@ -21,7 +21,7 @@ src/
     (public)/discover/page.tsx, (public)/discover/[retailerId]/page.tsx   # public, role-aware (D3)
     (app)/onboarding/page.tsx
     (app)/rewards/page.tsx, (app)/plan/page.tsx, (app)/history/page.tsx
-    (app)/dashboard/page.tsx       # replaces the Template placeholder (FR-21)
+    (app)/dashboard/page.tsx       # permanent redirect to /rewards (decision 0018)
     (app)/billing/return/page.tsx  # "processing" only, never grants (NFR-8)
     reminders/unsubscribe/page.tsx (GET confirm), api/reminders/unsubscribe/route.ts (POST) (D15, D17)
     api/stripe/webhook/route.ts, api/cron/reminders/route.ts, api/reports/pending/route.ts, api/reports/ack/route.ts
@@ -71,7 +71,7 @@ Result type, action order, `runAction` and route-handler rules: Template BUILD �
 | Route | Level |
 | --- | --- |
 | `/discover`, `/discover/[retailerId]` | `public` (data by role, D3; retired IDs 404; decision 0017) |
-| `/onboarding` | `user`; onboarded users go to `/dashboard` |
+| `/onboarding` | `user`; onboarded users go to `/rewards` |
 | `/dashboard`, `/rewards`, `/plan`, `/history`, `/billing/return` | `onboarded` |
 | `/settings` | `user` (Template; exempt from FR-6) |
 | `/reminders/unsubscribe` | `unsubscribe-token` |
@@ -455,7 +455,7 @@ Rules inside (the definitions; FR-10/FR-11 are the requirements):
 
 ### Operations
 #### `/onboarding` page (S-101)
-- Who: `user`. `onboarded_at` set → `redirect('/dashboard')`. Birthday unset → step 1; birthday set, `onboarded_at` null → step 2 (so "going back keeps the birthday"). Step 2 lists all non-retired retailers (C-102 as checkboxes); search and category tabs filter in the browser with F-3's `filterRetailers`, and without JS the list is complete. Time zone: a small client component fills a hidden `timeZone` input from `Intl.DateTimeFormat().resolvedOptions().timeZone`; without JS a required select is shown.
+- Who: `user`. `onboarded_at` set → `redirect('/rewards')`. Birthday unset → step 1; birthday set, `onboarded_at` null → step 2 (so "going back keeps the birthday"). Step 2 lists all non-retired retailers (C-102 as checkboxes); search and category tabs filter in the browser with F-3's `filterRetailers`, and without JS the list is complete. Time zone: a small client component fills a hidden `timeZone` input from `Intl.DateTimeFormat().resolvedOptions().timeZone`; without JS a required select is shown.
 
 #### `saveOnboarding` (server action, `actions/profile.ts`)
 - Who: `user` (not `onboarded`: this sets it) · Input:
@@ -466,7 +466,7 @@ Rules inside (the definitions; FR-10/FR-11 are the requirements):
     z.object({ step: z.literal("programs"), retailerIds: retailerIdsSchema.optional() }).strict(),  // absent = skip
   ])
   ```
-- Returns: step `birthday` → `redirect('/onboarding')`; step `programs` → `redirect('/dashboard')` · Errors: API-4 (BR-18, BR-19 as field errors), BR-1 (step `programs` without a birthday), BR-3, M-5, M-7, API-1–3 · Limit: §0.4 row `saveOnboarding` · Side effects: step 1 updates `birth_month, birth_day, time_zone`; step 2 runs F-3's `enroll` insert for all IDs in one statement, then sets `onboarded_at = now()` only where null; `revalidatePath('/dashboard')`.
+- Returns: step `birthday` → `redirect('/onboarding')`; step `programs` → `redirect('/rewards')` · Errors: API-4 (BR-18, BR-19 as field errors), BR-1 (step `programs` without a birthday), BR-3, M-5, M-7, API-1–3 · Limit: §0.4 row `saveOnboarding` · Side effects: step 1 updates `birth_month, birth_day, time_zone`; step 2 runs F-3's `enroll` insert for all IDs in one statement, then sets `onboarded_at = now()` only where null; `revalidatePath('/dashboard')`.
 
 #### `updateBirthday` (server action)
 - Who: `user` (settings is exempt from FR-6) · Input: `birthdaySchema.strict()` (§0.5) · Returns: `{ ok: true, message: M-257 }` · Errors: API-4 (BR-18), M-5, M-7, API-1–3 · Limit: §0.4 row `updateBirthday` · Side effects: updates `birth_month, birth_day`; `revalidatePath` for `/settings`, `/dashboard`, `/rewards`, `/plan`, `/history`.
@@ -479,7 +479,7 @@ Rules inside (the definitions; FR-10/FR-11 are the requirements):
 1. Zod (with `retailerIds` from `getAll`). 2. `requireUser()`; profile has no birthday → BR-1. 3. `rateLimit('saveOnboarding', { userId })`.
 4. IDs given: check they're all non-retired (`select id … in (…) and retired_at is null`); a count mismatch → BR-3, nothing saved. Insert enrollments `on conflict do nothing`.
 5. `update profiles set onboarded_at = now() where id = user.id and onboarded_at is null`.
-6. `redirect('/dashboard')` (S-102). A double submit is harmless (both steps idempotent).
+6. `redirect('/rewards')` (S-105, decision 0018). A double submit is harmless (both steps idempotent).
 
 ### States and edge cases
 ```mermaid
@@ -515,7 +515,7 @@ Unit tests use a fixed `now` and these birthdays; every row runs through the pub
 | `headerState` for each of the four states | unit | `headerState` | FR-14 |
 | `pickupDateRange` null outside the window; `planRange` in and out of the window | unit | `pickupDateRange`, `planRange` | FR-17, FR-23 |
 | `requireOnboarded`: no birthday → page redirect to `/onboarding`, action BR-1; `/settings` reachable | unit + e2e | `requireOnboarded` (mocked client); S-108 | FR-6 |
-| New user: S-101 step 1 → step 2 → skip → S-102; revisiting `/onboarding` → S-102 | e2e | S-101 | FR-6, FR-7 |
+| New user: S-101 step 1 → step 2 → skip → S-105; revisiting `/onboarding` → S-105 | e2e | S-101 | FR-6, FR-7 |
 | Save with 2 programs enrolls both; a retired id → BR-3, none saved | RLS + e2e | `saveOnboarding` | FR-7 |
 | B can't update A's birthday; A can't set `birth_day` 30 with month 2 (check) | RLS | `profiles` update | FR-6, NFR-1 |
 | Changing birthday moves My Rewards' window on reload; a group now outside shows M-235 | e2e | S-108 → S-105, S-106 | FR-9 |
@@ -598,7 +598,7 @@ S-103 signed in: `getUser()` → profile, entitlement, retailers, enrollments �
 | Toggle shows at once on S-103, S-105, S-106 | e2e | C-102 | FR-8 |
 | Details show the timing label for each type and the requirements | e2e | S-104 | FR-4 |
 
-## F-4 My Rewards and dashboard · FR-12, FR-13, FR-14, FR-15, FR-16, FR-21 · screens S-105, S-102, C-103 · decisions D4
+## F-4 My Rewards (the home page) · FR-12, FR-13, FR-14, FR-15, FR-16, FR-21 · screens S-105, C-103 · decisions D4, 0018
 
 ### Data
 None new. Reads `profiles`, `enrollments`, `retailers`, `pickups` (F-5) through the user client.
@@ -611,8 +611,11 @@ None new. Reads `profiles`, `enrollments`, `retailers`, `pickups` (F-5) through 
 - Renders per S-105: header from `headerState` and `w.daysUntilBirthday`; then exactly one of M-211 (no enrollments), M-207 (`{date}` = `w.planning.start`, out of the window) or the list. The list keeps `available` rewards only, sorted by `daysLeft` then name; `within=N` keeps `daysLeft <= N`; `q` as F-3. Pages of `REWARDS_PAGE_SIZE` (20, a build constant in the page file) with "Show more" (M-209) linking `?page=n+1` and rendering the first n pages, so no client state is needed. All available picked up or expired → M-212.
 - Each card: C-103 (`daysLeft`; band thresholds FR-12, mapped in C-103), "Mark picked up" (C-109, F-5), report (C-107). Route section: premium → C-106 (map feature); free → C-104 (M-132).
 
-#### `/dashboard` page (S-102; replaces the Template body)
-- Who: `onboarded`. Greeting as Template S-12. Stats: pickups with `picked_up_on` in [`w.current.start`, `w.current.cycleEnd`] counted (M-126) — the same range S-107 uses for the current cycle — and the latest `picked_up_on` overall (M-127, or M-128).
+#### S-105 header stats (FR-21, decision 0018)
+- Pickups with `picked_up_on` in [`w.current.start`, `w.current.cycleEnd`] counted (M-126) — the same range S-107 uses for the current cycle — and the latest `picked_up_on` overall (M-127, or M-128). The progress ring uses that count over the user's rewards this cycle.
+
+#### `/dashboard`
+- A permanent redirect to `/rewards` (decision 0018), so Template routes that end on S-12 still land on the home page.
 
 No server actions: this feature only reads.
 
@@ -640,7 +643,7 @@ stateDiagram-v2
 | Header state for birthday, birth month, later window day, outside (four seeded users) | e2e | S-105 | FR-14 |
 | Outside the window: M-207 with the right date and links; no list in the HTML | e2e (birthday 3 months ahead) | S-105 | FR-15 |
 | No enrollments: M-211 in and out of the window | e2e | S-105 | FR-16 |
-| Dashboard count equals S-107's current-cycle count, incl. a Dec 20 birthday seen on Jan 5 | unit + e2e | `cycleFor` / `windowFor`; S-102 vs S-107 | FR-21, FR-19 |
+| S-105 header count equals S-107's current-cycle count, incl. a Dec 20 birthday seen on Jan 5; `/dashboard` redirects to `/rewards` | unit + e2e | `cycleFor` / `windowFor`; S-105 vs S-107 | FR-21, FR-19 |
 | Opening S-105 triggers no location prompt | e2e | S-105 | NFR-3 |
 
 ## F-5 Pickups and history · FR-17, FR-18, FR-19, FR-20 · screens S-105 (pickup), S-107, C-108, C-109 · decisions D4, D7
