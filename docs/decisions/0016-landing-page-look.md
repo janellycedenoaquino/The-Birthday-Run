@@ -77,6 +77,14 @@ Why these colours: research on colour and emotion finds that brightness and satu
 
 **Illustrations kept from the old app** (outside the repo, `Design/images/` on the owner's machine): the three girls running (loading screen and empty states), the stacked gift boxes and the girls over a map (out of season on My Rewards and Plan). The gift boxes show real brand logos: in the app only, not in ads or on the public landing page.
 
+**Settings (Template S-13–S-18, S-108–S-110):**
+- A sticky side menu on wide screens (Birthday, Reminders, Premium, a divider, then Profile, Password, Two-step sign-in, Your data, Delete account), each with a small line icon on its own pastel colour; all cards stay on one page. On phones the menu becomes a row of links above the cards (Template S-13). Each card has a pastel header band in its section's colour; Delete account has a red border and band. Line icons, never emoji (§3.6).
+
+**Small pages, loading and emails:**
+- Every small page (Template S-6, S-7, S-9, S-10, S-11, S-20; S-111, S-112) is one plain frosted card on the still glow with the tilted headline block and no picture.
+- Only three screens get a picture: "That link didn't work" (S-8: the girls over a map), "Page not found" (S-19: the three girls running) and the loading screen. Loading shows one of three pictures (the girls running, the girls over a map, and a third the owner will pick), a different one each time, with three bouncing pastel dots that stop under reduced motion. The gift-boxes picture (real brand logos) stays off public pages like the 404.
+- Emails use a pastel gradient header (pink, blue, green) with the app name, a cream body, the tilted-block-free headline, reward rows with small badges, one sky-blue button with a navy outline, and the footer with the unsubscribe link (E- templates).
+
 **Retailer page (S-104), timing split:**
 - **Public:** the general rule (for example "30 days from your birthday"). That fact is what people search for, so it stays readable (decision 0017).
 - **Behind sign-up:** "Sign up to see your exact dates." Signed in, the page shows the user's own dates and days left (for example "Jan 3 – Feb 2 · 12 days left"). Only an account knows the birthday, so this is the honest reason to sign up.
@@ -96,6 +104,7 @@ Why these colours: research on colour and emotion finds that brightness and satu
 - **My Rewards:** one tap to mark picked up (with an undo bar or a "Claimed!" stamp); filters as a select or behind a Filter button; a "Report a problem" link under every card; a plain upgrade card for the route.
 - **Plan:** the list above the groups on every screen; two tabs on every screen; plain group cards; a "route line" group look; a "+ Group" button on each reward.
 - **History:** list rows, a sticker-book look, all years stacked, and count chips per year.
+- **Settings:** pill tabs with one card at a time, cards with no menu, plain cards. **Small pages:** a picture on every page, or centred text. **Loading:** skeleton rows. **Emails:** a plain header, or the doll in the header.
 - **Timing on the cards,** and **hiding the timing behind sign-up:** dropped. Cards stay clean, and hiding the fact would cost search traffic.
 - **Sign in / sign up:** 3D tunnel, two-row marquee and glow-only backgrounds; the card with the reminder at its side or under it; a brand count by category or a sample checklist as the reminder; a link at the bottom to switch (the Template's way); and pick 8's "your birthday run" preview checklist after Continue. The owner kept the confetti from that preview but not the checklist.
 
