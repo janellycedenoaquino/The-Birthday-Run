@@ -25,7 +25,9 @@ type Log = {
   cycle_start: string;
   sent_on: string;
 };
-function fakeAdmin(users: { id: string; month: number; day: number }[]) {
+function fakeAdmin(
+  users: { id: string; month: number; day: number; zone?: string }[],
+) {
   const logs: Log[] = [];
   let next = 0;
   const admin = {
@@ -36,10 +38,9 @@ function fakeAdmin(users: { id: string; month: number; day: number }[]) {
           data: users.map((u) => ({
             user_id: u.id,
             email: `${u.id}@example.test`,
-            display_name: null,
             birth_month: u.month,
             birth_day: u.day,
-            time_zone: "UTC",
+            time_zone: u.zone ?? "UTC",
           })),
           error: null,
         };
@@ -193,6 +194,44 @@ describe("runReminders (FR-41, D15)", () => {
     // All 21 expiring went out; the one left over is a plan-ahead.
     expect(many.logs.filter((l) => l.kind === "expiring")).toHaveLength(21);
     expect(many.logs.filter((l) => l.kind === "plan_ahead")).toHaveLength(19);
+  });
+
+  it("an idempotency key per reminder, so a retried send isn't delivered twice", async () => {
+    const send = vi.fn(async () => ({ ok: true }));
+    await runReminders(deps(admin, send));
+    const email = (send.mock.calls[0] as unknown[])[0] as {
+      idempotencyKey: string;
+    };
+    expect(email.idempotencyKey).toBe(`reminder:${uid(1)}:expiring:2026-06-19`);
+  });
+
+  it("one user's bad time zone fails only that user", async () => {
+    const mixed = fakeAdmin([
+      { id: uid(1), month: 6, day: 15, zone: "Not/AZone" },
+      { id: uid(2), month: 6, day: 15 },
+    ]);
+    expect(await runReminders(deps(mixed))).toMatchObject({
+      sent: 1,
+      failed: 1,
+    });
+  });
+
+  it("stops starting sends past the time budget; the rest are deferred", async () => {
+    const users = Array.from({ length: 3 }, (_, i) => ({
+      id: uid(i),
+      month: 6,
+      day: 15,
+    }));
+    let t = 0;
+    const send = vi.fn(async () => {
+      t += 25_000; // each send takes 25 s
+      return { ok: true };
+    });
+    const r = await runReminders({
+      ...deps(fakeAdmin(users), send),
+      clock: () => t,
+    });
+    expect(r).toMatchObject({ sent: 2, deferred: 1 });
   });
 
   it("no candidates → zero counts, no reads", async () => {

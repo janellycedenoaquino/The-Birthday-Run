@@ -15,7 +15,7 @@ export const metadata: Metadata = {
 const searchSchema = z.object({
   token: z.string().max(200).optional().catch(undefined),
   done: z.literal("1").optional().catch(undefined),
-  error: z.literal("rate_limited").optional().catch(undefined),
+  error: z.enum(["rate_limited", "failed"]).optional().catch(undefined),
 });
 
 export default async function UnsubscribePage({
@@ -43,7 +43,7 @@ export default async function UnsubscribePage({
           <p className="mt-3">{msg("M-271")}</p>
           {error ? (
             <p role="alert" className="mt-3 text-sm text-destructive">
-              {msg("M-5")}
+              {msg(error === "rate_limited" ? "M-5" : "M-7")}
             </p>
           ) : null}
           <form

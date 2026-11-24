@@ -241,7 +241,7 @@ isOneToOne: false
                            },
 "reminder_candidates":
 { Args: Record<PropertyKey, never>; Returns: {
-              "birth_day": number,"birth_month": number,"display_name": string,"email": string,"time_zone": string,"user_id": string
+              "birth_day": number,"birth_month": number,"email": string,"time_zone": string,"user_id": string
             }[]
                            },
 "reminder_pickups":

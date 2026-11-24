@@ -1,4 +1,5 @@
 import "server-only";
+import { createHash } from "node:crypto";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { createElement } from "react";
 import { render } from "react-email";
@@ -29,6 +30,9 @@ import { logError } from "@/server/errors";
 
 /** BUILD §0.4: sends per run, the whole app (Resend's free daily limit, A-24). */
 export const REMINDER_RUN_BUDGET = 40;
+/** Stop starting sends after this long, so the run ends inside the route's maxDuration of 60 s
+ *  (a send can take up to 10 s); the rest are deferred to tomorrow. */
+export const RUN_TIME_BUDGET_MS = 40_000;
 /** Pickups older than this can't be in any cycle the run looks at (cycles are ≤ 1 year + lead). */
 const PICKUP_LOOKBACK_DAYS = 400;
 
@@ -47,6 +51,8 @@ export type RunDeps = {
   siteUrl: string;
   /** createUnsubscribeToken; null when the secret is missing, so nothing is sent. */
   tokenFor: (userId: string) => string | null;
+  /** Milliseconds now, for the time budget (tests pass a fake clock). */
+  clock?: () => number;
 };
 
 type Job = {
@@ -85,41 +91,65 @@ export async function runReminders(deps: RunDeps): Promise<RunCounts> {
   const jobs: Job[] = [];
   for (const c of candidates) {
     const mine = logs.data!.filter((l) => l.user_id === c.user_id);
-    const { today, due } = remindersDue({
-      birthday: { month: c.birth_month, day: c.birth_day },
-      timeZone: c.time_zone,
-      now,
-      rewards: rewards.data!.filter((r) => r.user_id === c.user_id),
-      pickups: pickups
-        .data!.filter((p) => p.user_id === c.user_id)
-        .map((p) => ({
-          retailerId: p.retailer_id,
-          date: p.picked_up_on as LocalDate,
-        })),
-      lastExpiringOn:
-        (mine
-          .filter((l) => l.kind === "expiring")
-          .map((l) => l.sent_on)
-          .sort()
-          .at(-1) as LocalDate | undefined) ?? null,
-      planAheadCycles: mine
-        .filter((l) => l.kind === "plan_ahead")
-        .map((l) => l.cycle_start as LocalDate),
-    });
-    for (const reminder of due)
-      jobs.push({ userId: c.user_id, email: c.email, today, reminder });
+    // One user's bad data (e.g. a zone the runtime doesn't know) must not stop everyone's run.
+    let result: ReturnType<typeof remindersDue>;
+    try {
+      result = remindersDue({
+        birthday: { month: c.birth_month, day: c.birth_day },
+        timeZone: c.time_zone,
+        now,
+        rewards: rewards.data!.filter((r) => r.user_id === c.user_id),
+        pickups: pickups
+          .data!.filter((p) => p.user_id === c.user_id)
+          .map((p) => ({
+            retailerId: p.retailer_id,
+            date: p.picked_up_on as LocalDate,
+          })),
+        lastExpiringOn:
+          (mine
+            .filter((l) => l.kind === "expiring")
+            .map((l) => l.sent_on)
+            .sort()
+            .at(-1) as LocalDate | undefined) ?? null,
+        planAheadCycles: mine
+          .filter((l) => l.kind === "plan_ahead")
+          .map((l) => l.cycle_start as LocalDate),
+      });
+    } catch (dueError) {
+      logError(dueError, { op: "reminders.due" });
+      counts.failed++;
+      continue;
+    }
+    for (const reminder of result.due)
+      jobs.push({
+        userId: c.user_id,
+        email: c.email,
+        today: result.today,
+        reminder,
+      });
   }
 
-  // Budget (D15): expiring first (they can't wait), then plan-ahead; users in a stable order.
+  // Budget (D15): expiring first (they can't wait), then plan-ahead. Within each, an order that
+  // changes every day (a hash of the user and the UTC date), so the same users aren't always
+  // the ones deferred.
+  const day = todayIn("UTC", now);
+  const rank = (userId: string) =>
+    createHash("sha256").update(`${day}:${userId}`).digest("hex");
   jobs.sort(
     (a, b) =>
       Number(a.reminder.kind !== "expiring") -
         Number(b.reminder.kind !== "expiring") ||
-      a.userId.localeCompare(b.userId),
+      rank(a.userId).localeCompare(rank(b.userId)),
   );
   const batch = jobs.slice(0, REMINDER_RUN_BUDGET);
   counts.deferred = jobs.length - batch.length;
-  for (const job of batch) {
+  const clock = deps.clock ?? Date.now;
+  const started = clock();
+  for (const [i, job] of batch.entries()) {
+    if (clock() - started > RUN_TIME_BUDGET_MS) {
+      counts.deferred += batch.length - i;
+      break;
+    }
     const outcome = await sendOne(job, deps);
     if (outcome === "sent") counts.sent++;
     if (outcome === "failed") counts.failed++;
@@ -176,6 +206,10 @@ async function sendOne(
           "List-Unsubscribe": `<${unsubscribe}>`,
           "List-Unsubscribe-Post": "List-Unsubscribe=One-Click",
         },
+        // A send that timed out but went through isn't delivered again by the retry (24 h).
+        idempotencyKey: `reminder:${userId}:${reminder.kind}:${
+          reminder.kind === "plan_ahead" ? reminder.cycleStart : today
+        }`,
       })
     ).ok;
   } catch (renderError) {

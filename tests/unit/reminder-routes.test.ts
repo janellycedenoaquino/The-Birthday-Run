@@ -23,11 +23,13 @@ vi.mock("@/server/site-url", () => ({
 }));
 vi.mock("@/server/email/send", () => ({ sendEmail: vi.fn() }));
 const updates: unknown[] = [];
+const updateError = { value: null as { code: string } | null };
 vi.mock("@/server/supabase/admin", () => ({
   getAdminClient: () => ({
     from: () => ({
       update: (values: unknown) => ({
         eq: async (_: string, id: string) => {
+          if (updateError.value) return { error: updateError.value };
           updates.push({ values, id });
           return { error: null };
         },
@@ -61,6 +63,7 @@ const post = (token: string, body: Record<string, string>) =>
 beforeEach(() => {
   updates.length = 0;
   limited.value = false;
+  updateError.value = null;
   run.mockClear();
 });
 
@@ -139,15 +142,31 @@ describe("POST /api/reminders/unsubscribe (FR-42, RFC 8058)", () => {
     expect(updates).toEqual([]);
   });
 
-  it("rate limited: page → 303 with the error; one-click → 429", async () => {
+  it("rate limited: the page gets the error; one-click isn't limited (shared mail IPs)", async () => {
     limited.value = true;
     const page = await post(good(), { source: "page" });
     expect(page.headers.get("location")).toBe(
       "/reminders/unsubscribe?error=rate_limited",
     );
+    expect(updates).toEqual([]);
     expect(
       (await post(good(), { "List-Unsubscribe": "One-Click" })).status,
-    ).toBe(429);
-    expect(updates).toEqual([]);
+    ).toBe(200);
+    expect(updates).toHaveLength(1);
+  });
+
+  it("extra fields from a mail client are fine", async () => {
+    await post(good(), { "List-Unsubscribe": "One-Click", extra: "1" });
+    expect(updates).toHaveLength(1);
+  });
+
+  it("a failed update never says off: page → error=failed, one-click → 500", async () => {
+    updateError.value = { code: "57014" };
+    expect(
+      (await post(good(), { source: "page" })).headers.get("location"),
+    ).toBe("/reminders/unsubscribe?error=failed");
+    expect(
+      (await post(good(), { "List-Unsubscribe": "One-Click" })).status,
+    ).toBe(500);
   });
 });

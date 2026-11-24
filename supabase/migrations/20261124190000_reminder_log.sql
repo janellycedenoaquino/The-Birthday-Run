@@ -29,12 +29,13 @@ create policy reminder_log_mfa_required on public.reminder_log
   as restrictive for all to authenticated using ((select private.mfa_satisfied()));
 
 -- The job's user list: premium users with reminders on, a birthday, a zone and a confirmed email.
+-- Only the columns the emails use (no display name).
 create function public.reminder_candidates()
-returns table (user_id uuid, email text, display_name text, birth_month smallint,
-               birth_day smallint, time_zone text)
+returns table (user_id uuid, email text, birth_month smallint, birth_day smallint,
+               time_zone text)
 language sql stable security definer set search_path = ''
 as $$
-  select p.id, u.email::text, p.display_name, p.birth_month, p.birth_day, p.time_zone
+  select p.id, u.email::text, p.birth_month, p.birth_day, p.time_zone
   from public.profiles p join auth.users u on u.id = p.id
   where p.reminders_enabled and p.birth_month is not null and p.birth_day is not null
     and p.time_zone is not null and u.email is not null and u.email_confirmed_at is not null
