@@ -11,19 +11,21 @@ import { formInput, parseForm } from "@/lib/validation/form";
 import {
   addToGroupSchema,
   createGroupSchema,
+  copyNames,
   deleteGroupSchema,
+  duplicateGroupSchema,
   removeFromGroupSchema,
   reorderSchema,
   updateGroupSchema,
 } from "@/lib/validation/plan";
-import { requireOnboarded } from "@/server/auth/app-guards";
+import { requireOnboarded, requirePremium } from "@/server/auth/app-guards";
 import { loadPlanContext } from "@/server/rewards/plan-context";
 import { runAction } from "@/server/run-action";
 import { rateLimit } from "@/server/security/rate-limit";
 
 // Plan group actions (BUILD F-6: FR-23–FR-27, D6). Public endpoints: each validates and guards
 // itself (rule 4). The limits (FR-24, FR-25) are enforced by database triggers under a lock;
-// the action maps their errors. Duplicate (FR-28, premium) arrives with F-7.
+// the action maps their errors. Duplicate (FR-28) is premium only (requirePremium).
 
 type Result = ActionResult<{ groupId: string }>;
 type Refusal = Extract<ActionResult, { ok: false }>;
@@ -375,6 +377,105 @@ export async function deleteGroup(
       .select("id");
     if (error) throw new Error("deleteGroup failed", { cause: error });
     if (data.length !== 1) return { ok: false, error: "BR-11" };
+    done();
+    return { ok: true };
+  });
+}
+
+/**
+ * FR-28 (premium): a copy named "<name> (Copy)" (then "(Copy 2)"… on a name clash, BR-6 after
+ * 20), with the same pickup and the same rewards in the same order. Rewards a new group couldn't
+ * hold any more (picked up, retired, no longer enrolled: FR-26) are left out. The copy counts
+ * toward FR-24 (the trigger refuses it with BR-4); a failed item copy deletes the new group.
+ */
+export async function duplicateGroup(
+  _prev: ActionResult | null,
+  formData: FormData,
+): Promise<ActionResult> {
+  const input = parseForm(duplicateGroupSchema, formData);
+  if (!input.ok) return input.result;
+  const { groupId } = input.data;
+
+  return runAction("duplicateGroup", async () => {
+    const { supabase, user, profile } = await requirePremium();
+    const limit = await rateLimit("duplicateGroup", { userId: user.id });
+    if (!limit.ok) return limit;
+    // RLS: someone else's group reads as missing (BR-11).
+    const { data: source, error: readError } = await supabase
+      .from("reward_groups")
+      .select(
+        "name, pickup_date, pickup_time, reward_group_items(id, retailer_id, position)",
+      )
+      .eq("id", groupId)
+      .maybeSingle();
+    if (readError)
+      throw new Error("duplicateGroup: could not read the group", {
+        cause: readError,
+      });
+    if (!source) return { ok: false, error: "BR-11" };
+    const ctx = await loadPlanContext(supabase, profile);
+    const open = new Set(ctx.rows.filter((r) => !r.pickedUp).map((r) => r.id));
+    const items = [...source.reward_group_items]
+      .sort((a, b) => a.position - b.position || a.id.localeCompare(b.id))
+      .filter((i) => open.has(i.retailer_id));
+
+    let copyId: string | null = null;
+    for (const name of copyNames(source.name)) {
+      const { data, error } = await supabase
+        .from("reward_groups")
+        .insert({
+          user_id: user.id,
+          name,
+          pickup_date: source.pickup_date,
+          pickup_time: source.pickup_time,
+        })
+        .select("id")
+        .single();
+      if (!error) {
+        copyId = data.id;
+        break;
+      }
+      const isNameClash =
+        error.code === "23505" &&
+        error.message?.includes("reward_groups_user_name_key");
+      if (isNameClash) continue;
+      const refused = mapPgError(error);
+      if (refused) return refused;
+      throw new Error("duplicateGroup failed", { cause: error });
+    }
+    if (!copyId)
+      return {
+        ok: false,
+        error: "API-4",
+        fieldErrors: { form: [msg("BR-6")] },
+      };
+
+    if (items.length) {
+      const { error: itemsError } = await supabase
+        .from("reward_group_items")
+        .insert(
+          items.map((item, i) => ({
+            group_id: copyId,
+            user_id: user.id,
+            retailer_id: item.retailer_id,
+            position: i + 1,
+          })),
+        );
+      if (itemsError) {
+        // No half-made copy: the new group goes too.
+        const { error: undoError } = await supabase
+          .from("reward_groups")
+          .delete()
+          .eq("id", copyId);
+        if (undoError)
+          throw new Error("duplicateGroup: could not undo the copy", {
+            cause: undoError,
+          });
+        const mapped = mapPgError(itemsError);
+        if (mapped) return mapped;
+        throw new Error("duplicateGroup items failed", { cause: itemsError });
+      }
+    }
     done();
     return { ok: true };
   });

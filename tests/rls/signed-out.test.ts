@@ -73,6 +73,7 @@ const VALID: Record<string, Record<string, string>> = {
     itemIds: "00000000-0000-4000-8000-000000000000",
   },
   deleteGroup: { groupId: "00000000-0000-4000-8000-000000000000" },
+  duplicateGroup: { groupId: "00000000-0000-4000-8000-000000000000" },
   updatePickup: {
     pickupId: "00000000-0000-4000-8000-000000000000",
     note: "x",

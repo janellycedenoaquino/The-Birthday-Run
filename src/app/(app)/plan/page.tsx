@@ -12,6 +12,7 @@ import {
   addToGroup,
   createGroup,
   deleteGroup,
+  duplicateGroup,
   removeFromGroup,
   reorderGroupItems,
   updateGroup,
@@ -24,7 +25,7 @@ import { getGroupRoute, lookupZip } from "@/server/actions/route";
 import { loadPlanContext } from "@/server/rewards/plan-context";
 
 // S-106 Plan (SPEC §3.3, BUILD F-6: FR-22–FR-27, FR-9, FR-40). `onboarded` level. Group routes
-// (FR-33, F-10) are premium; Smart Grouping (FR-29) and Duplicate (FR-28) are still to come.
+// (FR-33, F-10) and Duplicate (FR-28) are premium; Smart Grouping (FR-29) is still to come.
 export const metadata: Metadata = {
   title: "Plan",
   robots: { index: false },
@@ -200,6 +201,8 @@ export default async function PlanPage({ searchParams }: PageProps<"/plan">) {
                   deleteGroup,
                   removeFromGroup,
                   reorderGroupItems,
+                  // FR-28: premium only; free users get no control (metric 2).
+                  duplicateGroup: premium ? duplicateGroup : undefined,
                 }}
                 route={
                   g.items.length < 2 ? null : premium ? (

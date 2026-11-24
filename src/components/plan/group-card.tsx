@@ -68,6 +68,8 @@ export function GroupCard({
     deleteGroup: Action;
     removeFromGroup: Action;
     reorderGroupItems: Action;
+    /** FR-28: premium only. Free users get no control (the page leaves it out). */
+    duplicateGroup?: Action;
   };
 }) {
   const router = useRouter();
@@ -134,6 +136,12 @@ export function GroupCard({
             range={range}
             updateGroup={actions.updateGroup}
           />
+          {actions.duplicateGroup ? (
+            <DuplicateGroup
+              group={group}
+              duplicateGroup={actions.duplicateGroup}
+            />
+          ) : null}
           <DeleteGroup group={group} deleteGroup={actions.deleteGroup} />
         </div>
       </div>
@@ -368,6 +376,40 @@ function EditGroup({
         </PlanForm>
       )}
     </EditDialog>
+  );
+}
+
+/** FR-28: one button posting the group's ID; works without JS. Errors show under the card. */
+function DuplicateGroup({
+  group,
+  duplicateGroup,
+}: {
+  group: GroupCardData;
+  duplicateGroup: Action;
+}) {
+  const [state, action, pending] = useActionState(duplicateGroup, null);
+  const error =
+    state && !state.ok
+      ? (state.fieldErrors?.form?.[0] ?? msg(state.error as MessageId))
+      : null;
+  return (
+    <form action={action}>
+      <input type="hidden" name="groupId" value={group.id} />
+      <Button
+        type="submit"
+        size="sm"
+        variant="ghost"
+        disabled={pending}
+        aria-label={`Duplicate ${group.name}`}
+      >
+        Duplicate
+      </Button>
+      {error ? (
+        <p role="alert" className="text-sm text-destructive">
+          {error}
+        </p>
+      ) : null}
+    </form>
   );
 }
 
