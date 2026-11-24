@@ -88,7 +88,7 @@ Fields and RLS rules: DESIGN §3.
 | F-1 | `import:retailers`, `retailer_counts`, `retailers-import.yml` | S-103, S-104 (data) | F-1 |
 | F-2 | `saveOnboarding`, `updateBirthday`, `updateTimeZone`, timing module | S-101, S-108 | F-2 |
 | F-3 | `enroll`, `unenroll`, Discover pages | S-103, S-104, C-102 | F-3 |
-| F-4 | My Rewards and dashboard pages | S-102, S-105, C-103 | F-4 |
+| F-4 | My Rewards (home page; no dashboard, decision 0018) | S-105, C-103 | F-4 |
 | F-5 | `createPickup`, `deletePickup`, `updatePickup`, `create_pickup` | S-105, S-107, C-108, C-109 | F-5 |
 | F-6 | `createGroup`, `addToGroup`, `updateGroup`, `removeFromGroup`, `reorderGroupItems`, `deleteGroup`, `duplicateGroup` | S-106, C-108 | F-6 |
 | F-7 | `is_premium`, `getEntitlement`, `grant-premium` | C-104, S-110 | F-7 |

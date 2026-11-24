@@ -86,7 +86,7 @@ All priorities are **must**.
 | ID | Requirement | Acceptance | Priority |
 | --- | --- | --- | --- |
 | FR-6 | **[v1]** Before using signed-in pages, a new user gives their birthday as month and day. | A user with no birthday is sent to onboarding from every signed-in page except settings. Only real dates are accepted, Feb 29 included. | must |
-| FR-7 | **[v1]** Onboarding then lets the user pick their programs (search, category filter) or skip. | One save enrolls the selection (FR-8); skip enrolls none. Either way onboarding is done, the user lands on the dashboard (FR-21) and isn't sent back. | must |
+| FR-7 | **[v1]** Onboarding then lets the user pick their programs (search, category filter) or skip. | One save enrolls the selection (FR-8); skip enrolls none. Either way onboarding is done, the user lands on My Rewards (S-105, decision 0018) and isn't sent back. | must |
 | FR-8 | **[v1]** A user can enroll in and unenroll from retailers at any time. | Change shows at once on Discover, My Rewards and Plan; enrolling twice has no effect. Unenrolling removes the retailer from the user's groups; its pickups stay in History. | must |
 | FR-9 | **[v1]** A user can change their birthday in settings (other settings: Template FR-12 onward). | Window, countdowns and lists follow the new date on next load. Groups are kept; any whose pickup now falls outside the window are flagged until edited (FR-27). | must |
 
@@ -109,10 +109,10 @@ All priorities are **must**.
 | FR-19 | **[v1]** History lists all pickups by cycle ("<year> Birthday Run"), newest first. | A pickup belongs to the cycle (Terms) it falls in (Jan 5 with a Dec 20 birthday → the cycle that began before Dec 20). The upcoming cycle shows even if empty. Entries show retailer, date, note, label, including unenrolled retailers (changed: old hid them). None ever → empty state. | must |
 | FR-20 | **[v1]** A user can delete a pickup, and edit its note and label. | Delete asks first; a current-cycle reward becomes available again if not expired. | must |
 
-#### Dashboard
+#### Home (My Rewards; decision 0018)
 | ID | Requirement | Acceptance | Priority |
 | --- | --- | --- | --- |
-| FR-21 | **[v1]** The dashboard (replaces Template FR-19's placeholder) greets the user, links to Discover, My Rewards, Plan and History, and shows pickups this cycle and the last pickup date. | Count matches History's current cycle (changed: old used the calendar year). | must |
+| FR-21 | **[v1]** My Rewards (S-105) is the signed-in home (decision 0018; there is no separate dashboard): its header greets the user and shows pickups this cycle and the last pickup date. | Count matches History's current cycle (changed: old used the calendar year). | must |
 
 #### Plan
 | ID | Requirement | Acceptance | Priority |
@@ -228,7 +228,7 @@ Each requirement → where it's shown (SPEC §3), decided (DESIGN) and built (BU
 | FR-18 | S-105 | D4, D7 | F-5 |
 | FR-19 | S-107 | D4, D7 | F-5 |
 | FR-20 | C-108, S-107 | D4, D7 | F-5 |
-| FR-21 | S-102 | D4 | F-4 |
+| FR-21 | S-105 | D4 | F-4 |
 | FR-22 | S-106 | D6, D13 | F-6 |
 | FR-23 | S-106 | D6, D13 | F-6 |
 | FR-24 | S-106 | D6, D13 | F-6 |
@@ -284,7 +284,7 @@ flowchart TD
   SU -. "Template sign-up flow" .-> G{"requireOnboarded()"}
   SI["Template S-4 Sign in"] -.-> G
   G -- "no birthday" --> OB["S-101 Onboarding"]
-  OB -- "save or skip (F-2)" --> DB["S-102 Dashboard"]
+  OB -- "save or skip (F-2)" --> DB["S-105 My Rewards (home)"]
   G -- "ok" --> DB
   DB --> D & MR["S-105 My Rewards"] & PL["S-106 Plan"] & HI["S-107 History"]
   MR -- "mark picked up (C-109)" --> MR
@@ -305,8 +305,8 @@ flowchart TD
 ### 3.2 Shared components
 
 **C-101 App navigation** (all pages; extends Template C-1)
-- Signed in: links Dashboard · Discover · My Rewards · Plan · History in a row under the header on wider screens; current page `aria-current="page"`. Settings stays in the Template account menu.
-- **Phones (decision 0016):** the links move to a bottom tab bar fixed to the bottom of the screen: five tabs with an icon and a label (Dashboard shown as "Home"), the current one on the pink block. The account menu stays on the round initial top right (Settings, Birthday & reminders, Premium, Sign out). Page content keeps room above the bar.
+- Signed in: links Discover · My Rewards · Plan · History in a row under the header on wider screens (no Dashboard, decision 0018); current page `aria-current="page"`. Settings stays in the Template account menu.
+- **Phones (decision 0016):** the links move to a bottom tab bar fixed to the bottom of the screen: four tabs (Discover, My Rewards, Plan, History) with an icon and a label, the current one on the pink block. The account menu stays on the round initial top right (Settings, Birthday & reminders, Premium, Sign out). Page content keeps room above the bar.
 - Signed out: "Discover" next to Template C-1's Sign in / Sign up.
 - Hidden on S-101 (onboarding has one job) and on Template S-9–S-11.
 - Labels: M-101.
@@ -365,16 +365,15 @@ flowchart TD
 
 #### S-101 Onboarding (`/onboarding`) · FR-6, FR-7, FR-10
 - **Look (decision 0016):** one frosted card on a still glow (nothing moves on its own, so no pause control), step text M-118. Continue turns the card around (a 3D flip) and its back is step 2; "Change birthday" turns it back. Step 2 is a logo grid with checkboxes; the Save button's count is the only pick feedback. No flip when motion is paused or reduced.
-- **Who:** signed in, no birthday (onboarded users go to S-102).
+- **Who:** signed in, no birthday (onboarded users go to S-105).
 - **Shows:** M-118 step label; h1 M-105.
   1. **Birthday:** text M-106; "Month" select and "Day" select (days follow the month; Feb 29 listed; picking it shows M-278, FR-49); no year field. Detected time zone shown as M-107 (changed in S-108); if detection fails, S-108's time-zone picker shows inline here and is required. Button "Continue" (M-108).
   2. **Programs:** h1 M-109; search "Search programs"; category tabs (M-170); list of C-102 as checkboxes (not toggles; saved together). Primary M-110 (`{count}` selected) or, with none selected, M-111b; secondary "Skip for now" (M-111c).
-- **Main action:** F-2 `saveOnboarding` ("Saving…") → S-102.
+- **Main action:** F-2 `saveOnboarding` ("Saving…") → S-105.
 - **States:** loading: skeleton list · empty search: M-171 · error: BR-18 (date), BR-19, M-5, M-7 above the button; going back keeps the birthday.
 
-#### S-102 Dashboard (`/dashboard`, replaces Template S-12's body) · FR-21
-- **Shows:** h1 as Template S-12 ("Welcome, {display_name}" / "Welcome"); stats card: M-126 (`{count}` pickups this cycle) and M-127 (`{date}` last pickup) or M-128 if none; four link cards (Discover, My Rewards, Plan, History) with one line each (M-129a–d). Template "Add your name in Settings" link kept.
-- **States:** no pickups: M-128 · loading: C-3 · error: Template S-20.
+#### S-102 Dashboard (removed, decision 0018)
+- `/dashboard` permanently redirects to `/rewards`; its content moved into S-105's header (FR-21). M-129a–d are retired.
 
 #### S-103 Discover (`/discover`) · FR-2, FR-3, FR-5, FR-45
 - **Who:** anyone. Data by role (D3).
@@ -390,7 +389,8 @@ flowchart TD
 - **Shows:** back link M-171c; logo; h1 name; category; reward description; timing label (M-181–M-184, M-184a, M-184b); join-by line M-277 when the retailer has a lead time (FR-49); reward type with its explanation (M-180); requirements list when present (M-189a purchase, M-189b membership, M-189c other); website link (new tab). Signed in: the user's own window for this reward, M-279 (e.g. "Your dates: Jan 3 – Feb 2 · 12 days left", from the timing module, NFR-5), enroll toggle (C-102 button) and C-107 trigger. Signed out: the timing label stays public (it's what search finds, decision 0017), then M-280 with "Sign up free" → Template S-5 (`next` = this page), in place of M-111.
 - **States:** error on toggle: inline (BR-3, M-5, M-7).
 
-#### S-105 My Rewards (`/rewards`) · FR-12–FR-18, FR-32, FR-48
+#### S-105 My Rewards (`/rewards`) · FR-12–FR-18, FR-21, FR-32, FR-48
+- **Home (decision 0018):** where signed-in users land. **Look (decision 0016):** the birthday header as a frosted card with the pickups line (M-126/M-127 or M-128); under it a row with a progress ring (picked up of this run's rewards) and a big countdown (rewards open now, or days to the birthday outside the window); then "Open now" (C-103 badges, "Picked up") and "Starting later" (start dates); picked-up rewards never show. No enrollments: the header and countdown stay, plus a "No programs yet" card linking to Discover with 4 popular retailers to add with "+".
 - **Shows, in order:**
   1. **Birthday header:** h1 for the FR-14 state (M-201–M-204, `{name}` variants when a display name is set) and the countdown M-205/M-206 (hidden on the birthday).
   2. **Outside the window** (FR-15): M-207 (`{date}`) with links "Browse Discover" and "Start planning" → S-103, S-106. Nothing below shows.
@@ -424,7 +424,7 @@ flowchart TD
 - Free: C-104 (M-138), with no title of its own: the card's "Premium" heading is the title, never M-130's "Premium is part of Premium" (owner, 2026-11-24). Premium by grant: M-261. Paid: M-262 (`{date}` renews or M-263 ends), button M-143 → F-8 portal ("Opening…"). Errors: BR-15, M-5, M-7.
 
 #### S-111 Payment return (`/billing/return`) · FR-37, NFR-8
-- **Shows:** h1 M-264; M-265; "Check again" (reloads) and "Go to dashboard". Never turns premium on; once the server reports premium, the page shows M-266 instead. **States:** payments off: M-139 text.
+- **Shows:** h1 M-264; M-265; "Check again" (reloads) and "Go to My Rewards". Never turns premium on; once the server reports premium, the page shows M-266 instead. **States:** payments off: M-139 text.
 
 #### S-112 Turn off reminders (`/reminders/unsubscribe?token=…`) · FR-42
 - No sign-in needed (token, D15). Minimal Template C-1.
@@ -434,7 +434,7 @@ flowchart TD
 Template M-, API-, E- texts apply unchanged. Placeholders in `{braces}` are filled as text. Plurals: one message per form where shown (`{days}` = 1 uses the singular ID). Dates: "Oct 6" style in the user's time zone; times "10:00 AM".
 
 **Navigation and onboarding**
-- M-101 (C-101): "Dashboard" · "Discover" · "My Rewards" (M-101b) · "Plan" (M-101d) · "History" (M-101c)
+- M-101 (C-101): "Discover" · "My Rewards" (M-101b) · "Plan" (M-101d) · "History" (M-101c)
 - M-102 (S-1): "Browse rewards"
 - M-103 / M-104 (C-102 toggle): "Add" / "Added"
 - M-105 (S-101 h1): "When's your birthday?"
@@ -455,8 +455,8 @@ Template M-, API-, E- texts apply unchanged. Placeholders in `{braces}` are fill
 - M-117 (note or label over FR-17's limit): "Use {limit} characters or fewer."
 - M-120: "Last day" · M-121: "1 day left" (unused: days left count today, so one day is the last day) · M-122: "{days} days left"
 - M-123: "Ends soon" · M-124: "Coming up" · M-125: "Plenty of time"
-- M-126 (S-102): "{count} picked up this Birthday Run" · M-127: "Last pickup: {date}" · M-128: "No pickups yet this Birthday Run."
-- M-129a–d (S-102 cards; M-129d is History): "Find birthday rewards and add your programs." · "See what's open now and how long it lasts." · "Group pickups into runs." · "Everything you've picked up."
+- M-126 (S-105 header): "{count} picked up this Birthday Run" · M-127: "Last pickup: {date}" · M-128: "No pickups yet this Birthday Run."
+- M-129a–d: retired with S-102 (decision 0018).
 - M-201 (header, birthday): "Happy birthday, {name}" / M-201b "Happy birthday"
 - M-202 (birth month): "Happy birth month, {name}" / M-202b "Happy birth month"
 - M-203 (later window day, rewards open): "Your birthday's passed, but your rewards haven't."
