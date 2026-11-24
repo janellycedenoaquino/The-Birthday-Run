@@ -27,7 +27,8 @@ export async function findNearbyStores(
     p_per_brand: PER_BRAND,
   });
   if (error) {
-    if (error.message === "not_premium") return { failed: true, notPremium: true };
+    if (error.message === "not_premium")
+      return { failed: true, notPremium: true };
     // Logged without the arguments: the start point never goes to Sentry (NFR-3).
     logError(new Error(`nearby_stores failed: ${error.code ?? "unknown"}`), {
       op: "findNearbyStores",
@@ -36,7 +37,11 @@ export async function findNearbyStores(
   }
   const stores = new Map<string, StoreCandidate[]>();
   for (const s of data ?? []) {
-    const address = [s.address, s.city, [s.state, s.postal_code].filter(Boolean).join(" ")]
+    const address = [
+      s.address,
+      s.city,
+      [s.state, s.postal_code].filter(Boolean).join(" "),
+    ]
       .filter(Boolean)
       .join(", ");
     const list = stores.get(s.retailer_id) ?? [];
@@ -69,7 +74,10 @@ export async function stateAt(
   supabase: SupabaseClient<Database>,
   at: LatLng,
 ): Promise<string | null> {
-  const { data, error } = await supabase.rpc("zip_location", { p_lat: at.lat, p_lng: at.lng });
+  const { data, error } = await supabase.rpc("zip_location", {
+    p_lat: at.lat,
+    p_lng: at.lng,
+  });
   if (error) throw rpcError("zip_location", error);
   return data?.[0]?.state ?? null;
 }

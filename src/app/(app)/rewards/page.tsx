@@ -18,13 +18,21 @@ import {
 } from "@/lib/birthday/timing";
 import { msg } from "@/lib/messages";
 import { joinByLine, timingLabel } from "@/lib/retailers/labels";
-import { myRewards, type RewardItem } from "@/lib/rewards/my-rewards";
+import { UpgradePrompt } from "@/components/billing/upgrade-prompt";
+import { RewardsRoute } from "@/components/map/rewards-route";
+import {
+  availableRewards,
+  myRewards,
+  type RewardItem,
+} from "@/lib/rewards/my-rewards";
 import { createPickup, deletePickup } from "@/server/actions/pickups";
+import { findStops, lookupZip } from "@/server/actions/route";
+import { getEntitlement } from "@/server/premium/entitlement";
 import { requireOnboarded } from "@/server/auth/app-guards";
 
 // S-105 My Rewards (SPEC §3.3, BUILD F-4: FR-12–FR-16). `onboarded` level. The rules live in
-// src/lib/rewards/my-rewards.ts; this page loads rows and renders. The report menu (F-13) and the
-// Route section (F-7) arrive in later phases.
+// src/lib/rewards/my-rewards.ts; this page loads rows and renders. The Route section is premium
+// (FR-32, BUILD F-10); free users get C-104 there. The report menu (F-13) arrives later.
 export const metadata: Metadata = {
   title: "My Rewards",
   robots: { index: false },
@@ -61,14 +69,15 @@ export default async function RewardsPage({
     .gte("picked_up_on", cycleStart);
   if (pError)
     throw new Error("S-105: could not read pickups", { cause: pError });
+  const picked = pickups.map((p) => ({
+    retailerId: p.retailer_id,
+    date: p.picked_up_on as LocalDate,
+  }));
   const r = myRewards({
     birthday: profile.birthday,
     today: now,
     enrolled,
-    pickups: pickups.map((p) => ({
-      retailerId: p.retailer_id,
-      date: p.picked_up_on as LocalDate,
-    })),
+    pickups: picked,
     filters: {
       q: filters.q,
       within: filters.within
@@ -78,6 +87,18 @@ export default async function RewardsPage({
     },
   });
   const w = r.window;
+  const { premium } = await getEntitlement(supabase);
+  // FR-32: every available reward, most urgent first, whatever the list's filters (premium only:
+  // free pages carry no route data, FR-39).
+  const routeRewards =
+    premium && r.view === "list"
+      ? availableRewards({
+          birthday: profile.birthday,
+          today: now,
+          enrolled,
+          pickups: picked,
+        }).open.map(({ id, name }) => ({ id, name }))
+      : [];
   // In the list view the window is open, so the pickup date range exists (FR-17).
   const range = pickupDateRange(w);
   const name = profile.displayName;
@@ -218,6 +239,20 @@ export default async function RewardsPage({
               </Button>
             </div>
           ) : null}
+          <section aria-labelledby="route-heading" className="mt-12 grid gap-4">
+            <h2 id="route-heading" className="text-xl font-semibold">
+              {msg("M-210")}
+            </h2>
+            {premium ? (
+              <RewardsRoute
+                rewards={routeRewards}
+                findStops={findStops}
+                lookupZip={lookupZip}
+              />
+            ) : (
+              <UpgradePrompt supabase={supabase} feature="M-132" />
+            )}
+          </section>
         </>
       )}
     </div>

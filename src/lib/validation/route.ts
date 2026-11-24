@@ -18,13 +18,18 @@ export const startLocationSchema = z.discriminatedUnion("kind", [
   z
     .object({
       kind: z.literal("zip"),
-      zip: z.string().trim().regex(/^\d{5}$/, msg("BR-12")),
+      zip: z
+        .string()
+        .trim()
+        .regex(/^\d{5}$/, msg("BR-12")),
     })
     .strict(),
 ]);
 export type StartLocation = z.infer<typeof startLocationSchema>;
 
-export const lookupZipSchema = z.object({ start: startLocationSchema }).strict();
+export const lookupZipSchema = z
+  .object({ start: startLocationSchema })
+  .strict();
 export const findStopsSchema = z
   .object({ start: startLocationSchema, retailerIds: retailerIdsSchema })
   .strict();

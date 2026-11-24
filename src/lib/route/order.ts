@@ -15,7 +15,10 @@ export function pathLength(start: LatLng, stops: readonly LatLng[]): number {
 }
 
 /** Nearest-neighbour order from the start; ties keep the input order. */
-export function nearestNeighbour<T extends LatLng>(stops: readonly T[], start: LatLng): T[] {
+export function nearestNeighbour<T extends LatLng>(
+  stops: readonly T[],
+  start: LatLng,
+): T[] {
   const left = [...stops];
   const out: T[] = [];
   let at: LatLng = start;
@@ -42,7 +45,10 @@ const MIN_GAIN = 1;
  * Nearest-neighbour, then 2-opt: reverse a segment when that shortens the open path by more than
  * 1 m, until no reversal helps (at most n² × 10 passes). Never longer than nearest-neighbour.
  */
-export function orderStops<T extends LatLng>(stops: readonly T[], start: LatLng): T[] {
+export function orderStops<T extends LatLng>(
+  stops: readonly T[],
+  start: LatLng,
+): T[] {
   const path = nearestNeighbour(stops, start);
   const n = path.length;
   if (n < 3) return path;

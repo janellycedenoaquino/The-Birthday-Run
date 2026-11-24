@@ -19,10 +19,12 @@ import {
 import { requireOnboarded } from "@/server/auth/app-guards";
 import { getEntitlement } from "@/server/premium/entitlement";
 import { UpgradePrompt } from "@/components/billing/upgrade-prompt";
+import { GroupRoute, LockedRoute } from "@/components/map/group-route";
+import { getGroupRoute, lookupZip } from "@/server/actions/route";
 import { loadPlanContext } from "@/server/rewards/plan-context";
 
-// S-106 Plan (SPEC §3.3, BUILD F-6: FR-22–FR-27, FR-9, FR-40). `onboarded` level. Smart Grouping
-// (FR-29), Duplicate (FR-28) and the route (C-106) are premium and arrive with F-7, F-10, F-11.
+// S-106 Plan (SPEC §3.3, BUILD F-6: FR-22–FR-27, FR-9, FR-40). `onboarded` level. Group routes
+// (FR-33, F-10) are premium; Smart Grouping (FR-29) and Duplicate (FR-28) are still to come.
 export const metadata: Metadata = {
   title: "Plan",
   robots: { index: false },
@@ -199,6 +201,24 @@ export default async function PlanPage({ searchParams }: PageProps<"/plan">) {
                   removeFromGroup,
                   reorderGroupItems,
                 }}
+                route={
+                  g.items.length < 2 ? null : premium ? (
+                    <GroupRoute
+                      groupId={g.id}
+                      orderKey={g.items.map((i) => i.id).join()}
+                      getGroupRoute={getGroupRoute}
+                      lookupZip={lookupZip}
+                    />
+                  ) : (
+                    <LockedRoute>
+                      <UpgradePrompt
+                        supabase={supabase}
+                        feature="M-136"
+                        compact
+                      />
+                    </LockedRoute>
+                  )
+                }
               />
             ))}
           </ul>

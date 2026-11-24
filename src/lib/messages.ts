@@ -220,8 +220,7 @@ export const M = {
   "M-157": "Change",
   "M-160": "Start",
   "M-161": "Map of {count} stops. The same stops are listed below.",
-  "M-162":
-    "The map couldn't load. Your stops and directions below still work.",
+  "M-162": "The map couldn't load. Your stops and directions below still work.",
   "M-163": "{distance} mi straight-line from the previous stop",
   "M-163b": "{distance} mi straight-line from your start",
   "M-164": "No map pin",

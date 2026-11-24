@@ -16,7 +16,11 @@ export type RouteResult = {
   /** The resolved start (a ZIP's centroid), for the map pin only. */
   start: { lat: number; lng: number };
   stops: RouteStop[];
-  noPin: { retailerId: string; retailerName: string; finderUrl: string | null }[];
+  noPin: {
+    retailerId: string;
+    retailerName: string;
+    finderUrl: string | null;
+  }[];
   /** Google Maps URLs, one per leg (FR-34). */
   legs: string[];
 };

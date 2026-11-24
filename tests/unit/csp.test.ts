@@ -118,3 +118,16 @@ describe("newNonce", () => {
     for (const n of nonces) expect(n).toMatch(/^[A-Za-z0-9+/]+=*$/);
   });
 });
+
+describe("buildCsp: the map (BUILD F-10, D11, DESIGN T-112)", () => {
+  const d = directives(buildCsp({ ...base, dev: false }));
+  it("adds only the tile host to connect-src and img-src", () => {
+    expect(d.get("connect-src")).toBe("'self' https://tiles.openfreemap.org");
+    expect(d.get("img-src")).toBe(
+      "'self' data: blob: https://tiles.openfreemap.org",
+    );
+  });
+  it("keeps the worker same-origin: no blob: worker", () => {
+    expect(d.get("worker-src")).toBe("'self'");
+  });
+});

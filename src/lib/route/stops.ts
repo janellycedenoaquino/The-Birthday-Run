@@ -14,7 +14,8 @@ export type StoreCandidate = LatLng & {
 const MAX_ROUNDS = 3;
 
 const byNearest = (start: LatLng) => (a: StoreCandidate, b: StoreCandidate) =>
-  haversineMeters(start, a) - haversineMeters(start, b) || a.storeId - b.storeId;
+  haversineMeters(start, a) - haversineMeters(start, b) ||
+  a.storeId - b.storeId;
 
 /**
  * `brands` lists the rewards in order (the group's order with `ordered`); `candidates` holds each
@@ -32,11 +33,17 @@ export function chooseStops(
   const unique = [...new Set(brands)];
   const noPin = unique.filter((b) => !candidates.get(b)?.length);
   const pinned = unique.filter((b) => candidates.get(b)?.length);
-  const pools = pinned.map((b) => [...candidates.get(b)!].sort(byNearest(start)));
+  const pools = pinned.map((b) =>
+    [...candidates.get(b)!].sort(byNearest(start)),
+  );
   const chosen = pools.map((p) => p[0]!);
 
   const cost = (k: number, c: StoreCandidate) => {
-    if (ordered) return pathLength(start, chosen.map((s, i) => (i === k ? c : s)));
+    if (ordered)
+      return pathLength(
+        start,
+        chosen.map((s, i) => (i === k ? c : s)),
+      );
     let total = haversineMeters(start, c);
     chosen.forEach((s, i) => {
       if (i !== k) total += haversineMeters(c, s);

@@ -141,6 +141,7 @@ const eslintConfig = defineConfig([
     "build/**",
     "next-env.d.ts",
     "src/lib/types/database.types.ts",
+    "public/vendor/**", // third-party build copies (decision 0013)
   ]),
 ]);
 

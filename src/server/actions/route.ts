@@ -4,7 +4,12 @@ import "server-only";
 import { headers } from "next/headers";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type { ActionResult } from "@/lib/action-result";
-import { today as todayIn, timingOf, windowFor, type LocalDate } from "@/lib/birthday/timing";
+import {
+  today as todayIn,
+  timingOf,
+  windowFor,
+  type LocalDate,
+} from "@/lib/birthday/timing";
 import { msg } from "@/lib/messages";
 import { availableRewards } from "@/lib/rewards/my-rewards";
 import { haversineMeters, toMiles, type LatLng } from "@/lib/route/distance";
@@ -37,16 +42,25 @@ import {
 type Refusal = Extract<ActionResult, { ok: false }>;
 type Db = SupabaseClient<Database>;
 
-const bad = (input: { success: false; error: { issues: { path: PropertyKey[]; message: string }[] } }): Refusal => {
+const bad = (input: {
+  success: false;
+  error: { issues: { path: PropertyKey[]; message: string }[] };
+}): Refusal => {
   const fieldErrors: Record<string, string[]> = {};
   for (const issue of input.error.issues) {
     // `start.zip` → `zip`, the C-105 field (BR-12); anything else by its top-level key.
-    const key = String((issue.path[0] === "start" ? issue.path.at(-1) : issue.path[0]) ?? "form");
+    const key = String(
+      (issue.path[0] === "start" ? issue.path.at(-1) : issue.path[0]) ?? "form",
+    );
     (fieldErrors[key] ??= []).push(issue.message);
   }
   return { ok: false, error: "API-4", fieldErrors };
 };
-const unknownZip: Refusal = { ok: false, error: "API-4", fieldErrors: { zip: [msg("BR-12")] } };
+const unknownZip: Refusal = {
+  ok: false,
+  error: "API-4",
+  fieldErrors: { zip: [msg("BR-12")] },
+};
 
 /** The start as a point: coordinates re-rounded (A-11), a ZIP through zip_location. */
 async function resolveStart(
@@ -60,7 +74,9 @@ async function resolveStart(
 }
 
 /** NotPremiumError from an RPC (premium ended mid-request) → BR-2; anything else rethrows. */
-async function premiumOnly<T>(fn: () => Promise<ActionResult<T>>): Promise<ActionResult<T>> {
+async function premiumOnly<T>(
+  fn: () => Promise<ActionResult<T>>,
+): Promise<ActionResult<T>> {
   try {
     return await fn();
   } catch (error) {
@@ -79,6 +95,8 @@ async function buildRoute(
   brands: Brand[],
   ordered: boolean,
 ): Promise<ActionResult<RouteResult>> {
+  if (!brands.length)
+    return { ok: true, data: { start: at, stops: [], noPin: [], legs: [] } };
   const byId = new Map(brands.map((b) => [b.id, b]));
   const nearby = await findNearbyStores(supabase, at, [...byId.keys()]);
   if (nearby.failed && nearby.notPremium) return { ok: false, error: "BR-2" };
@@ -117,15 +135,26 @@ async function buildRoute(
   );
   return {
     ok: true,
-    data: { start: at, stops, noPin: noPin.map((id) => noPinRow(byId.get(id)!)), legs },
+    data: {
+      start: at,
+      stops,
+      noPin: noPin.map((id) => noPinRow(byId.get(id)!)),
+      legs,
+    },
   };
 }
 
-const noPinRow = (b: Brand) => ({ retailerId: b.id, retailerName: b.name, finderUrl: b.finderUrl });
+const noPinRow = (b: Brand) => ({
+  retailerId: b.id,
+  retailerName: b.name,
+  finderUrl: b.finderUrl,
+});
 
 /** FR-31: the brand's store finder, else its website. */
-const finder = (r: { store_finder_url: string | null; website_url: string | null }) =>
-  r.store_finder_url ?? r.website_url ?? null;
+const finder = (r: {
+  store_finder_url: string | null;
+  website_url: string | null;
+}) => r.store_finder_url ?? r.website_url ?? null;
 
 /** C-105: the start's state (FR-5). Also confirms an unknown ZIP before the route asks. */
 export async function lookupZip(
@@ -154,7 +183,9 @@ export async function lookupZip(
 }
 
 /** S-105's route (FR-31, FR-32): the chosen available rewards, in the shortest order found. */
-export async function findStops(input: unknown): Promise<ActionResult<RouteResult>> {
+export async function findStops(
+  input: unknown,
+): Promise<ActionResult<RouteResult>> {
   const parsed = findStopsSchema.safeParse(input);
   if (!parsed.success) return bad(parsed);
   return runAction("findStops", () =>
@@ -175,16 +206,21 @@ export async function findStops(input: unknown): Promise<ActionResult<RouteResul
           "retailer:retailers!inner(id, name, timing_type, days_before, days_after, store_finder_url, website_url)",
         )
         .is("retailer.retired_at", null);
-      if (error) throw new Error("findStops: could not read programs", { cause: error });
+      if (error)
+        throw new Error("findStops: could not read programs", { cause: error });
       const enrolled = data.map((row) => row.retailer);
       const now = todayIn(profile.timeZone, new Date());
-      const cycleStart = windowFor(profile.birthday, enrolled.map(timingOf), now).planning
-        .cycleStart;
+      const cycleStart = windowFor(
+        profile.birthday,
+        enrolled.map(timingOf),
+        now,
+      ).planning.cycleStart;
       const { data: pickups, error: pError } = await supabase
         .from("pickups")
         .select("retailer_id, picked_up_on")
         .gte("picked_up_on", cycleStart);
-      if (pError) throw new Error("findStops: could not read pickups", { cause: pError });
+      if (pError)
+        throw new Error("findStops: could not read pickups", { cause: pError });
       const { open } = availableRewards({
         birthday: profile.birthday,
         today: now,
@@ -198,15 +234,15 @@ export async function findStops(input: unknown): Promise<ActionResult<RouteResul
       const brands = open
         .filter((r) => wanted.has(r.id))
         .map((r) => ({ id: r.id, name: r.name, finderUrl: finder(r) }));
-      if (!brands.length)
-        return { ok: true, data: { start: resolved.at, stops: [], noPin: [], legs: [] } };
       return buildRoute(supabase, start, resolved.at, brands, false);
     }),
   );
 }
 
 /** S-106's group route (FR-33): the group's rewards in the group's own order (FR-27). */
-export async function getGroupRoute(input: unknown): Promise<ActionResult<RouteResult>> {
+export async function getGroupRoute(
+  input: unknown,
+): Promise<ActionResult<RouteResult>> {
   const parsed = groupRouteSchema.safeParse(input);
   if (!parsed.success) return bad(parsed);
   return runAction("getGroupRoute", () =>
@@ -221,7 +257,10 @@ export async function getGroupRoute(input: unknown): Promise<ActionResult<RouteR
         .select("id, items:reward_group_items(id, retailer_id, position)")
         .eq("id", groupId)
         .maybeSingle();
-      if (error) throw new Error("getGroupRoute: could not read the group", { cause: error });
+      if (error)
+        throw new Error("getGroupRoute: could not read the group", {
+          cause: error,
+        });
       if (!group) return { ok: false, error: "BR-11" };
       const resolved = await resolveStart(supabase, start);
       if (!resolved) return unknownZip;
@@ -235,14 +274,15 @@ export async function getGroupRoute(input: unknown): Promise<ActionResult<RouteR
             .select("id, name, store_finder_url, website_url")
             .in("id", order)
         : { data: [], error: null };
-      if (rError) throw new Error("getGroupRoute: could not read retailers", { cause: rError });
+      if (rError)
+        throw new Error("getGroupRoute: could not read retailers", {
+          cause: rError,
+        });
       const info = new Map(retailers.map((r) => [r.id, r]));
       const brands = order.flatMap((id) => {
         const r = info.get(id);
         return r ? [{ id, name: r.name, finderUrl: finder(r) }] : [];
       });
-      if (!brands.length)
-        return { ok: true, data: { start: resolved.at, stops: [], noPin: [], legs: [] } };
       return buildRoute(supabase, start, resolved.at, brands, true);
     }),
   );

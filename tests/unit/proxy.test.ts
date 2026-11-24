@@ -175,7 +175,7 @@ describe("static security headers", () => {
     expect(byKey["X-Content-Type-Options"]).toBe("nosniff");
     expect(byKey["Referrer-Policy"]).toBe("strict-origin-when-cross-origin");
     expect(byKey["Permissions-Policy"]).toBe(
-      "camera=(), microphone=(), geolocation=(), payment=(), usb=(), browsing-topics=()",
+      "camera=(), microphone=(), geolocation=(self), payment=(), usb=(), browsing-topics=()",
     );
     expect(byKey["X-Frame-Options"]).toBe("DENY");
     expect(byKey["Cross-Origin-Opener-Policy"]).toBe("same-origin");

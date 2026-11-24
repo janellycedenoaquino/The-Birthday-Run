@@ -7,7 +7,9 @@
     "node": ">=24.2 <25"
   },
   "scripts": {
+    "predev": "node scripts/copy-maplibre-worker.mjs",
     "dev": "next dev",
+    "prebuild": "node scripts/copy-maplibre-worker.mjs",
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
@@ -42,6 +44,7 @@
     "class-variance-authority": "~0.7.1",
     "cn": "~0.5.2",
     "lucide-react": "^1.73.0",
+    "maplibre-gl": "6.19.0",
     "next": "^16.4.6",
     "next-themes": "~0.4.6",
     "radix-ui": "^1.8.1",

@@ -21,7 +21,12 @@ import { CSS } from "@dnd-kit/utilities";
 import { GripVertical } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { startTransition, useActionState, useState } from "react";
+import {
+  startTransition,
+  useActionState,
+  useState,
+  type ReactNode,
+} from "react";
 import { toast } from "sonner";
 import { ConfirmCancel, ConfirmDialog, EditDialog } from "@/components/dialogs";
 import { Button } from "@/components/ui/button";
@@ -52,9 +57,12 @@ export function GroupCard({
   group,
   range,
   actions,
+  route,
 }: {
   group: GroupCardData;
   range: { min: string; max: string };
+  /** S-106's route slot (FR-33): the group route for premium, C-104 for free; none under 2. */
+  route?: ReactNode;
   actions: {
     updateGroup: Action;
     deleteGroup: Action;
@@ -180,6 +188,7 @@ export function GroupCard({
           </SortableContext>
         </DndContext>
       )}
+      {route}
     </li>
   );
 }

@@ -6,3 +6,4 @@ package-lock.json
 .next/
 src/lib/types/database.types.ts
 supabase/templates/
+public/vendor/

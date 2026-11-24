@@ -16,7 +16,9 @@ describe("haversineMeters", () => {
     [NYC, LA, 3_935_746],
     [LONDON, PARIS, 343_556],
   ])("matches known city pairs within 0.5%%", (a, b, expected) => {
-    expect(Math.abs(haversineMeters(a, b) - expected) / expected).toBeLessThan(0.005);
+    expect(Math.abs(haversineMeters(a, b) - expected) / expected).toBeLessThan(
+      0.005,
+    );
   });
   it("is 0 for the same point and symmetric", () => {
     expect(haversineMeters(NYC, NYC)).toBe(0);
@@ -29,30 +31,54 @@ describe("haversineMeters", () => {
 });
 
 // A small grid near the origin: 0.01° of latitude ≈ 1.1 km.
-const at = (lat: number, lng: number): LatLng => ({ lat: 40 + lat / 100, lng: -74 + lng / 100 });
+const at = (lat: number, lng: number): LatLng => ({
+  lat: 40 + lat / 100,
+  lng: -74 + lng / 100,
+});
 const START = at(0, 0);
 
 describe("orderStops", () => {
   it("finds the optimal order for a known 6-stop case where nearest-neighbour doesn't", () => {
     // Nearest-neighbour goes right to x=1, left to -1.5, -3, -4, then back right (length 15).
-    const stops = [at(0, 1), at(0, -1.5), at(0, 4), at(0, 5), at(0, -3), at(0, -4)];
+    const stops = [
+      at(0, 1),
+      at(0, -1.5),
+      at(0, 4),
+      at(0, 5),
+      at(0, -3),
+      at(0, -4),
+    ];
     const nn = nearestNeighbour(stops, START);
     const best = orderStops(stops, START);
     // Optimal open path: cover the near (left) side, then the right: 4 + 9 = 13 units; right
     // first is 14. 2-opt must reach that length (several orders share it).
-    const optimal = [at(0, -1.5), at(0, -3), at(0, -4), at(0, 1), at(0, 4), at(0, 5)];
+    const optimal = [
+      at(0, -1.5),
+      at(0, -3),
+      at(0, -4),
+      at(0, 1),
+      at(0, 4),
+      at(0, 5),
+    ];
     expect(pathLength(START, best)).toBeCloseTo(pathLength(START, optimal), 0);
-    expect(best.slice(3).map((p) => p.lng)).toEqual(optimal.slice(3).map((p) => p.lng));
+    expect(best.slice(3).map((p) => p.lng)).toEqual(
+      optimal.slice(3).map((p) => p.lng),
+    );
     expect(pathLength(START, best)).toBeLessThan(pathLength(START, nn));
   });
 
   it("is never longer than nearest-neighbour (random fixed points)", () => {
     let seed = 7;
-    const rand = () => ((seed = (seed * 16807) % 2147483647) / 2147483647) * 20 - 10;
+    const rand = () =>
+      ((seed = (seed * 16807) % 2147483647) / 2147483647) * 20 - 10;
     for (let t = 0; t < 30; t++) {
-      const stops = Array.from({ length: 2 + (t % 9) }, () => at(rand(), rand()));
+      const stops = Array.from({ length: 2 + (t % 9) }, () =>
+        at(rand(), rand()),
+      );
       const nn = pathLength(START, nearestNeighbour(stops, START));
-      expect(pathLength(START, orderStops(stops, START))).toBeLessThanOrEqual(nn + 1e-6);
+      expect(pathLength(START, orderStops(stops, START))).toBeLessThanOrEqual(
+        nn + 1e-6,
+      );
     }
   });
 
@@ -62,7 +88,11 @@ describe("orderStops", () => {
   });
 });
 
-const store = (retailerId: string, storeId: number, p: LatLng): StoreCandidate => ({
+const store = (
+  retailerId: string,
+  storeId: number,
+  p: LatLng,
+): StoreCandidate => ({
   ...p,
   retailerId,
   storeId,
@@ -83,7 +113,10 @@ describe("chooseStops", () => {
   });
 
   it("lists brands without candidates as no-pin, in input order", () => {
-    const candidates = new Map([["a", [store("a", 1, at(1, 1))]], ["b", []]]);
+    const candidates = new Map([
+      ["a", [store("a", 1, at(1, 1))]],
+      ["b", []],
+    ]);
     const { chosen, noPin } = chooseStops(["z", "a", "b"], candidates, START);
     expect(chosen.map((s) => s.retailerId)).toEqual(["a"]);
     expect(noPin).toEqual(["z", "b"]);
@@ -91,8 +124,16 @@ describe("chooseStops", () => {
 
   it("breaks ties by the lower store ID, whatever the input order", () => {
     const p = at(1, 1);
-    const one = chooseStops(["a"], new Map([["a", [store("a", 9, p), store("a", 2, p)]]]), START);
-    const two = chooseStops(["a"], new Map([["a", [store("a", 2, p), store("a", 9, p)]]]), START);
+    const one = chooseStops(
+      ["a"],
+      new Map([["a", [store("a", 9, p), store("a", 2, p)]]]),
+      START,
+    );
+    const two = chooseStops(
+      ["a"],
+      new Map([["a", [store("a", 2, p), store("a", 9, p)]]]),
+      START,
+    );
     expect(one.chosen[0]?.storeId).toBe(2);
     expect(two.chosen[0]?.storeId).toBe(2);
   });
@@ -102,7 +143,9 @@ describe("chooseStops", () => {
       ["a", [store("a", 1, at(0, 2))]],
       ["b", [store("b", 2, at(0, 4)), store("b", 3, at(0, -1))]],
     ]);
-    const { chosen } = chooseStops(["a", "b"], candidates, START, { ordered: true });
+    const { chosen } = chooseStops(["a", "b"], candidates, START, {
+      ordered: true,
+    });
     expect(chosen.map((s) => s.storeId)).toEqual([1, 2]); // start → a → b: b's east store is on the way
   });
 });
@@ -110,21 +153,30 @@ describe("chooseStops", () => {
 describe("googleLegs", () => {
   const stops = (n: number) => Array.from({ length: n }, (_, i) => at(i, i));
   const params = (url: string) => new URL(url).searchParams;
-  const waypointCount = (url: string) => params(url).get("waypoints")?.split("|").length ?? 0;
+  const waypointCount = (url: string) =>
+    params(url).get("waypoints")?.split("|").length ?? 0;
 
   it("mobile: 4 stops fit one link (3 waypoints); 5 make 2 legs, leg 2 starting at stop 4", () => {
     expect(googleLegs(stops(4), { kind: "coords" }, "mobile")).toHaveLength(1);
-    expect(waypointCount(googleLegs(stops(4), { kind: "coords" }, "mobile")[0]!)).toBe(3);
+    expect(
+      waypointCount(googleLegs(stops(4), { kind: "coords" }, "mobile")[0]!),
+    ).toBe(3);
     const legs = googleLegs(stops(5), { kind: "coords" }, "mobile");
     expect(legs).toHaveLength(2);
     const s4 = stops(5)[3]!;
-    expect(params(legs[1]!).get("origin")).toBe(`${s4.lat.toFixed(5)},${s4.lng.toFixed(5)}`);
+    expect(params(legs[1]!).get("origin")).toBe(
+      `${s4.lat.toFixed(5)},${s4.lng.toFixed(5)}`,
+    );
     expect(params(legs[1]!).get("waypoints")).toBeNull();
   });
 
   it("desktop: 10 stops fit one link; 11 make 2 legs", () => {
-    expect(googleLegs(stops(10), { kind: "coords" }, "desktop")).toHaveLength(1);
-    expect(googleLegs(stops(11), { kind: "coords" }, "desktop")).toHaveLength(2);
+    expect(googleLegs(stops(10), { kind: "coords" }, "desktop")).toHaveLength(
+      1,
+    );
+    expect(googleLegs(stops(11), { kind: "coords" }, "desktop")).toHaveLength(
+      2,
+    );
   });
 
   it("never puts a browser-location start in a URL; a ZIP start is leg 1's origin", () => {
@@ -137,14 +189,20 @@ describe("googleLegs", () => {
 
   it("one stop: one leg with a destination only", () => {
     const [url] = googleLegs(stops(1), { kind: "coords" }, "mobile");
-    expect(url).toMatch(/^https:\/\/www\.google\.com\/maps\/dir\/\?api=1&travelmode=driving&/);
+    expect(url).toMatch(
+      /^https:\/\/www\.google\.com\/maps\/dir\/\?api=1&travelmode=driving&/,
+    );
     expect(params(url!).get("destination")).toBeTruthy();
     expect(params(url!).has("waypoints")).toBe(false);
   });
 
   it("encodes separators and stays under 2,048 characters at 40 stops", () => {
     for (const device of ["mobile", "desktop"] as const) {
-      for (const url of googleLegs(stops(40), { kind: "zip", zip: "10001" }, device)) {
+      for (const url of googleLegs(
+        stops(40),
+        { kind: "zip", zip: "10001" },
+        device,
+      )) {
         expect(url.length).toBeLessThanOrEqual(2048);
         if (url.includes("waypoints")) expect(url).toContain("%7C");
         expect(url).toContain("%2C");
@@ -162,10 +220,25 @@ describe("deviceFromHeaders", () => {
   const h = (init: Record<string, string>) => new Headers(init);
   it.each([
     [{ "sec-ch-ua-mobile": "?1" }, "mobile"],
-    [{ "sec-ch-ua-mobile": "?0", "user-agent": "Mozilla/5.0 (Windows NT 10.0)" }, "desktop"],
-    [{ "user-agent": "Mozilla/5.0 (iPhone; CPU iPhone OS 18_0 like Mac OS X) Mobile/15E148" }, "mobile"],
+    [
+      {
+        "sec-ch-ua-mobile": "?0",
+        "user-agent": "Mozilla/5.0 (Windows NT 10.0)",
+      },
+      "desktop",
+    ],
+    [
+      {
+        "user-agent":
+          "Mozilla/5.0 (iPhone; CPU iPhone OS 18_0 like Mac OS X) Mobile/15E148",
+      },
+      "mobile",
+    ],
     [{ "user-agent": "Mozilla/5.0 (Linux; Android 15; Pixel 9)" }, "mobile"],
-    [{ "user-agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7)" }, "desktop"],
+    [
+      { "user-agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7)" },
+      "desktop",
+    ],
     [{}, "desktop"],
   ])("%o → %s", (headers, device) => {
     expect(deviceFromHeaders(h(headers))).toBe(device);
