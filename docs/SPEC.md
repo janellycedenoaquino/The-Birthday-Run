@@ -357,6 +357,7 @@ flowchart TD
 #### Template S-1 Landing (changed body) · FR-2
 - Hero h1 `appConfig.name`, `appConfig.description`; primary "Get started" → Template S-5; secondary M-102 → S-103. Signed in: Template behaviour. No feature grid.
 - **Look:** decision 0016: a 3D tunnel of retailer logos behind a frosted card, a "Pause motion" control, hovering a logo shows its name and reward and freezes the motion, nothing below the hero (one screen), and an optional game in a pink pull-up tab at the bottom that pauses the motion while it's played.
+- **Buttons (decision 0016):** "Get started" → Template S-5 and "Browse rewards" (M-102) → S-103 in the card; "Sign in" top right → Template S-4, as on every public page.
 
 #### Template S-4 Sign in and S-5 Sign up (changed look)
 - **Look:** decision 0016: the tilted wall of retailer cards behind one frosted card with "Create account" / "Sign in" tabs (links between the two routes, keeping `next`), a rotating "waiting for you" reward under the tabs, and a confetti burst with the "Check your email" panel. Everything else as Template S-4 and S-5.
@@ -375,6 +376,7 @@ flowchart TD
 
 #### S-103 Discover (`/discover`) · FR-2, FR-3, FR-5, FR-45
 - **Who:** anyone. Data by role (D3).
+- **Look (decision 0016):** big centred headline, logo-only cards in a grid that show the brand and reward on hover or keyboard focus (always shown on touch screens), no timing and no category tags on the cards, glow background.
 - **Signed out shows:** h1 M-171a; text M-171b; every non-retired C-102 card (no toggle, no filters; decision 0017); at the end, card M-111 with "Sign up free" → Template S-5 (`next=/discover`) and "Sign in".
 - **Signed in shows:** h1 M-171a; search "Search by name"; category tabs (M-170); premium filters row: state filter (FR-5: needs C-105; on → M-172 with `{state}`, `{hidden}` and "Show all" M-173) and duration select (M-174–M-177) and checkbox M-177a (FR-45). Free users see one C-104 (M-131) in place of both. Then the grid of C-102 with M-178 (`{shown}` of `{total}`).
 - **Main action:** open S-104; toggle enrollment.
@@ -382,7 +384,7 @@ flowchart TD
 
 #### S-104 Retailer details (`/discover/[retailerId]`) · FR-4, FR-8, FR-48
 - **Who:** anyone, for every non-retired retailer (decision 0017). Retired and unknown IDs → Template S-19.
-- **Shows:** back link M-171c; logo; h1 name; category; reward description; timing label (M-181–M-184, M-184a, M-184b); join-by line M-277 when the retailer has a lead time (FR-49); reward type with its explanation (M-180); requirements list when present (M-189a purchase, M-189b membership, M-189c other); website link (new tab). Signed in: enroll toggle (C-102 button) and C-107 trigger. Signed out: M-111 compact with "Sign up free".
+- **Shows:** back link M-171c; logo; h1 name; category; reward description; timing label (M-181–M-184, M-184a, M-184b); join-by line M-277 when the retailer has a lead time (FR-49); reward type with its explanation (M-180); requirements list when present (M-189a purchase, M-189b membership, M-189c other); website link (new tab). Signed in: the user's own window for this reward, M-279 (e.g. "Your dates: Jan 3 – Feb 2 · 12 days left", from the timing module, NFR-5), enroll toggle (C-102 button) and C-107 trigger. Signed out: the timing label stays public (it's what search finds, decision 0017), then M-280 with "Sign up free" → Template S-5 (`next` = this page), in place of M-111.
 - **States:** error on toggle: inline (BR-3, M-5, M-7).
 
 #### S-105 My Rewards (`/rewards`) · FR-12–FR-18, FR-32, FR-48
@@ -476,6 +478,7 @@ Template M-, API-, E- texts apply unchanged. Placeholders in `{braces}` are fill
 - M-180 (reward types; label: explanation): "Free item: something free, no purchase needed." · "Discount: money off your order." · "Buy one, get one: a second item free when you buy one." · "Points: bonus points added to your account." · "Free with purchase: free when you buy something else."
 - M-181: "Birthday only" · (every "{n} days" below reads "1 day" for one) · M-182: "{days} days from your birthday" · M-183: "All birth month" · M-184: "From {before} days before to {after} days after your birthday" (`{after}` = 0: "From {before} days before to your birthday") · M-184a: "{days} days from the 1st of your birth month" · M-184b: "From your birthday to the end of your birth month"
 - M-276: "Brands may end it early by their own clock. Go early in the day."
+- M-279 (S-104, signed in): "Your dates: {start} – {end} · {days} days left" ("1 day left" for one; "Ends today" on the last day; "Starts in {days} days" before the window opens) · M-280 (S-104, signed out): "Sign up to see your exact dates."
 - M-277: "Join by {date} to get this one." · M-277b (after that date): "{brand} needs members to join {days} days before the birthday, so it may not come this year."
 - M-278: "In years without Feb 29 we count Feb 28. Some brands use Mar 1, so check their app."
 - M-189a: "Purchase: {text}" · M-189b: "Membership: {text}" · M-189c: "Also: {text}"
