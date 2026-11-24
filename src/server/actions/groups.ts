@@ -90,10 +90,13 @@ function mapPgError(error: Pg): Refusal | null {
     return { ok: false, error: "API-4", fieldErrors: { name: [msg("BR-6")] } };
   if (error.code === "23505") return { ok: false, error: "BR-7" };
   // The group's FK (deleted meanwhile) vs the enrollment's FK (not one of their programs).
+  // Postgres names them reward_group_items_group_id_user_id_fkey / …_user_id_retailer_id_fkey.
   if (error.code === "23503")
     return {
       ok: false,
-      error: error.message?.includes("reward_groups") ? "BR-11" : "BR-22",
+      error: error.message?.includes("_group_id_user_id_fkey")
+        ? "BR-11"
+        : "BR-22",
     };
   return null;
 }
@@ -385,13 +388,13 @@ export async function deleteGroup(
 /**
  * FR-28 (premium): a copy named "<name> (Copy)" (then "(Copy 2)"… on a name clash, BR-6 after
  * 20), with the same pickup and the same rewards in the same order. Rewards a new group couldn't
- * hold any more (picked up, retired, no longer enrolled: FR-26) are left out. The copy counts
+ * hold any more (picked up, retired, no longer enrolled: FR-26) are left out; expired ones stay. The copy counts
  * toward FR-24 (the trigger refuses it with BR-4); a failed item copy deletes the new group.
  */
 export async function duplicateGroup(
-  _prev: ActionResult | null,
+  _prev: Result | null,
   formData: FormData,
-): Promise<ActionResult> {
+): Promise<Result> {
   const input = parseForm(duplicateGroupSchema, formData);
   if (!input.ok) return input.result;
   const { groupId } = input.data;
@@ -414,7 +417,8 @@ export async function duplicateGroup(
       });
     if (!source) return { ok: false, error: "BR-11" };
     const ctx = await loadPlanContext(supabase, profile);
-    const open = new Set(ctx.rows.filter((r) => !r.pickedUp).map((r) => r.id));
+    // `all`, not `rows`: an expired reward can stay in a group, so the copy keeps it too.
+    const open = new Set(ctx.all.filter((r) => !r.pickedUp).map((r) => r.id));
     const items = [...source.reward_group_items]
       .sort((a, b) => a.position - b.position || a.id.localeCompare(b.id))
       .filter((i) => open.has(i.retailer_id));
@@ -477,6 +481,6 @@ export async function duplicateGroup(
       }
     }
     done();
-    return { ok: true };
+    return { ok: true, data: { groupId: copyId } };
   });
 }

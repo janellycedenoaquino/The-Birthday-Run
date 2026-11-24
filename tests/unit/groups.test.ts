@@ -27,6 +27,15 @@ const ctx = plannable({
       days_after: 7,
     },
     {
+      // Ended Jun 3: expired on Jun 15, but a group can still hold it.
+      id: "ended",
+      name: "Ended",
+      logo_file: null,
+      timing_type: "month_start",
+      days_before: null,
+      days_after: 3,
+    },
+    {
       id: "done",
       name: "Done",
       logo_file: null,
@@ -254,6 +263,7 @@ describe("duplicateGroup (FR-28)", () => {
         { id: "i3", retailer_id: "week", position: 3 },
         { id: "i1", retailer_id: "one", position: 1 },
         { id: "i2", retailer_id: "done", position: 2 },
+        { id: "i4", retailer_id: "ended", position: 4 },
       ],
     };
   });
@@ -270,14 +280,14 @@ describe("duplicateGroup (FR-28)", () => {
   });
 
   it("copies the name, pickup and items in order, leaving out a picked-up reward", async () => {
-    expect(await run()).toEqual({ ok: true });
+    expect(await run()).toEqual({ ok: true, data: { groupId: "g1" } });
     expect(state.writes[0]).toBe(
       `insert reward_groups ${JSON.stringify({ user_id: "user-1", name: "Saturday run (Copy)", pickup_date: "2026-06-16", pickup_time: "11:00" })}`,
     );
     const items = JSON.parse(
       state.writes[1]!.replace("insert reward_group_items ", ""),
     );
-    // Group order kept; "done" was picked up, so it's left out and the rest renumbered.
+    // Group order kept; "done" was picked up, so it's left out; "ended" expired but stays.
     expect(
       items.map((i: { retailer_id: string; position: number }) => [
         i.retailer_id,
@@ -286,12 +296,13 @@ describe("duplicateGroup (FR-28)", () => {
     ).toEqual([
       ["one", 1],
       ["week", 2],
+      ["ended", 3],
     ]);
   });
 
   it("a name clash moves on to (Copy 2)", async () => {
     state.takenNames.add("Saturday run (Copy)");
-    expect(await run()).toEqual({ ok: true });
+    expect(await run()).toEqual({ ok: true, data: { groupId: "g1" } });
     expect(
       state.writes.filter((w) => w.startsWith("insert reward_groups")),
     ).toHaveLength(2);
@@ -333,7 +344,7 @@ describe("duplicateGroup (FR-28)", () => {
 
   it("an empty group copies with no item insert", async () => {
     state.source = { ...(state.source as object), reward_group_items: [] };
-    expect(await run()).toEqual({ ok: true });
+    expect(await run()).toEqual({ ok: true, data: { groupId: "g1" } });
     expect(
       state.writes.some((w) => w.startsWith("insert reward_group_items")),
     ).toBe(false);
@@ -345,5 +356,32 @@ describe("duplicateGroup (FR-28)", () => {
       error: "API-4",
     });
     expect(state.writes).toEqual([]);
+  });
+});
+
+describe("addToGroup: foreign keys (FR-26)", async () => {
+  const { addToGroup } = await import("@/server/actions/groups");
+  it("the group deleted meanwhile → BR-11; not one of their programs → BR-22", async () => {
+    state.source = { pickup_date: "2026-06-16", reward_group_items: [] };
+    const add = () =>
+      addToGroup(
+        null,
+        form({
+          groupId: "00000000-0000-4000-8000-000000000001",
+          retailerIds: "week",
+        }),
+      );
+    state.itemsError = {
+      code: "23503",
+      message:
+        'insert or update on table "reward_group_items" violates foreign key constraint "reward_group_items_group_id_user_id_fkey"',
+    };
+    expect(await add()).toEqual({ ok: false, error: "BR-11" });
+    state.itemsError = {
+      code: "23503",
+      message:
+        'insert or update on table "reward_group_items" violates foreign key constraint "reward_group_items_user_id_retailer_id_fkey"',
+    };
+    expect(await add()).toEqual({ ok: false, error: "BR-22" });
   });
 });

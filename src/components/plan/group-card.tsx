@@ -34,10 +34,10 @@ import type { ActionResult } from "@/lib/action-result";
 import { msg, type MessageId } from "@/lib/messages";
 import { GroupFields, PlanForm } from "./plan-rewards";
 
-type Action = (
-  prev: ActionResult | null,
+type Action<T = void> = (
+  prev: ActionResult<T> | null,
   formData: FormData,
-) => Promise<ActionResult>;
+) => Promise<ActionResult<T>>;
 
 export type GroupItem = { id: string; name: string };
 export type GroupCardData = {
@@ -69,7 +69,7 @@ export function GroupCard({
     removeFromGroup: Action;
     reorderGroupItems: Action;
     /** FR-28: premium only. Free users get no control (the page leaves it out). */
-    duplicateGroup?: Action;
+    duplicateGroup?: Action<{ groupId: string }>;
   };
 }) {
   const router = useRouter();
@@ -385,7 +385,7 @@ function DuplicateGroup({
   duplicateGroup,
 }: {
   group: GroupCardData;
-  duplicateGroup: Action;
+  duplicateGroup: Action<{ groupId: string }>;
 }) {
   const [state, action, pending] = useActionState(duplicateGroup, null);
   const error =
