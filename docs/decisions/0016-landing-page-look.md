@@ -60,6 +60,13 @@ Why these colours: research on colour and emotion finds that brightness and satu
 - One frosted card on a still glow: no logos behind it and no drifting, so there is no "Pause motion" control (WCAG 2.2.2 covers only motion that starts by itself; the flip runs only when the user presses a button). Floating logos were dropped because onboarding is a form, and motion at the edge of vision pulls attention away from the task (NN/g, "The Role of Animation and Motion in UX"). "Step 1 of 2" text, month and day menus, then "Which programs are you in?" as a logo grid with checkboxes, search and category chips. The Save button's count ("Save 4 programs") is the only feedback when picking.
 - **The card turns around:** Continue flips the card on its vertical axis (about 0.8 s, from the rotating gradient cards, pick 3), and its back is step 2. "← Change birthday" flips it back; Save or Skip flips it to the finish screen with confetti. Focus moves to the new heading. When motion is paused or reduced, the step changes with no flip.
 
+**My Rewards parts (S-105, C-104, C-107, C-109):**
+- **Mark picked up:** the C-109 pop-up as specced: the date (today by default), an optional note and an optional "where". After saving, the row turns mint green ("{retailer} picked up.") and shows "Undo" with a seconds countdown for FR-18's 60 seconds, then leaves the list.
+- **Filters:** search, plus "Ends within" as chips (Any time, 1 day, 7 days, 14 days) instead of a select, and "Showing N of M".
+- **Report a problem (C-107):** in a "⋯" menu on each reward row ("Report a problem", "See brand details"); after a report the item reads "Reported, thanks". The dialog lists the four reasons as large radio rows with no text box.
+- **Route for free users (C-104):** the upgrade card sits over a blurred preview of a route map, so people see what Premium adds. The preview is a static picture with no real stores or location. Premium users get C-106: the map, numbered stops and Google Maps links.
+- **Special states:** outside the window, a card with a calendar tile showing the start date, "Your next run starts {date}", and the S-105 links. With everything picked up, M-212 with confetti and links to History and Discover.
+
 **Retailer page (S-104), timing split:**
 - **Public:** the general rule (for example "30 days from your birthday"). That fact is what people search for, so it stays readable (decision 0017).
 - **Behind sign-up:** "Sign up to see your exact dates." Signed in, the page shows the user's own dates and days left (for example "Jan 3 – Feb 2 · 12 days left"). Only an account knows the birthday, so this is the honest reason to sign up.
@@ -76,6 +83,7 @@ Why these colours: research on colour and emotion finds that brightness and satu
 - **Phone menu:** a ☰ button with a full-screen menu, a floating navy dock, and scrollable tabs under the name.
 - **Onboarding:** logos floating or the tilted wall behind the card, step tabs or a pink progress bar, tapping a month then a day, a list with rewards, and picked logos flying into a tray or spinning in a 3D ring.
 - **Brand details as a side drawer or a full page only; a gift-ticket or two-column details layout; a green check or green outline for "added"; the add button only inside the details.**
+- **My Rewards:** one tap to mark picked up (with an undo bar or a "Claimed!" stamp); filters as a select or behind a Filter button; a "Report a problem" link under every card; a plain upgrade card for the route.
 - **Timing on the cards,** and **hiding the timing behind sign-up:** dropped. Cards stay clean, and hiding the fact would cost search traffic.
 - **Sign in / sign up:** 3D tunnel, two-row marquee and glow-only backgrounds; the card with the reminder at its side or under it; a brand count by category or a sample checklist as the reminder; a link at the bottom to switch (the Template's way); and pick 8's "your birthday run" preview checklist after Continue. The owner kept the confetti from that preview but not the checklist.
 

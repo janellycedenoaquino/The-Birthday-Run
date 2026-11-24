@@ -394,7 +394,7 @@ flowchart TD
 - **Shows, in order:**
   1. **Birthday header:** h1 for the FR-14 state (M-201–M-204, `{name}` variants when a display name is set) and the countdown M-205/M-206 (hidden on the birthday).
   2. **Outside the window** (FR-15): M-207 (`{date}`) with links "Browse Discover" and "Start planning" → S-103, S-106. Nothing below shows.
-  3. **Filters:** search "Search rewards"; select "Ends within" (M-208a–d); M-178 count.
+  3. **Filters:** search "Search rewards"; "Ends within" (M-208a–d) as a row of chips, one pressed at a time (`aria-pressed`; decision 0016); M-178 count.
   4. **Reward list:** per card: logo, name, reward description, timing label, C-103, buttons M-115 (opens C-109), and a "More" menu with C-107. Loads in pages: "Show more" (M-209).
   5. **Route** (h2 M-210): premium: checklist of available rewards (defaults: FR-32) + C-106. Free: C-104 (M-132).
 - **States:** no enrollments: M-211 with links to S-103 and S-106 (in or out of the window) · all picked up or expired: M-212 · no match: M-179 · loading: skeleton · error: Template S-20.
