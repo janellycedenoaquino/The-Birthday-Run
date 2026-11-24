@@ -70,7 +70,7 @@ Result type, action order, `runAction` and route-handler rules: Template BUILD �
 
 | Route | Level |
 | --- | --- |
-| `/discover`, `/discover/[retailerId]` | `public` (data by role, D3; non-popular IDs 404 signed out) |
+| `/discover`, `/discover/[retailerId]` | `public` (data by role, D3; retired IDs 404; decision 0017) |
 | `/onboarding` | `user`; onboarded users go to `/dashboard` |
 | `/dashboard`, `/rewards`, `/plan`, `/history`, `/billing/return` | `onboarded` |
 | `/settings` | `user` (Template; exempt from FR-6) |
@@ -301,7 +301,7 @@ grant execute on function public.retailer_counts() to anon, authenticated;
 - Who: the Builder or the Action, as the database owner via `postgres` (devDependency). Target per §0.1 (`--target=production` needs `SUPABASE_DB_URL`) · Input: `data/retailers.csv` · Returns: exit 0 with counts `inserted / updated / unchanged / retired / restored`; exit 1 with numbered errors · Errors: CSV errors (`row`, `column`, `code`), a missing logo file, any SQL error → nothing written · Limit: none (not an endpoint) · Side effects: one transaction (`sql.begin`, postgres.js README "Transactions"), steps in Flow.
 
 #### `public.retailer_counts()` (DB function)
-- Who: `anon`, `authenticated` · Input: none · Returns: `{ popular, total }` of non-retired retailers · Errors: none · Limit: none (read) · Side effects: none.
+- Who: `anon`, `authenticated` · Input: none · Returns: `{ popular, total }` of non-retired retailers · Errors: none · Limit: none (read) · Side effects: none. Unused since decision 0017 (kept; drop it in a later migration).
 
 #### `retailers-import.yml` (GitHub Action)
 ```yaml
@@ -364,7 +364,7 @@ stateDiagram-v2
 - Retired: hidden from Discover, My Rewards and Plan (every query in F-3–F-6 filters `retired_at is null`); pickups stay (FK `restrict`, rows never deleted); enrollments stay but are invisible; History shows the name.
 - A logo PR deploys on Vercel while the Action updates the row; a row pointing at a not-yet-deployed file shows initials (C-102 fallback).
 - Two pushes close together: `concurrency` queues the second run.
-- Popular flag removed: the retailer leaves signed-out Discover on the next request; its `/discover/<id>` becomes 404 signed out.
+- Popular flag removed: nothing changes in the app; the retailer stays public (decision 0017).
 
 ### Tests
 | What | Type | Through | Proves |
@@ -374,7 +374,7 @@ stateDiagram-v2
 | Empty DB → all rows; re-run → 0 changed and `updated_at` unchanged; edited row → 1 updated; renamed row keeps id and its enrollments | RLS (local DB) | `import:retailers` CLI on a fixture CSV | FR-1, FR-44 |
 | A bad row → exit 1 and the table is byte-for-byte unchanged | RLS | CLI | FR-1 |
 | Row removed → `retired_at` set, its group items gone, its pickups kept; row restored → listed again | RLS | CLI + `postgres` queries | FR-44 |
-| `anon` sees only popular non-retired rows; `anon` select of a non-popular id → 0 rows; no role can insert/update/delete; `authenticated` sees retired rows | RLS | PostgREST as anon / A | D3, FR-2 |
+| `anon` sees every non-retired row, popular or not, and 0 rows for a retired id (decision 0017); no role can insert/update/delete; `authenticated` sees retired rows | RLS | PostgREST as anon / A | D3, FR-2 |
 | `retailer_counts()` as anon returns the right two numbers | RLS | `rpc` as anon | FR-2 |
 | The real `data/retailers.csv` passes and imports in CI | CI | `npm run import:retailers` after `db reset` | FR-1, FR-46 |
 | The conversion output has 190 rows and every legacy `logoUrl` resolved | manual (once) | conversion run, PR review | FR-1 |
@@ -555,7 +555,7 @@ Registry: `USER_DATA_TABLES` += `{ schema: 'public', table: 'enrollments', owner
 ### Operations
 #### `/discover` page (S-103)
 - Who: `public`. One `createClient()`; `auth.getUser()` decides the role for rendering only (RLS decides the data, D3).
-- **Signed out:** `from('retailers').select(<card columns>)` (RLS returns popular, non-retired) + `rpc('retailer_counts')` → M-111 `{count}` = `total − popular`. No filters are read.
+- **Signed out:** `from('retailers').select(<card columns>)` (RLS returns every non-retired row, decision 0017) and M-111 at the end. No filters are read.
 - **Signed in:** no onboarding redirect (public page; a user without a birthday gets BR-1 on enroll). Reads non-retired retailers and the user's enrollment IDs. `searchParams` parsed by
   ```ts
   z.object({
@@ -568,7 +568,7 @@ Registry: `USER_DATA_TABLES` += `{ schema: 'public', table: 'enrollments', owner
   ```
   `length` and `early` are **dropped unless `getEntitlement().premium`**; `state` is not a URL parameter at all: FR-5 filters in the browser (decision 0014) (FR-45 "server ignores"; FR-5); free users get C-104 (M-131) in their place (F-7). Filters are a GET form, so they work without JS and combine. **Until F-7 (Phase 4)** there's no entitlement, so the page doesn't parse those three at all and shows no premium row or C-104; F-7's PR adds both.
 #### `/discover/[retailerId]` page (S-104)
-- Who: `public`. `params.retailerId` through `retailerIdSchema`; invalid, unknown, retired, or (signed out) non-popular → `notFound()` (Template S-19). Timing label: `timingOf(row)` → M-181–M-184. Signed in: enroll toggle and C-107 (reports feature).
+- Who: `public`. `params.retailerId` through `retailerIdSchema`; invalid, unknown or retired → `notFound()` (Template S-19). Timing label: `timingOf(row)` → M-181–M-184. Signed in: enroll toggle and C-107 (reports feature).
 
 #### `enroll` (server action, `actions/enrollments.ts`)
 - Who: `onboarded` · Input: `z.object({ retailerId: retailerIdSchema }).strict()` · Returns: `{ ok: true }` · Errors: API-4, BR-1, BR-3, M-5, M-7, API-1–3 · Limit: §0.4 row "Plan and pickup writes" (`enroll`) · Side effects: `insert … on conflict do nothing` (PostgREST `upsert` with `ignoreDuplicates: true`); an RLS `42501` on insert → BR-3; `revalidatePath` for `/discover`, `/rewards`, `/plan`.
@@ -582,13 +582,13 @@ C-102's toggle is a form per card posting `enroll` or `unenroll` (works without 
 S-103 signed in: `getUser()` → profile, entitlement, retailers, enrollments → parse and strip `searchParams` → `filterRetailers` → M-178, M-172 (`hiddenByState`) or M-179.
 
 ### States and edge cases
-- Signed out, `/discover/<non-popular>` and any PostgREST call for it: 404 / 0 rows (D3).
+- Signed out, `/discover/<retired>` and any PostgREST call for it: 404 / 0 rows (D3); every other retailer is public (decision 0017).
 - A free user's hand-written `?state=CA&length=day` renders the unfiltered list and C-104.
 
 ### Tests
 | What | Type | Through | Proves |
 | --- | --- | --- | --- |
-| Signed out: only popular cards in the HTML; M-111 count = total − popular; a non-popular details URL → 404 | e2e | S-103, S-104 | FR-2, D3 |
+| Signed out: every non-retired card in the HTML, M-111 shown; a non-popular details URL opens; retired and unknown IDs → 404; the sitemap lists `/discover` and every retailer page | e2e | S-103, S-104 | FR-2, D3, decision 0017 |
 | Search + category combine; clearing restores; no match → M-179 | unit + e2e | `filterRetailers`; S-103 | FR-3 |
 | `length` / `early` / `state` filters for a premium user; a free user's URL with them returns the unfiltered list and C-104 | unit + integration | `filterRetailers`; S-103 rendered as free and premium users | FR-5, FR-45, metric 2 |
 | Buckets are exclusive: `day` = 1-day only; `week` keeps 2 and 7, not 1 or 8; `longer` keeps 8+ and `birth_month`; `early` keeps `around_birthday` and `birth_month` when the birthday isn't the 1st, and combines with any bucket | unit | `filterRetailers` | FR-45 |

@@ -89,13 +89,14 @@ export const M = {
   "M-109": "Which programs are you in?",
   "M-110": "Save {count} programs",
   "M-111":
-    "And {count} more birthday rewards. Sign up free to see them all and track your own.",
+    "Sign up free to track the rewards you're in, see how long each lasts and plan your run.",
   "M-111b": "Choose programs to continue",
   "M-111c": "Skip for now",
   "M-118": "Step {step} of 2",
   "M-171": "No programs match that search.",
   "M-171a": "Discover",
-  "M-171b": "Free birthday rewards from popular loyalty programs.",
+  "M-171b":
+    "Free birthday rewards from loyalty programs, each checked on the brand's own page.",
   "M-171c": "Back to Discover",
   "M-178": "Showing {shown} of {total}",
   "M-179": "Nothing matches these filters.",

@@ -2,51 +2,54 @@ import { existsSync } from "node:fs";
 import { expect, test } from "@playwright/test";
 import { watchCsp } from "./support";
 
-// Discover and enrollment in a real browser (BUILD F-3 "Tests": FR-2, FR-3, FR-4, FR-8, D3).
+// Discover and enrollment in a real browser (BUILD F-3 "Tests": FR-2, FR-3, FR-4, FR-8, D3, decision 0017).
 if (existsSync(".env.local")) process.loadEnvFile(".env.local");
 const { sql } = await import("../rls/helpers");
 
-test("signed out: popular cards only, the real count, and a 404 for the rest (FR-2, D3)", async ({
+test("signed out: every non-retired retailer, the sign-up prompt, and a 404 for retired ones (FR-2, D3, decision 0017)", async ({
   page,
 }) => {
   const violations = await watchCsp(page);
   const db = sql();
-  const [counts] = await db<{ popular: number; total: number }[]>`
-    select (count(*) filter (where is_popular))::int as popular, count(*)::int as total
-    from public.retailers where retired_at is null`;
+  const [{ total } = { total: 0 }] = await db<{ total: number }[]>`
+    select count(*)::int as total from public.retailers where retired_at is null`;
+  const [notPopular] = await db<{ id: string; name: string }[]>`
+    select id, name from public.retailers
+    where retired_at is null and not is_popular order by id limit 1`;
+  const [retired] = await db<{ id: string }[]>`
+    select id from public.retailers where retired_at is not null order by id limit 1`;
   await db.end();
 
   await page.goto("/discover");
   await expect(
     page.getByRole("heading", { name: "Discover", level: 1 }),
   ).toBeVisible();
-  await expect(page.getByRole("heading", { level: 3 })).toHaveCount(
-    counts!.popular,
-  );
+  await expect(page.getByRole("heading", { level: 3 })).toHaveCount(total);
   await expect(page.getByRole("heading", { name: "Starbucks" })).toBeVisible();
-  await expect(page.getByRole("heading", { name: "16 Handles" })).toHaveCount(
-    0,
-  );
   await expect(
-    page.getByText(
-      `And ${counts!.total - counts!.popular} more birthday rewards.`,
-      {
-        exact: false,
-      },
-    ),
+    page.getByText("Sign up free to track the rewards you're in", {
+      exact: false,
+    }),
   ).toBeVisible();
   // No toggles signed out.
   await expect(page.getByRole("button", { name: /^Add/ })).toHaveCount(0);
 
-  // A non-popular retailer isn't reachable by URL when signed out.
-  const res = await page.goto("/discover/16-handles");
-  expect(res?.status()).toBe(404);
-  // A popular one is, with its timing label and requirements.
-  await page.goto("/discover/starbucks");
+  // A non-popular retailer's page is public now, with the sign-up prompt in place of the toggle.
+  expect(notPopular, "the catalogue has a non-popular retailer").toBeDefined();
+  await page.goto(`/discover/${notPopular!.id}`);
   await expect(
-    page.getByRole("heading", { name: "Starbucks", level: 1 }),
+    page.getByRole("heading", { name: notPopular!.name, level: 1 }),
   ).toBeVisible();
   await expect(page.getByText("Back to Discover")).toBeVisible();
+  await expect(page.getByRole("link", { name: "Sign up free" })).toBeVisible();
+
+  // Retired and unknown IDs stay a 404.
+  if (retired) {
+    const res = await page.goto(`/discover/${retired.id}`);
+    expect(res?.status()).toBe(404);
+  }
+  const unknown = await page.goto("/discover/no-such-retailer");
+  expect(unknown?.status()).toBe(404);
 
   expect(violations).toEqual([]);
 });

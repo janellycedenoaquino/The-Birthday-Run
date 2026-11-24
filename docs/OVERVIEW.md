@@ -13,7 +13,7 @@ A web app that lists the free birthday rewards from the loyalty programs you bel
 
 ## 2. Scope
 In:
-- **F-1** Retailer catalogue: CSV, import, retire-not-delete, signed-out popular list
+- **F-1** Retailer catalogue: CSV, import, retire-not-delete, whole list public (decision 0017)
 - **F-2** Profile, onboarding, the shared timing module
 - **F-3** Discover and enrollment, free and premium filters
 - **F-4** My Rewards countdowns and the dashboard
@@ -32,7 +32,7 @@ Out: SPEC §2.4 (cut old features, Google Maps APIs, admin UI, old user data, bi
 
 ## 3. Architecture in ten lines
 1. Every data call is on the server; no browser Supabase client (Template D21, DESIGN §2).
-2. Signed-out visitors get popular retailers only, enforced by RLS (D3).
+2. Signed-out visitors see every non-retired retailer (decision 0017); RLS still hides retired ones (D3).
 3. All date logic goes through one module, `src/lib/birthday/timing.ts` (D4, NFR-5).
 4. Premium is one function over grants and subscriptions; users can read it, never write it (D5).
 5. Plan limits and the one-pickup rule live in the database, under locks (D6, D7).
@@ -49,7 +49,7 @@ All detail is in DESIGN §1. Changing one needs a file in `docs/decisions/`.
 | --- | --- |
 | D1 | Template stack plus MapLibre, dnd-kit, Stripe, DuckDB (dev), PostGIS |
 | D2 | Retailer CSV with slug IDs; one-transaction import; retire not delete; import on merge |
-| D3 | RLS limits signed-out Discover to popular retailers; counts from a definer function |
+| D3 | RLS decides signed-out Discover: every non-retired retailer since decision 0017 |
 | D4 | Month, day and time zone on the profile; one timing module; three timing types |
 | D5 | Premium = grants + subscriptions, one `is_premium` function, read-only to users |
 | D6 | Plan limits enforced by DB triggers under a profile lock |

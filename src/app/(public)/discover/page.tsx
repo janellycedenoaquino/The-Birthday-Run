@@ -21,11 +21,11 @@ import {
 import { lookupZip } from "@/server/actions/route";
 import { createClient } from "@/server/supabase/server";
 
-// S-103 Discover (SPEC §3.3, BUILD F-3: FR-2, FR-3). Public. RLS decides the data (D3): signed
-// out, only popular retailers come back; the role here only picks what to render.
+// S-103 Discover (SPEC §3.3, BUILD F-3: FR-2, FR-3). Public. RLS decides the data (D3, decision
+// 0017): signed out, every non-retired retailer comes back; the role here only picks what to render.
 export const metadata: Metadata = {
   title: "Discover",
-  description: "Free birthday rewards from popular loyalty programs.",
+  description: msg("M-171b"),
 };
 
 const CARD_COLUMNS =
@@ -64,13 +64,6 @@ export default async function DiscoverPage({
     throw new Error("S-103: could not read retailers", { cause: error });
 
   if (!user) {
-    const { data: counts, error: countError } = await supabase
-      .rpc("retailer_counts")
-      .single();
-    if (countError)
-      throw new Error("S-103: could not count retailers", {
-        cause: countError,
-      });
     return (
       <Shell>
         <p className="mt-2 text-muted-foreground">{msg("M-171b")}</p>
@@ -78,7 +71,7 @@ export default async function DiscoverPage({
           {(rows as Row[]).map((r) => (
             <RetailerCard key={r.id} retailer={r} />
           ))}
-          <SignUpPrompt more={counts.total - counts.popular} />
+          <SignUpPrompt />
         </ul>
       </Shell>
     );
@@ -275,12 +268,11 @@ function Shell({ children }: { children: React.ReactNode }) {
   );
 }
 
-/** M-111: the real number of other rewards, and the way in (FR-2). */
-function SignUpPrompt({ more }: { more: number }) {
-  if (more <= 0) return null;
+/** M-111: the way in (FR-2): what signing up adds to the public list. */
+function SignUpPrompt() {
   return (
     <li className="flex flex-col justify-center gap-3 rounded-lg border border-dashed border-border p-4">
-      <p>{msg("M-111").replace("{count}", String(more))}</p>
+      <p>{msg("M-111")}</p>
       <div className="flex gap-2">
         <Button asChild size="sm">
           <Link href="/sign-up?next=%2Fdiscover">Sign up free</Link>

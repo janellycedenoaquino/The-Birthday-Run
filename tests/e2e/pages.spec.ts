@@ -1,7 +1,10 @@
+import "../rls/load-env";
 import AxeBuilder from "@axe-core/playwright";
 import { expect, test } from "@playwright/test";
 import { ownIp } from "./support";
 import { appConfig } from "../../src/config/app";
+
+const { sql } = await import("../rls/helpers");
 
 // Its own client IP, so sign-ins don't share one per-IP budget (support.ts ownIp).
 test.use(ownIp(15));
@@ -111,9 +114,20 @@ test("metadata routes: manifest, robots, sitemap, OG image, icons (FR-24, FR-25)
     "Disallow: /",
   );
   const sitemap = await (await request.get("/sitemap.xml")).text();
-  for (const path of ["/privacy", "/terms"])
+  for (const path of ["/discover", "/privacy", "/terms"])
     expect(sitemap).toContain(`${path}</loc>`);
   expect(sitemap).not.toContain("/dashboard");
+  // Every non-retired retailer, popular or not, and no retired one (decision 0017).
+  const db = sql();
+  const live = await db<{ id: string }[]>`
+    select id from public.retailers where retired_at is null`;
+  const retired = await db<{ id: string }[]>`
+    select id from public.retailers where retired_at is not null`;
+  await db.end();
+  expect(live.length).toBeGreaterThan(0);
+  for (const { id } of live) expect(sitemap).toContain(`/discover/${id}</loc>`);
+  for (const { id } of retired)
+    expect(sitemap).not.toContain(`/discover/${id}</loc>`);
   const og = await request.get("/opengraph-image");
   expect(og.status()).toBe(200);
   expect(og.headers()["content-type"]).toBe("image/png");

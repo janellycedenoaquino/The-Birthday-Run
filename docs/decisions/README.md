@@ -13,3 +13,4 @@ The Template's own decisions are in `docs/template/decisions/`.
 | 0004 | Own local Supabase name and ports | accepted | 2026-10-06 |
 | 0005 | Sentry `traceLifecycle: "static"` (no per-request warning; transaction scrubber honoured) | accepted | 2026-11-22 |
 | 0016 | Landing page look sets the app's brand (tunnel, pastel colours, pause control) | accepted | 2026-11-24 |
+| 0017 | The whole retailer catalogue is public (signed-out Discover, every retailer page, sitemap) | accepted | 2026-11-24 |
