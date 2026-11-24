@@ -10,7 +10,8 @@ import { RouteView } from "./route-view";
 type Action<T> = (input: unknown) => Promise<ActionResult<T>>;
 
 // S-106's collapsible group route (SPEC §3.3: FR-33, premium, groups of 2 or more): C-105, then
-// C-106 in the group's order. Nothing is asked for until the section is opened.
+// C-106 in the group's order. Nothing is asked for until the section is first opened; it then
+// stays mounted, so closing and reopening doesn't call the action again.
 export function GroupRoute({
   groupId,
   orderKey,
@@ -27,7 +28,9 @@ export function GroupRoute({
   return (
     <details
       className="rounded-md border border-border/70 p-3"
-      onToggle={(e) => setOpen(e.currentTarget.open)}
+      onToggle={(e) => {
+        if (e.currentTarget.open) setOpen(true);
+      }}
     >
       <summary className="cursor-pointer font-medium">{msg("M-238")}</summary>
       {open ? (

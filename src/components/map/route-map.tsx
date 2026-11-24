@@ -2,13 +2,19 @@
 
 import "maplibre-gl/dist/maplibre-gl.css";
 import { useEffect, useRef, useState } from "react";
-import { MAP_STYLE_URL, maplibreWorkerPath } from "@/config/map";
+import {
+  MAP_ATTRIBUTION,
+  MAP_STYLE_URL,
+  maplibreWorkerPath,
+} from "@/config/map";
 import { msg } from "@/lib/messages";
 import type { RouteResult } from "@/lib/route/result";
 
 // The C-106 map (BUILD F-10, D11, NFR-7). Loaded with next/dynamic for premium users only, after
 // the stop list. Pins are DOM built with textContent (never HTML strings). If the style or tiles
 // fail, the map area shows M-162; the list and links above and below don't depend on it.
+// The map itself is one labelled image (M-161) with nothing to tab into: the canvas isn't
+// focusable and the credit is plain links below it, outside the image role.
 export default function RouteMap({
   route,
 }: {
@@ -30,11 +36,21 @@ export default function RouteMap({
       map = new maplibregl.Map({
         container: container.current,
         style: MAP_STYLE_URL,
-        attributionControl: { compact: false },
+        attributionControl: false,
         center: [route.start.lng, route.start.lat],
         zoom: 11,
       });
-      map.on("error", () => setFailed(true));
+      // NFR-7: the map counts as failed when the style or first render can't load. A single
+      // tile failing later leaves the working map in place.
+      let loaded = false;
+      map.on("load", () => {
+        loaded = true;
+      });
+      map.on("error", () => {
+        if (!loaded) setFailed(true);
+      });
+      map.getCanvas().tabIndex = -1;
+      map.keyboard.disable();
       const bounds = new maplibregl.LngLatBounds();
       const pin = (text: string, start: boolean) => {
         const el = document.createElement("div");
@@ -65,17 +81,34 @@ export default function RouteMap({
   }, [route]);
 
   return (
-    <div
-      role="img"
-      aria-label={msg("M-161").replace("{count}", String(route.stops.length))}
-      className="relative h-72 w-full overflow-hidden rounded-lg border border-border/70 sm:h-96"
-    >
-      <div ref={container} className="absolute inset-0" />
-      {failed ? (
-        <p className="absolute inset-0 grid place-items-center bg-background/90 p-6 text-center text-sm">
-          {msg("M-162")}
-        </p>
-      ) : null}
+    <div className="grid gap-1">
+      <div
+        role="img"
+        aria-label={msg("M-161").replace("{count}", String(route.stops.length))}
+        className="relative h-72 w-full overflow-hidden rounded-lg border border-border/70 sm:h-96"
+      >
+        <div ref={container} className="absolute inset-0" />
+        {failed ? (
+          <p className="absolute inset-0 grid place-items-center bg-background/90 p-6 text-center text-sm">
+            {msg("M-162")}
+          </p>
+        ) : null}
+      </div>
+      <p className="text-xs text-muted-foreground">
+        {MAP_ATTRIBUTION.map((a, i) => (
+          <span key={a.href}>
+            {i ? " · " : null}
+            <a
+              href={a.href}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="underline underline-offset-2"
+            >
+              {a.text}
+            </a>
+          </span>
+        ))}
+      </p>
     </div>
   );
 }

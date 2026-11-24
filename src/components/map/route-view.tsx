@@ -27,7 +27,7 @@ export function RouteView({
   load: LoadRoute;
   runKey: string;
 }) {
-  const { start, clear } = useStartLocation();
+  const { start } = useStartLocation();
   // The result is kept with the start and rewards it was for, so a stale one never shows.
   const [saved, setSaved] = useState<{
     key: string;
@@ -39,12 +39,16 @@ export function RouteView({
   useEffect(() => {
     if (!start || !key) return;
     startTransition(async () => {
-      const r = await load(start);
-      // The ZIP went unknown between C-105's check and now: ask for it again.
-      if (!r.ok && r.fieldErrors?.zip) clear();
+      let r: ActionResult<RouteResult>;
+      try {
+        r = await load(start);
+      } catch {
+        // A network failure stays inside C-106 (NFR-7), never the page's error boundary.
+        r = { ok: false, error: "M-7" };
+      }
       setSaved({ key, result: r });
     });
-    // `load` and `clear` are rebuilt every render; the key holds what the route depends on.
+    // `load` is rebuilt every render; the key holds what the route depends on.
     // eslint-disable-next-line react-hooks/exhaustive-deps -- re-run when the key changes only
   }, [key]);
 
@@ -62,7 +66,8 @@ export function RouteView({
   if (!result.ok)
     return (
       <p role="alert" className="text-sm text-destructive">
-        {errorText(result.error)}
+        {/* An unknown ZIP (BR-12) reads as its field text; "Change" above clears it. */}
+        {result.fieldErrors?.zip?.[0] ?? errorText(result.error)}
       </p>
     );
   const route = result.data!;

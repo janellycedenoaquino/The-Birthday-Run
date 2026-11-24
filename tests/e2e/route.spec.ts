@@ -114,6 +114,14 @@ test("premium: ZIP start → map, numbered stops, no-pin row and one Google link
   ).toBeVisible();
   await worker; // same-origin worker (D11)
   await expect(page.locator(".maplibregl-canvas")).toBeVisible();
+  // Nothing to tab into inside the image; the OSM credit is a plain link outside it (NFR-6).
+  await expect(page.locator(".maplibregl-canvas")).toHaveAttribute(
+    "tabindex",
+    "-1",
+  );
+  await expect(
+    r.getByRole("link", { name: "© OpenStreetMap contributors" }),
+  ).toBeVisible();
   expect(csp).toEqual([]);
   // NFR-6: the route view with its map has no serious or critical axe issues.
   const axe = await new AxeBuilder({ page })

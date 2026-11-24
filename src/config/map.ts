@@ -13,3 +13,13 @@ export const MAP_HOSTS = ["https://tiles.openfreemap.org"] as const;
  */
 export const maplibreWorkerPath = (version: string) =>
   `/vendor/maplibre/${version}/maplibre-gl-worker.mjs`;
+
+/** The map credit (FR-32: OpenStreetMap), shown under the map as plain links. */
+export const MAP_ATTRIBUTION = [
+  { text: "OpenFreeMap", href: "https://openfreemap.org" },
+  { text: "© OpenMapTiles", href: "https://www.openmaptiles.org/" },
+  {
+    text: "© OpenStreetMap contributors",
+    href: "https://www.openstreetmap.org/copyright",
+  },
+] as const;

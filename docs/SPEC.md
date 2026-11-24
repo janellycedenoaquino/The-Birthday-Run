@@ -333,7 +333,7 @@ flowchart TD
 
 **C-106 Route view** (FR-31–FR-34, NFR-7; S-105, S-106)
 - Needs C-105 first; until set, only C-105 shows.
-- Order on the page: (1) map, (2) stop list, (3) "no map pin" list, (4) Google Maps links. (2)–(4) render on the server and work without the map.
+- Order on the page: (1) map, (2) stop list, (3) "no map pin" list, (4) Google Maps links. (2)–(4) are plain HTML from the route action's result (BUILD F-10) and work without the map.
 - **Map:** loaded only for premium users after the stop list; numbered pins match the list numbers; start marked M-160; OpenStreetMap credit from the map config (D11). Wrapper `role="img"` with `aria-label` M-161; the list is the accessible version. Tiles fail: the map area shows M-162; everything else stays.
 - **Stop list** (`<ol>`): number, retailer, store name, address, M-163 (distance from the previous stop, or from the start for stop 1).
 - **No map pin** (heading M-164): retailer + M-165, linking to the store finder (website if none; new tab, `rel="noopener noreferrer"`). BR-13: every stop appears here, with BR-13's message above.

@@ -28,6 +28,9 @@ export function RewardsRoute({
   const [draft, setDraft] = useState<string[]>(initial);
   const [chosen, setChosen] = useState<string[]>(initial);
   const id = useId();
+  // Rewards picked up or ended since (the page re-renders with a new list) drop out.
+  const available = rewards.map((r) => r.id);
+  const live = chosen.filter((x) => available.includes(x));
   const toggle = (rid: string, on: boolean) =>
     setDraft((d) =>
       on
@@ -41,7 +44,7 @@ export function RewardsRoute({
         className="grid gap-3"
         onSubmit={(e) => {
           e.preventDefault();
-          setChosen(draft);
+          setChosen(draft.filter((x) => available.includes(x)));
         }}
       >
         <fieldset className="grid gap-2">
@@ -68,17 +71,18 @@ export function RewardsRoute({
             type="submit"
             variant="outline"
             size="lg"
-            disabled={draft.length === 0}
+            disabled={!draft.some((x) => available.includes(x))}
           >
             {msg("M-238")}
           </Button>
         </div>
       </form>
       <StartLocationForm lookupZip={lookupZip} />
-      {chosen.length ? (
+      {live.length ? (
         <RouteView
-          runKey={chosen.join()}
-          load={(start) => findStops({ start, retailerIds: chosen })}
+          // The available list is in the key too: a pickup elsewhere on the page re-runs it.
+          runKey={`${live.join()}|${available.join()}`}
+          load={(start) => findStops({ start, retailerIds: live })}
         />
       ) : null}
     </div>
