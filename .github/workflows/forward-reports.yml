@@ -1,0 +1,44 @@
+name: Forward reward reports
+
+# Daily: turns the app's report summary (retailer, reason, count; no user data) into one GitHub
+# issue per retailer for the checker, then acks the batch (BUILD F-13, FR-48, NFR-11, D16).
+on:
+  schedule:
+    - cron: "41 15 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  issues: write
+
+concurrency:
+  group: forward-reports
+  cancel-in-progress: false
+
+jobs:
+  forward:
+    # Only main's script and template write issues, never a dispatched branch's.
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+      - run: npm ci --ignore-scripts
+      - name: Make sure the label exists
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+        run: gh label create reward-report --color d93f0b --description "Users reported this reward as wrong (F-13)" || true
+      - name: Forward the reports
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          SITE_URL: ${{ vars.SITE_URL }}
+          REPORTS_EXPORT_SECRET: ${{ secrets.REPORTS_EXPORT_SECRET }}
+        run: node scripts/forward-reports.ts

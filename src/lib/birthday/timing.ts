@@ -40,6 +40,15 @@ export function addDays(date: LocalDate, n: number): LocalDate {
 }
 
 /** `a − b` in days: negative if `a` is earlier, 0 if the same day. */
+/** The same day `n` calendar months earlier, clamped to that month's last day (FR-47, A-10). */
+export function monthsBefore(date: LocalDate, n: number): LocalDate {
+  const [y, m, d] = date.split("-").map(Number) as [number, number, number];
+  const index = y * 12 + (m - 1) - n;
+  const year = Math.floor(index / 12);
+  const month = (index % 12) + 1;
+  return `${year}-${pad(month)}-${pad(Math.min(d, daysInMonth(year, month)))}` as LocalDate;
+}
+
 export function compareDates(a: LocalDate, b: LocalDate): number {
   return toDayNumber(a) - toDayNumber(b);
 }

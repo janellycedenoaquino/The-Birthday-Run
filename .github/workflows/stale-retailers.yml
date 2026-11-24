@@ -1,0 +1,37 @@
+name: Stale retailers
+
+# Monthly: lists retailers whose CSV row wasn't re-checked in 6 months, in one open issue
+# (BUILD F-13, FR-47, A-10, D14). Reads data/retailers.csv only: no database, no secrets.
+on:
+  schedule:
+    - cron: "23 6 1 * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  check:
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+      - run: npm ci --ignore-scripts
+      - name: Make sure the label exists
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+        run: gh label create stale-retailers --color fbca04 --description "Retailers to re-check (F-13)" || true
+      - name: Check the CSV
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+        run: npm run check:stale-retailers

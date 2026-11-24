@@ -229,6 +229,20 @@ export const M = {
   "BR-19": "Choose a time zone from the list.",
   "BR-3": "That program is no longer listed.",
 
+  // Reports (C-107, FR-48)
+  "M-190": "Report a problem",
+  "M-191": "What's wrong with {retailer}'s reward?",
+  "M-192": "Pick the closest reason. We'll check the brand's site.",
+  "M-193": "It's expired or no longer offered",
+  "M-194": "The reward is different",
+  "M-195": "The timing is wrong",
+  "M-196": "The store closed",
+  "M-197": "Send report",
+  "M-198": "Reported",
+  "M-199": "Choose a reason.",
+  "BR-14": "You've already reported this one. We're checking it.",
+  "BR-20": "Thanks. We'll check it.",
+
   // Location and route (C-105, C-106)
   "M-150": "Use my location",
   "M-151": "Use ZIP",

@@ -121,6 +121,7 @@ npm ci                                # also installs the Supabase CLI (npx supa
 - `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` and `SUPABASE_SECRET_KEY`: from `npx supabase status -o env`
 - `RATE_LIMIT_HMAC_SECRET`: `openssl rand -hex 32`
 - `CRON_SECRET` and `REMINDER_UNSUBSCRIBE_SECRET` (reminder emails, F-12): optional locally; `openssl rand -hex 32` each to try the reminder job
+- `REPORTS_EXPORT_SECRET` (reward reports, F-13): optional locally; set it only to try the report routes
 - Turnstile test keys: site `1x00000000000000000000AA`, secret `TURNSTILE_SECRET_KEY=1x0000000000000000000000000000000AA`
 - `EMAIL_TRANSPORT=mailpit`, and any `EMAIL_FROM` address
 - `GOOGLE_CLIENT_ID` / `GOOGLE_CLIENT_SECRET` / `RESEND_API_KEY`: any non-empty placeholder (Google sign-in and Resend aren't used locally)
@@ -141,6 +142,7 @@ Names and rules: BUILD §0.6 and F-2. Real values go only in `.env.local` (and i
 | `RATE_LIMIT_HMAC_SECRET` | **secret** | Hashes rate-limit keys and signs password-reset markers; 32+ characters. Rotating it resets all counters and voids reset links opened in the last 15 minutes | `openssl rand -hex 32` |
 | `CRON_SECRET` | **secret** | Bearer that Vercel Cron sends to `/api/cron/reminders` (F-12, D14). Unset: the route refuses every call. Vercel sends it automatically once the Production variable exists | `openssl rand -hex 32` |
 | `REMINDER_UNSUBSCRIBE_SECRET` | **secret** | Signs reminder turn-off links (F-12, D15). Unset: no reminder is sent. Rotating it voids every old turn-off link | `openssl rand -hex 32` |
+| `REPORTS_EXPORT_SECRET` | **secret** | Bearer the `forward-reports.yml` Action sends to `/api/reports/pending` and `/api/reports/ack` (F-13, D16). Unset: both routes refuse every call. Same value in Vercel Production and the repo's Actions secrets | `openssl rand -hex 32` |
 | `NEXT_PUBLIC_TURNSTILE_SITE_KEY` | public | Turnstile widget | Cloudflare → Turnstile → your widget |
 | `TURNSTILE_SECRET_KEY` | **secret** | Supabase's CAPTCHA check; read by `supabase config push`, not set on Vercel | Same Turnstile widget |
 | `EMAIL_TRANSPORT` | server | `resend`, or `mailpit` locally (refused in production) | Your choice |

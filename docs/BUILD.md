@@ -1631,6 +1631,8 @@ stateDiagram-v2
 | Report dialog: reason required (M-199), success toast BR-20, then M-198 | e2e | C-107 on S-105 | FR-48 |
 | Checker outputs only comments/PRs touching `data/retailers.csv` | manual (first three runs, recorded) | the bot's PRs and comments | NFR-11 |
 
+**As built (2026-11-25):** a `before insert` trigger (`private.set_report_cycle`) replaces a user's `cycle_start` with today's cycle from `private.current_cycle` (decision 0008) and refuses a caller with no birthday, so a direct API insert can't pick another date to report the same retailer again; the action still sends the timing module's value, which is the same date. The insert policy also refuses retired retailers (BR-3, as enrollments). `claimPendingSummary` takes only `{ admin }` (no clock is needed). The bearer check is `checkReportsAuth` beside `checkCronAuth` (`security/cron-auth.ts`, one constant-time helper). On S-105 the trigger sits in each card's "More" menu (M-198 shows there as a disabled item); on S-104 it's a ghost button, for signed-in users with a birthday. The Actions run only on `main` and create their label with `gh label create … || true`; the in-memory `IssueSink` lives in `tests/unit/memory-issues.ts`. The stale cutoff uses the timing module's new `monthsBefore` (NFR-5).
+
 Sources (2026-10-06): https://docs.github.com/en/actions/reference/workflows-and-actions/events-that-trigger-workflows (schedule; cited in DESIGN D14). **Unverified:** whether `gh issue list --search` matches titles exactly (the script compares titles itself).
 
 ## F-14 Catalogue verification · FR-46 · screens none · decisions D2

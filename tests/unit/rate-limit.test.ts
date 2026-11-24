@@ -108,6 +108,7 @@ describe("LIMITS (the §0.4 table)", () => {
         "applySuggestions",
         "setReminders",
         "reminderUnsubscribe",
+        "reportReward",
         "authConfirm",
         "authCallback",
       ].sort(),

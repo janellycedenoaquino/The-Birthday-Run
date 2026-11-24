@@ -12,3 +12,16 @@ export const retailerIdsSchema = z.array(retailerIdSchema).min(1).max(250);
 export const retailerIdInputSchema = z
   .object({ retailerId: retailerIdSchema })
   .strict();
+
+/** FR-48: the four report reasons, as the report_reason enum (no free text, NFR-11). */
+export const reportReasonSchema = z.enum([
+  "expired",
+  "different_reward",
+  "wrong_timing",
+  "store_closed",
+]);
+export type ReportReason = z.infer<typeof reportReasonSchema>;
+
+export const reportRewardSchema = z
+  .object({ retailerId: retailerIdSchema, reason: reportReasonSchema })
+  .strict();

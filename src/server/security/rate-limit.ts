@@ -58,6 +58,8 @@ export const LIMITS = {
   lookupZip: { user: [60, HOUR] },
   // BUILD §0.4: Smart Grouping suggestions, 30 per user per hour.
   suggestGroups: { user: [30, HOUR] },
+  // BUILD §0.4: reward reports, 10 per user per hour (FR-48).
+  reportReward: { user: [10, HOUR] },
   // "Plan and pickup writes": Smart Grouping's "Apply all" (F-11).
   applySuggestions: { user: [300, HOUR] },
   // BUILD §0.4: the reminder turn-off POST, per IP (no account: the token is the only key).

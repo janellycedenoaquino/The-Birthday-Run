@@ -46,6 +46,7 @@ const VALID: Record<string, Record<string, string>> = {
   updateBirthday: { month: "6", day: "15" },
   updateTimeZone: { timeZone: "America/New_York" },
   setReminders: { enabled: "off" },
+  reportReward: { retailerId: "starbucks", reason: "expired" },
   enroll: { retailerId: "starbucks" },
   unenroll: { retailerId: "starbucks" },
   createPickup: { retailerId: "starbucks" },
