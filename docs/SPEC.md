@@ -386,6 +386,7 @@ flowchart TD
 
 #### S-104 Retailer details (`/discover/[retailerId]`) · FR-4, FR-8, FR-48
 - **Who:** anyone, for every non-retired retailer (decision 0017). Retired and unknown IDs → Template S-19.
+- **Full-page look (decision 0016; what search and shared links open):** breadcrumb "Discover / {category} / {brand}", h1 "{brand} birthday reward", a top card with the logo on a side panel in the category colour and the gift beside it, three fact cards (When, Join early or "Any time before", What you need), for visitors blurred sample dates with M-280 and a pastel sign-up band, then 4 more retailers from the same category and a link to all of them.
 - **Shows:** back link M-171c; logo; h1 name; category; reward description; timing label (M-181–M-184, M-184a, M-184b); join-by line M-277 when the retailer has a lead time (FR-49); reward type with its explanation (M-180); requirements list when present (M-189a purchase, M-189b membership, M-189c other); website link (new tab). Signed in: the user's own window for this reward, M-279 (e.g. "Your dates: Jan 3 – Feb 2 · 12 days left", from the timing module, NFR-5), enroll toggle (C-102 button) and C-107 trigger. Signed out: the timing label stays public (it's what search finds, decision 0017), then M-280 with "Sign up free" → Template S-5 (`next` = this page), in place of M-111.
 - **States:** error on toggle: inline (BR-3, M-5, M-7).
 
@@ -622,7 +623,8 @@ S-106 Plan: group card           C-106 Route view (premium)
 Template §3.6 unchanged: shadcn/ui defaults, neutral base, light and dark, `appConfig.brand` primary, system fonts, `lucide-react` icons. App additions:
 - **Urgency colours (C-103):** shadcn-style tokens `--urgent`, `--soon`, `--relaxed` (each with a `-foreground`), defined in `globals.css` for light and dark, used only by C-103 and the route pins; contrast per §3.7.
 - **Feel:** plain and adult. One primary button per screen (S-105: none outside dialogs; the per-card action is outline). No emoji in UI or emails.
-- **Map:** OpenFreeMap's style as served (D11); pins use `--primary` with white numbers.
+- **Map (decision 0016):** OpenFreeMap's light style (D11) recoloured to the pastels at load (cream land, baby-blue water, mint parks, white roads with pink edges); each stop is a round white pin with the brand logo and a pink number badge; the route is a pink line; the start is a navy "S". In dark mode the map uses the cocoa colours.
+- **Theme (decision 0016, changes Template FR-21):** light for everyone by default, whatever the device's setting; the footer's theme select (Template C-2) stays where it is and lets a person switch to dark (cocoa) or back. The choice is kept in the browser.
 - **Brand look:** decision 0016 sets the brand colours, the headline font and the motion rules. Pages move to it one at a time with the owner; until then they keep the Template look.
 
 **Patterns to reject** (whole app): Template §3.6's list, plus the old app's look: bouncing or pulsing animation, motion that can't be paused, emoji as icons or headings, rounded "pill" badges with shadows, exclamation-heavy copy. **Exception** to the Template list: deleting a pickup or a group uses C-108, because FR-20 and FR-27 require asking first.
