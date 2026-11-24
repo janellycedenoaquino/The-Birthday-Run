@@ -24,7 +24,8 @@ npx supabase db dump --db-url "$SUPABASE_DB_URL" --role-only -f roles.sql
 sed -i '/^GRANT .* ON PARAMETER .* TO "supabase_/d' roles.sql
 npx supabase db dump --db-url "$SUPABASE_DB_URL" -f schema.sql
 npx supabase db dump --db-url "$SUPABASE_DB_URL" --data-only --use-copy \
-  -x storage.buckets_vectors -x storage.vector_indexes -f data.sql
+  -x storage.buckets_vectors -x storage.vector_indexes \
+  -x public.retailer_stores -f data.sql  # public store data, rebuilt by import:stores (DESIGN §5.4)
 
 tar czf - roles.sql schema.sql data.sql | age -r "$BACKUP_AGE_RECIPIENT" -o "$out"
 echo "backup: $(basename "$out") ($(du -h "$out" | cut -f1))"

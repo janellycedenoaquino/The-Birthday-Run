@@ -1250,6 +1250,8 @@ grant execute on function public.zip_location(text), public.zip_location(float8,
 - ZCTAs aren't exactly USPS ZIPs; a valid ZIP with no ZCTA (PO-box-only) gives BR-12 (A-8 risk accepted).
 - Territories (PR, GU, VI…) get their USPS code; the FR-5 state filter then shows only "all" and unknown-scope retailers there.
 
+- **As built (Phase 5):** `nearby_stores` also skips retired retailers (a joined `retired_at is null`) and both functions reject null coordinates; the tables also revoke `service_role`, since only the owner's import scripts write them. ATP GeoJSON is read with `fetch` + `JSON.parse` (each spider file is small) and DuckDB is used only for Overture's S3 parquet. The ZIP import parses the two pipe-delimited Census files in TypeScript (`scripts/lib/zips.ts`) and unzips the Gazetteer with `unzip -p`. `data/store-sources.csv` (2026-11-24): 80 of the 100 live retailers have an ATP spider; 95 have a Wikidata brand ID (from the spider's `brand:wikidata` or Wikidata search); 5 match Overture by brand name. `american-eagle` filters its spider to AE's own ID (the spider also carries Aerie). Backups skip `retailer_stores` data (DESIGN §5.4).
+
 ### Tests
 | What | Type | Through | Proves |
 | --- | --- | --- | --- |

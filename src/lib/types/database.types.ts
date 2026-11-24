@@ -91,6 +91,26 @@ isOneToOne: false
                   Relationships: [
                     
                   ]
+                },"retailer_stores": {
+                  Row: {
+                    "address": string | null,"city": string | null,"id": number,"imported_at": string,"location": unknown,"name": string,"postal_code": string | null,"retailer_id": string,"source": Database["public"]['Enums']["store_source"],"source_ref": string,"state": string | null
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "address"?: string | null,"city"?: string | null,"id"?: never,"imported_at"?: string,"location": unknown,"name": string,"postal_code"?: string | null,"retailer_id": string,"source": Database["public"]['Enums']["store_source"],"source_ref": string,"state"?: string | null
+                  }
+                  Update: {
+                    "address"?: string | null,"city"?: string | null,"id"?: never,"imported_at"?: string,"location"?: unknown,"name"?: string,"postal_code"?: string | null,"retailer_id"?: string,"source"?: Database["public"]['Enums']["store_source"],"source_ref"?: string,"state"?: string | null
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "retailer_stores_retailer_id_fkey"
+      columns: ["retailer_id"]
+isOneToOne: false
+      referencedRelation: "retailers"
+      referencedColumns: ["id"]
+    }
+                  ]
                 },"retailers": {
                   Row: {
                     "category": Database["public"]['Enums']["retailer_category"],"created_at": string,"days_after": number | null,"days_before": number | null,"description": string,"id": string,"is_popular": boolean,"last_checked_on": string,"logo_file": string | null,"membership_requirement": string | null,"name": string,"other_requirement": string | null,"purchase_requirement": string | null,"requires_purchase": boolean,"retired_at": string | null,"reward_description": string,"reward_type": Database["public"]['Enums']["reward_type"],"signup_lead_days": number | null,"source_url": string,"state_codes": (string)[],"states_scope": Database["public"]['Enums']["states_scope"],"store_finder_url": string | null,"timing_type": Database["public"]['Enums']["timing_type"],"updated_at": string,"website_url": string | null
@@ -159,6 +179,20 @@ isOneToOne: false
                   Relationships: [
                     
                   ]
+                },"zip_centroids": {
+                  Row: {
+                    "location": unknown,"state": string,"zip": string
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "location": unknown,"state": string,"zip": string
+                  }
+                  Update: {
+                    "location"?: unknown,"state"?: string,"zip"?: string
+                  }
+                  Relationships: [
+                    
+                  ]
                 }
           }
           Views: {
@@ -177,6 +211,11 @@ isOneToOne: false
 "mark_password_set":
 { Args: Record<PropertyKey, never>; Returns: boolean
                            },
+"nearby_stores":
+{ Args: { "p_lat": number,"p_lng": number,"p_per_brand"?: number,"p_retailer_ids": (string)[] }; Returns: {
+              "address": string,"city": string,"distance_m": number,"lat": number,"lng": number,"name": string,"postal_code": string,"retailer_id": string,"state": string,"store_id": number
+            }[]
+                           },
 "rate_limit_hit":
 { Args: { "p_key": string,"p_max": number,"p_window_seconds": number }; Returns: boolean
                            },
@@ -190,10 +229,19 @@ isOneToOne: false
 { Args: Record<PropertyKey, never>; Returns: {
               "popular": number,"total": number
             }[]
+                           },
+"zip_location":
+{ Args: { "p_lat": number,"p_lng": number }; Returns: {
+              "lat": number,"lng": number,"state": string
+            }[]
+                           } |
+{ Args: { "p_zip": string }; Returns: {
+              "lat": number,"lng": number,"state": string
+            }[]
                            }
           }
           Enums: {
-            "retailer_category": "food_drink"|"entertainment"|"retail"|"beauty","reward_type": "free_item"|"discount"|"bogo"|"points"|"free_with_purchase","states_scope": "all"|"listed"|"unknown","timing_type": "from_birthday"|"birth_month"|"around_birthday"|"month_start"|"to_month_end"
+            "retailer_category": "food_drink"|"entertainment"|"retail"|"beauty","reward_type": "free_item"|"discount"|"bogo"|"points"|"free_with_purchase","states_scope": "all"|"listed"|"unknown","store_source": "atp"|"overture","timing_type": "from_birthday"|"birth_month"|"around_birthday"|"month_start"|"to_month_end"
           }
           CompositeTypes: {
             [_ in never]: never
@@ -313,7 +361,7 @@ export const Constants = {
           }
         },"public": {
           Enums: {
-            "retailer_category": ["food_drink", "entertainment", "retail", "beauty"],"reward_type": ["free_item", "discount", "bogo", "points", "free_with_purchase"],"states_scope": ["all", "listed", "unknown"],"timing_type": ["from_birthday", "birth_month", "around_birthday", "month_start", "to_month_end"]
+            "retailer_category": ["food_drink", "entertainment", "retail", "beauty"],"reward_type": ["free_item", "discount", "bogo", "points", "free_with_purchase"],"states_scope": ["all", "listed", "unknown"],"store_source": ["atp", "overture"],"timing_type": ["from_birthday", "birth_month", "around_birthday", "month_start", "to_month_end"]
           }
         }
 } as const
