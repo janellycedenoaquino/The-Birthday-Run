@@ -47,9 +47,9 @@ jobs:
         with:
           node-version-file: .nvmrc
           cache: npm
-      - name: Generate the rate-limit HMAC, cron and unsubscribe secrets
+      - name: Generate the rate-limit HMAC, cron, unsubscribe and report secrets
         run: |
-          for name in RATE_LIMIT_HMAC_SECRET CRON_SECRET REMINDER_UNSUBSCRIBE_SECRET; do
+          for name in RATE_LIMIT_HMAC_SECRET CRON_SECRET REMINDER_UNSUBSCRIBE_SECRET REPORTS_EXPORT_SECRET; do
             secret=$(openssl rand -hex 32)
             echo "::add-mask::$secret"
             echo "$name=$secret" >> "$GITHUB_ENV"
@@ -89,9 +89,9 @@ jobs:
         with:
           node-version-file: .nvmrc
           cache: npm
-      - name: Generate the rate-limit HMAC, cron and unsubscribe secrets
+      - name: Generate the rate-limit HMAC, cron, unsubscribe and report secrets
         run: |
-          for name in RATE_LIMIT_HMAC_SECRET CRON_SECRET REMINDER_UNSUBSCRIBE_SECRET; do
+          for name in RATE_LIMIT_HMAC_SECRET CRON_SECRET REMINDER_UNSUBSCRIBE_SECRET REPORTS_EXPORT_SECRET; do
             secret=$(openssl rand -hex 32)
             echo "::add-mask::$secret"
             echo "$name=$secret" >> "$GITHUB_ENV"

@@ -1,45 +1,10 @@
 import { existsSync, readFileSync, readdirSync } from "node:fs";
 import { describe, expect, it } from "vitest";
-import {
-  CSV_COLUMNS,
-  parseRetailerCsv,
-  readCsv,
-} from "@/lib/retailers/csv-schema";
+import { parseRetailerCsv, readCsv } from "@/lib/retailers/csv-schema";
+import { csv, HEADER, line, type Cells } from "./csv-fixture";
 
 // BUILD F-1 "Tests": FR-1 (bad rows rejected with their row number), FR-46 (dates, sources).
 const TODAY = "2026-11-23";
-const HEADER = CSV_COLUMNS.join(",");
-
-type Cells = Partial<Record<(typeof CSV_COLUMNS)[number], string>>;
-const base: Record<(typeof CSV_COLUMNS)[number], string> = {
-  id: "cafe-one",
-  name: "Cafe One",
-  category: "food_drink",
-  description: "Coffee shop",
-  reward_description: "Free drink",
-  timing_type: "from_birthday",
-  days_before: "",
-  days_after: "7",
-  reward_type: "free_item",
-  requires_purchase: "no",
-  purchase_requirement: "",
-  membership_requirement: "Rewards member",
-  other_requirement: "",
-  signup_lead_days: "",
-  logo_file: "cafe-one.png",
-  website_url: "https://cafe.example",
-  store_finder_url: "",
-  states: "all",
-  is_popular: "yes",
-  last_checked_on: "2026-11-01",
-  source_url: "https://cafe.example/rewards",
-};
-const line = (cells: Cells = {}) =>
-  CSV_COLUMNS.map((c) => {
-    const v = cells[c] ?? base[c];
-    return /[",\r\n]/.test(v) ? `"${v.replaceAll('"', '""')}"` : v;
-  }).join(",");
-const csv = (...rows: string[]) => [HEADER, ...rows].join("\n") + "\n";
 const parse = (text: string) => parseRetailerCsv(text, { today: TODAY });
 const errorsOf = (text: string) => {
   const r = parse(text);

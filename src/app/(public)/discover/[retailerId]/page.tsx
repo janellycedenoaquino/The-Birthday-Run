@@ -3,6 +3,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { cache } from "react";
 import { EnrollToggle } from "@/components/retailers/enroll-toggle";
+import { ReportDialog } from "@/components/rewards/report-dialog";
 import { RetailerLogo } from "@/components/retailers/retailer-logo";
 import { Button } from "@/components/ui/button";
 import { timingOf, today, windowFor } from "@/lib/birthday/timing";
@@ -15,10 +16,13 @@ import {
 } from "@/lib/retailers/labels";
 import { retailerIdSchema } from "@/lib/validation/retailers";
 import { enroll, unenroll } from "@/server/actions/enrollments";
+import { reportReward } from "@/server/actions/reports";
+import { reportedThisCycle } from "@/server/reports/own";
 import { createClient } from "@/server/supabase/server";
 
 // S-104 Retailer details (SPEC §3.3, BUILD F-3: FR-4, FR-8, FR-49). Public for every non-retired
-// retailer (D3, decision 0017); retired and unknown IDs are a 404.
+// retailer (D3, decision 0017); retired and unknown IDs are a 404. Signed in with a birthday: the
+// report dialog (C-107, F-13: FR-48).
 
 const load = cache(async (raw: string) => {
   const id = retailerIdSchema.safeParse(raw);
@@ -53,6 +57,8 @@ export default async function RetailerPage({
 
   let enrolled = false;
   let joinBy: string | null = null;
+  // null: not signed in or no birthday yet, so no report button (reportReward needs a birthday).
+  let reported: boolean | null = null;
   if (user) {
     const [{ data: row }, { data: profile }] = await Promise.all([
       supabase
@@ -67,6 +73,13 @@ export default async function RetailerPage({
         .maybeSingle(),
     ]);
     enrolled = Boolean(row);
+    if (profile?.birth_month && profile.birth_day && profile.time_zone)
+      reported = (
+        await reportedThisCycle(supabase, {
+          birthday: { month: profile.birth_month, day: profile.birth_day },
+          timeZone: profile.time_zone,
+        })
+      ).has(r.id);
     // FR-49: the join-by date before the user's next birthday, when the brand has a lead time.
     if (
       r.signup_lead_days &&
@@ -147,7 +160,7 @@ export default async function RetailerPage({
           </a>
         </p>
       ) : null}
-      <div className="mt-8">
+      <div className="mt-8 grid justify-items-start gap-3">
         {user ? (
           <EnrollToggle
             retailerId={r.id}
@@ -168,6 +181,14 @@ export default async function RetailerPage({
             </Button>
           </div>
         )}
+        {reported !== null ? (
+          <ReportDialog
+            retailerId={r.id}
+            retailer={r.name}
+            reported={reported}
+            reportReward={reportReward}
+          />
+        ) : null}
       </div>
     </div>
   );

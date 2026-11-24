@@ -3,6 +3,7 @@ import Link from "next/link";
 import { z } from "zod";
 import { DaysLeftBadge } from "@/components/rewards/days-left-badge";
 import { PickupDialog } from "@/components/rewards/pickup-dialog";
+import { ReportDialog } from "@/components/rewards/report-dialog";
 import { UndoBar } from "@/components/rewards/undo-bar";
 import { RetailerLogo } from "@/components/retailers/retailer-logo";
 import { Button } from "@/components/ui/button";
@@ -26,13 +27,15 @@ import {
   type RewardItem,
 } from "@/lib/rewards/my-rewards";
 import { createPickup, deletePickup } from "@/server/actions/pickups";
+import { reportReward } from "@/server/actions/reports";
 import { findStops, lookupZip } from "@/server/actions/route";
+import { reportedThisCycle } from "@/server/reports/own";
 import { getEntitlement } from "@/server/premium/entitlement";
 import { requireOnboarded } from "@/server/auth/app-guards";
 
 // S-105 My Rewards (SPEC §3.3, BUILD F-4: FR-12–FR-16). `onboarded` level. The rules live in
 // src/lib/rewards/my-rewards.ts; this page loads rows and renders. The Route section is premium
-// (FR-32, BUILD F-10); free users get C-104 there. The report menu (F-13) arrives later.
+// (FR-32, BUILD F-10); free users get C-104 there. Each card's "More" menu holds C-107 (F-13).
 export const metadata: Metadata = {
   title: "My Rewards",
   robots: { index: false },
@@ -87,7 +90,10 @@ export default async function RewardsPage({
     },
   });
   const w = r.window;
-  const { premium } = await getEntitlement(supabase);
+  const [{ premium }, reported] = await Promise.all([
+    getEntitlement(supabase),
+    reportedThisCycle(supabase, profile),
+  ]);
   // FR-32: every available reward, most urgent first, whatever the list's filters (premium only:
   // free pages carry no route data, FR-39).
   const routeRewards =
@@ -204,6 +210,7 @@ export default async function RewardsPage({
                 <RewardCard
                   key={item.id}
                   item={item}
+                  reported={reported.has(item.id)}
                   range={{
                     // Not before this reward itself opened (FR-17; createPickup checks again).
                     min: latest(
@@ -283,9 +290,11 @@ function RewardCard({
   item,
   joinBy,
   range,
+  reported,
 }: {
   item: RewardItem;
   joinBy: string | null;
+  reported: boolean;
   range: { min: string; max: string };
 }) {
   return (
@@ -306,13 +315,20 @@ function RewardCard({
         </p>
         {joinBy ? <p className="text-sm">{joinBy}</p> : null}
         <DaysLeftBadge daysLeft={item.daysLeft} />
-        <div className="mt-2">
+        <div className="mt-2 flex flex-wrap items-center gap-2">
           <PickupDialog
             retailerId={item.id}
             retailer={item.name}
             minDate={range.min}
             maxDate={range.max}
             createPickup={createPickup}
+          />
+          <ReportDialog
+            retailerId={item.id}
+            retailer={item.name}
+            reported={reported}
+            reportReward={reportReward}
+            trigger="menu"
           />
         </div>
       </div>

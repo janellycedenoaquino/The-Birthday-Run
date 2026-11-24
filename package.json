@@ -31,7 +31,8 @@
     "check:duplicates": "jscpd . --baseline-from-ref origin/main --fail-on-new-clones",
     "grant-premium": "node scripts/grant-premium.ts",
     "import:stores": "node scripts/import-stores.ts",
-    "import:zips": "node scripts/import-zips.ts"
+    "import:zips": "node scripts/import-zips.ts",
+    "check:stale-retailers": "node scripts/check-stale-retailers.ts"
   },
   "dependencies": {
     "@dnd-kit/core": "6.3.1",

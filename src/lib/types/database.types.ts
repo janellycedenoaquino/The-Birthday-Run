@@ -179,6 +179,26 @@ isOneToOne: false
                   Relationships: [
                     
                   ]
+                },"reward_reports": {
+                  Row: {
+                    "batch_id": string | null,"created_at": string,"cycle_start": string,"forwarded_at": string | null,"id": string,"reason": Database["public"]['Enums']["report_reason"],"retailer_id": string,"user_id": string
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "batch_id"?: string | null,"created_at"?: string,"cycle_start": string,"forwarded_at"?: string | null,"id"?: string,"reason": Database["public"]['Enums']["report_reason"],"retailer_id": string,"user_id": string
+                  }
+                  Update: {
+                    "batch_id"?: string | null,"created_at"?: string,"cycle_start"?: string,"forwarded_at"?: string | null,"id"?: string,"reason"?: Database["public"]['Enums']["report_reason"],"retailer_id"?: string,"user_id"?: string
+                  }
+                  Relationships: [
+                    {
+      foreignKeyName: "reward_reports_retailer_id_fkey"
+      columns: ["retailer_id"]
+isOneToOne: false
+      referencedRelation: "retailers"
+      referencedColumns: ["id"]
+    }
+                  ]
                 },"subscriptions": {
                   Row: {
                     "cancel_at_period_end": boolean,"current_period_end": string | null,"status": string | null,"stripe_customer_id": string,"stripe_subscription_id": string | null,"synced_at": string,"user_id": string
@@ -213,8 +233,16 @@ isOneToOne: false
             [_ in never]: never
           }
           Functions: {
-            "apply_group_suggestions":
+            "ack_report_batch":
+{ Args: { "p_batch": string }; Returns: number
+                           },
+"apply_group_suggestions":
 { Args: { "p_groups": Json }; Returns: (string)[]
+                           },
+"claim_report_batch":
+{ Args: { "p_batch": string }; Returns: {
+              "reason": Database["public"]['Enums']["report_reason"],"report_count": number,"retailer_id": string
+            }[]
                            },
 "claim_welcome_email":
 { Args: Record<PropertyKey, never>; Returns: boolean
@@ -273,7 +301,7 @@ isOneToOne: false
                            }
           }
           Enums: {
-            "reminder_kind": "plan_ahead"|"expiring","retailer_category": "food_drink"|"entertainment"|"retail"|"beauty","reward_type": "free_item"|"discount"|"bogo"|"points"|"free_with_purchase","states_scope": "all"|"listed"|"unknown","store_source": "atp"|"overture","timing_type": "from_birthday"|"birth_month"|"around_birthday"|"month_start"|"to_month_end"
+            "reminder_kind": "plan_ahead"|"expiring","report_reason": "expired"|"different_reward"|"wrong_timing"|"store_closed","retailer_category": "food_drink"|"entertainment"|"retail"|"beauty","reward_type": "free_item"|"discount"|"bogo"|"points"|"free_with_purchase","states_scope": "all"|"listed"|"unknown","store_source": "atp"|"overture","timing_type": "from_birthday"|"birth_month"|"around_birthday"|"month_start"|"to_month_end"
           }
           CompositeTypes: {
             [_ in never]: never
@@ -393,7 +421,7 @@ export const Constants = {
           }
         },"public": {
           Enums: {
-            "reminder_kind": ["plan_ahead", "expiring"],"retailer_category": ["food_drink", "entertainment", "retail", "beauty"],"reward_type": ["free_item", "discount", "bogo", "points", "free_with_purchase"],"states_scope": ["all", "listed", "unknown"],"store_source": ["atp", "overture"],"timing_type": ["from_birthday", "birth_month", "around_birthday", "month_start", "to_month_end"]
+            "reminder_kind": ["plan_ahead", "expiring"],"report_reason": ["expired", "different_reward", "wrong_timing", "store_closed"],"retailer_category": ["food_drink", "entertainment", "retail", "beauty"],"reward_type": ["free_item", "discount", "bogo", "points", "free_with_purchase"],"states_scope": ["all", "listed", "unknown"],"store_source": ["atp", "overture"],"timing_type": ["from_birthday", "birth_month", "around_birthday", "month_start", "to_month_end"]
           }
         }
 } as const

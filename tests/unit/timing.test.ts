@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   addDays,
+  monthsBefore,
   birthdayIn,
   compareDates,
   cycleFor,
@@ -66,6 +67,19 @@ describe("addDays and compareDates (D4: UTC-midnight day numbers)", () => {
     expect(compareDates(d("2026-06-15"), d("2026-06-15"))).toBe(0);
     // The difference in days, so callers can ask "how many days apart".
     expect(compareDates(d("2027-01-05"), d("2026-12-20"))).toBe(16);
+  });
+});
+
+describe("monthsBefore (FR-47: the 6-month staleness cutoff)", () => {
+  it.each([
+    ["2026-11-15", 6, "2026-05-15"],
+    ["2026-03-10", 6, "2025-09-10"], // across the year
+    ["2026-08-31", 6, "2026-02-28"], // clamped to the month's end
+    ["2028-08-31", 6, "2028-02-29"], // leap year
+    ["2026-12-31", 6, "2026-06-30"],
+    ["2026-05-01", 0, "2026-05-01"],
+  ])("%s − %d months = %s", (start, n, end) => {
+    expect(monthsBefore(d(start), n)).toBe(end);
   });
 });
 

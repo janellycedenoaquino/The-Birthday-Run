@@ -135,6 +135,9 @@ const eslintConfig = defineConfig([
       // F-12 (BUILD §0.1): the reminder job's claims and the token-checked turn-off.
       "src/app/api/cron/reminders/route.ts",
       "src/app/api/reminders/unsubscribe/route.ts",
+      // F-13 (D16): the report summary and its ack (bearer-checked, counts only).
+      "src/app/api/reports/pending/route.ts",
+      "src/app/api/reports/ack/route.ts",
     ],
     rules: { "no-restricted-imports": "off" },
   },

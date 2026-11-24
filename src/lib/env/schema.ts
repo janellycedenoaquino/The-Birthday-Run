@@ -45,6 +45,8 @@ export const serverEnvSchema = z
     // no CRON_SECRET → the cron route answers 401; no unsubscribe secret → no reminder is sent.
     CRON_SECRET: optional(z.string().min(32)),
     REMINDER_UNSUBSCRIBE_SECRET: optional(z.string().min(32)),
+    // F-13 (D16): no secret → the two report routes answer 401.
+    REPORTS_EXPORT_SECRET: optional(z.string().min(32)),
     // FR-38 (D8): payments stay off unless this is exactly "true".
     PAYMENTS_ENABLED: optional(z.enum(["true", "false"])),
   })
