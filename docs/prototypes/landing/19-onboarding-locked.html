@@ -156,6 +156,9 @@ canvas#conf{position:fixed;inset:0;z-index:40;pointer-events:none}
 .backlink{margin-bottom:10px;font-size:14px}
 h1[tabindex="-1"]:focus{outline:none}
 .panel{display:none}
+/* nothing moves on its own here, so no pause button (her call, WCAG 2.2.2 only covers motion that starts by itself) */
+.pause{display:none!important}
+.blob{animation:none!important}
 </style>
 </head>
 <body class="bg-glow bd-select pk-grid fb-count pg-text">
