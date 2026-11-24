@@ -1,0 +1,286 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>PROTOTYPE · TBR onboarding (locked picks + card flip)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<script src="retailers-detail.js"></script>
+<style>
+/* Throwaway prototype: Onboarding (S-101) in the locked look (decision 0016). Step 1 birthday, step 2 programs. */
+:root{--bg:#FFFCF7;--ink:#1F2A5C;--muted:#4C557D;--hl:#FF9EC4;--btn:#8EC5FF;--hover:#8FE3B0;--line:color-mix(in srgb,var(--ink) 16%,transparent)}
+*{box-sizing:border-box;margin:0}
+body{font-family:"Plus Jakarta Sans",system-ui,sans-serif;background:var(--bg);color:var(--ink);min-height:100vh;overflow-x:hidden}
+.glow{position:fixed;inset:0;z-index:-2;overflow:hidden}
+.blob{position:absolute;width:70vw;height:70vw;border-radius:50%;filter:blur(40px)}
+.blob.p{background:radial-gradient(circle,#FFD6E5 0%,transparent 65%);left:-25vw;top:-30vw;animation:b1 44s ease-in-out infinite alternate}
+.blob.b{background:radial-gradient(circle,#D6EBFF 0%,transparent 65%);right:-25vw;top:-25vw;animation:b2 52s ease-in-out infinite alternate}
+.blob.g{background:radial-gradient(circle,#D3F5E1 0%,transparent 65%);left:15vw;bottom:-45vw;animation:b3 60s ease-in-out infinite alternate}
+@keyframes b1{to{transform:translate(45vw,35vh) scale(1.2)}}@keyframes b2{to{transform:translate(-50vw,40vh) scale(.9)}}@keyframes b3{to{transform:translate(-20vw,-45vh) scale(1.15)}}
+body.paused *{animation-play-state:paused!important}
+#bg{position:fixed;inset:0;z-index:-1;overflow:hidden}
+.ft{position:absolute;width:96px;height:64px;border-radius:14px;background:#fff;display:grid;place-items:center;box-shadow:0 0 0 1.5px var(--line);opacity:.75}
+.ft img{max-width:72px;max-height:36px;object-fit:contain}
+.wall{position:absolute;inset:-30%;transform:rotate(-8deg);display:flex;flex-direction:column;justify-content:center;gap:16px;opacity:.55}
+.wall .row{display:flex;gap:16px;width:max-content;animation:slide 60s linear infinite}
+.wall .row.rev{animation-direction:reverse}
+.wall .row div{width:130px;height:80px;border-radius:14px;background:#fff;display:grid;place-items:center;box-shadow:0 0 0 1.5px var(--line)}
+.wall img{max-width:96px;max-height:40px;object-fit:contain}
+@keyframes slide{to{transform:translateX(-50%)}}
+
+.top{display:flex;align-items:center;justify-content:space-between;padding:18px 24px}
+.logo{font-weight:800;font-size:18px;letter-spacing:-.02em;background:rgba(255,252,247,.7);padding:8px 12px;border-radius:12px}
+.pause{font-family:inherit;font-weight:600;font-size:14px;color:var(--ink);background:#fff;border:0;border-radius:12px;padding:10px 14px;cursor:pointer;box-shadow:0 0 0 1.5px color-mix(in srgb,var(--ink) 25%,transparent);display:flex;gap:8px;align-items:center}
+.pause svg{width:14px;height:14px}
+.wrap{display:flex;justify-content:center;padding:6px 18px 140px}
+.card{width:100%;max-width:520px;background:rgba(255,252,247,.62);backdrop-filter:blur(14px) saturate(1.2);-webkit-backdrop-filter:blur(14px);border-radius:28px;padding:30px 30px 28px;box-shadow:0 0 0 1.5px color-mix(in srgb,var(--ink) 12%,transparent),0 20px 60px -30px rgba(0,0,0,.25)}
+body.step2 .card{max-width:940px}
+.hl{background:var(--hl);padding:0 .14em;border-radius:6px;display:inline-block;transform:rotate(-2deg)}
+h1{font-size:36px;font-weight:800;letter-spacing:-.03em;line-height:1.1}
+.lead{color:var(--muted);margin-top:8px;line-height:1.5}
+.btn{font-family:inherit;font-weight:800;font-size:16px;line-height:1;padding:15px 20px;border-radius:12px;border:0;cursor:pointer;background:var(--btn);color:var(--ink);box-shadow:0 0 0 1.5px var(--ink)}
+.btn:hover{box-shadow:3px 3px 0 var(--ink),0 0 0 1.5px var(--ink)}
+.btn[disabled]{opacity:.55;cursor:not-allowed;box-shadow:0 0 0 1.5px var(--line)}
+.link{font-family:inherit;font-weight:700;font-size:15px;background:none;border:0;color:var(--ink);cursor:pointer;text-decoration:underline;text-decoration-color:var(--hl);text-decoration-thickness:3px;text-underline-offset:4px}
+
+/* progress options */
+.prog{margin-bottom:18px}
+body.pg-text .prog{font-size:13px;letter-spacing:.12em;text-transform:uppercase;font-weight:800;color:var(--muted)}
+body.pg-bar .prog{height:10px;border-radius:6px;background:#fff;box-shadow:inset 0 0 0 1.5px var(--line);overflow:hidden;position:relative}
+body.pg-bar .prog i{position:absolute;inset:0 auto 0 0;background:var(--hl);border-right:1.5px solid var(--ink);transition:width .4s}
+body.pg-bar .prog span{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
+body.pg-steps .prog{display:flex;gap:8px}
+body.pg-steps .prog b{flex:1;font-size:13px;font-weight:800;padding:9px 12px;border-radius:10px;background:#fff;box-shadow:inset 0 0 0 1.5px var(--line);color:var(--muted)}
+body.pg-steps .prog b.on{background:var(--hl);color:var(--ink);box-shadow:inset 0 0 0 1.5px var(--ink)}
+body.pg-steps .prog b.done{background:#D3F5E1;color:var(--ink)}
+
+/* step 1 birthday options */
+.sel{display:flex;gap:12px;margin-top:22px}
+.sel label{flex:1;font-weight:700;font-size:14px}
+.sel select{display:block;width:100%;margin-top:6px;font-family:inherit;font-size:17px;font-weight:600;padding:13px 12px;border-radius:12px;border:0;background:#fff;color:var(--ink);box-shadow:inset 0 0 0 1.5px var(--line)}
+.grids{display:none;margin-top:20px}
+body.bd-tiles .sel{display:none}
+body.bd-tiles .grids{display:block}
+.grids h3{font-size:13px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin:14px 0 8px}
+.months{display:grid;grid-template-columns:repeat(6,1fr);gap:6px}
+.days{display:grid;grid-template-columns:repeat(7,1fr);gap:6px}
+.grids button{font-family:inherit;font-weight:700;font-size:14px;padding:10px 0;border-radius:10px;border:0;background:#fff;color:var(--ink);cursor:pointer;box-shadow:inset 0 0 0 1.5px var(--line)}
+.grids button.on{background:var(--hl);box-shadow:inset 0 0 0 1.5px var(--ink),2px 2px 0 var(--ink)}
+.picked{margin-top:16px;font-size:22px;font-weight:800;min-height:30px}
+.picked .hl{font-size:22px}
+.note{font-size:13px;color:var(--muted);margin-top:12px;line-height:1.5}
+.note.feb{background:#FFF0E6;color:var(--ink);padding:10px 12px;border-radius:10px;box-shadow:inset 0 0 0 1.5px #FFB996}
+.tz{font-size:13px;color:var(--muted);margin-top:14px}
+.row-end{display:flex;justify-content:flex-end;align-items:center;gap:16px;margin-top:22px}
+
+/* step 2 programs */
+.s2top{display:flex;gap:14px;align-items:flex-end;justify-content:space-between;flex-wrap:wrap}
+.s2top input{font-family:inherit;font-size:16px;padding:12px 14px;border-radius:12px;border:0;width:260px;background:#fff;color:var(--ink);box-shadow:inset 0 0 0 1.5px var(--line)}
+.cats{display:flex;flex-wrap:wrap;gap:8px;margin:16px 0 14px}
+.cats button{font-family:inherit;font-weight:700;font-size:14px;cursor:pointer;color:var(--ink);border:0;padding:8px 12px;border-radius:10px;background:var(--cc,#fff);box-shadow:inset 0 0 0 1.5px var(--line)}
+.cats button.on{box-shadow:inset 0 0 0 2px var(--ink),2px 2px 0 var(--ink)}
+.c-food_drink{--cc:#FFD6E5}.c-retail{--cc:#D6EBFF}.c-beauty{--cc:#D3F5E1}.c-entertainment{--cc:#E6DEFF}
+.picks{max-height:430px;overflow:auto;padding:4px}
+body.pk-grid .picks{display:grid;grid-template-columns:repeat(auto-fill,minmax(132px,1fr));gap:12px}
+.pk{position:relative;border-radius:16px;background:#fff;box-shadow:0 0 0 1.5px var(--line);cursor:pointer;display:flex;align-items:center;gap:12px;user-select:none;transition:box-shadow .15s,transform .15s}
+.pk:hover{box-shadow:0 0 0 3px var(--hover)}
+.pk input{position:absolute;opacity:0;pointer-events:none}
+.pk .lg{display:grid;place-items:center}
+.pk img{object-fit:contain}
+.pk .bx{width:24px;height:24px;border-radius:7px;box-shadow:inset 0 0 0 2px var(--line);display:grid;place-items:center;font-weight:800;font-size:14px;flex:none;background:#fff}
+.pk.on{box-shadow:0 0 0 3px var(--ink)}
+.pk.on .bx{background:var(--hover);box-shadow:inset 0 0 0 2px var(--ink)}
+.pk:focus-within{outline:3px solid var(--btn);outline-offset:2px}
+body.pk-grid .pk{flex-direction:column;justify-content:center;height:116px;padding:10px}
+body.pk-grid .pk .lg{height:54px}
+body.pk-grid .pk img{max-width:100px;max-height:46px}
+body.pk-grid .pk .bx{position:absolute;top:8px;right:8px}
+body.pk-grid .pk .nm{font-size:12px;font-weight:700;color:var(--muted);text-align:center}
+body.pk-grid .pk .rw{display:none}
+body.pk-list .picks{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+body.pk-list .pk{padding:10px 14px}
+body.pk-list .pk .lg{width:70px;height:40px;flex:none}
+body.pk-list .pk img{max-width:66px;max-height:34px}
+body.pk-list .pk .nm{font-weight:800;font-size:15px}
+body.pk-list .pk .rw{font-size:13px;color:var(--muted)}
+body.pk-list .pk .bx{margin-left:auto}
+.ini{width:48px;height:40px;border-radius:10px;display:grid;place-items:center;font-weight:800;background:#FFD6E5}
+
+/* feedback options: tray / ring */
+.foot{display:flex;align-items:center;justify-content:space-between;gap:16px;margin-top:18px;flex-wrap:wrap}
+.tray{display:none;flex:1;min-width:200px;min-height:56px;border-radius:14px;padding:8px;background:rgba(255,255,255,.6);box-shadow:inset 0 0 0 1.5px var(--line);gap:6px;overflow-x:auto;align-items:center}
+body.fb-tray .tray{display:flex}
+.tray .t{flex:none;width:58px;height:40px;border-radius:9px;background:#fff;display:grid;place-items:center;box-shadow:0 0 0 1.5px var(--line);animation:pop .35s ease}
+.tray .t img{max-width:48px;max-height:26px;object-fit:contain}
+.tray .empty{font-size:13px;color:var(--muted);padding:0 8px}
+@keyframes pop{from{transform:scale(.4) translateY(-30px);opacity:0}}
+.count{font-weight:800}
+.ringwrap{display:none;height:150px;perspective:800px;margin:6px 0 0;position:relative}
+body.fb-ring .ringwrap{display:block}
+.ring{position:absolute;left:50%;top:50%;width:0;height:0;transform-style:preserve-3d;animation:spin 18s linear infinite}
+@keyframes spin{from{transform:rotateX(-10deg) rotateY(0)}to{transform:rotateX(-10deg) rotateY(360deg)}}
+.ring .rc{position:absolute;left:-55px;top:-60px;width:110px;height:120px;border-radius:16px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;padding:8px;box-shadow:0 0 0 1.5px var(--ink)}
+.ring .rc img{max-width:84px;max-height:36px;object-fit:contain;background:#fff;border-radius:8px;padding:4px 6px}
+.ring .rc span{font-size:11px;font-weight:800;text-align:center;line-height:1.2}
+.ringempty{position:absolute;inset:0;display:grid;place-items:center;color:var(--muted);font-size:14px}
+
+/* finish */
+.done{text-align:center;padding:30px 10px}
+.done h1{font-size:40px}
+canvas#conf{position:fixed;inset:0;z-index:40;pointer-events:none}
+
+/* panel */
+.panel{position:fixed;left:16px;bottom:16px;z-index:50;background:#111;color:#ddd;border-radius:16px;padding:12px 14px;font:500 12px/1.2 system-ui,sans-serif;box-shadow:0 20px 50px -10px rgba(0,0,0,.5);max-width:calc(100vw - 32px);width:580px}
+.panel.min .rows{display:none}
+.panel .tp{display:flex;justify-content:space-between;align-items:center}.panel .tp b{color:#fff;font-size:13px}
+.panel button{font:inherit;background:#222;color:#ddd;border:0;border-radius:8px;padding:6px 9px;cursor:pointer}
+.panel button.on{background:#fff;color:#111;font-weight:700}
+.prow{display:grid;grid-template-columns:112px 1fr;gap:8px;align-items:center;margin-top:8px}.prow>span{color:#999}.prow div{display:flex;flex-wrap:wrap;gap:4px}
+.now{margin-top:10px;color:#aaa;line-height:1.5}.now b{color:#fff}
+.ptag{position:fixed;top:10px;left:50%;transform:translateX(-50%);z-index:60;font:700 10px system-ui;letter-spacing:.15em;background:#111;color:#fff;padding:5px 8px;border-radius:6px}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
+@media (max-width:700px){.foot{position:sticky;bottom:0;z-index:5;background:rgba(255,252,247,.95);margin:12px -18px -22px;padding:12px 18px;border-radius:0 0 28px 28px;box-shadow:0 -1.5px 0 var(--line)}.card{padding:22px 18px}h1{font-size:28px}.months{grid-template-columns:repeat(4,1fr)}body.pk-list .picks{grid-template-columns:1fr}body.pk-grid .picks{grid-template-columns:repeat(2,minmax(0,1fr))}.s2top input{width:100%}.picks{max-height:46vh}.ptag{top:auto;bottom:62px}.pause span{display:none}.foot .btn{flex:1}}
+
+/* card flip between steps (her pick, from the rotating gradient cards) */
+.wrap{perspective:1600px}
+.card{transform-style:preserve-3d;will-change:transform}
+.card.fo{animation:fo .34s cubic-bezier(.5,0,.9,.4) forwards}
+.card.fi{animation:fi .42s cubic-bezier(.1,.6,.4,1)}
+.card.fob{animation:fob .34s cubic-bezier(.5,0,.9,.4) forwards}
+.card.fib{animation:fib .42s cubic-bezier(.1,.6,.4,1)}
+@keyframes fo{to{transform:rotateY(90deg) translateZ(-80px) scale(.96)}}
+@keyframes fi{from{transform:rotateY(-90deg) translateZ(-80px) scale(.96)}}
+@keyframes fob{to{transform:rotateY(-90deg) translateZ(-80px) scale(.96)}}
+@keyframes fib{from{transform:rotateY(90deg) translateZ(-80px) scale(.96)}}
+.backlink{margin-bottom:10px;font-size:14px}
+h1[tabindex="-1"]:focus{outline:none}
+.panel{display:none}
+</style>
+</head>
+<body class="bg-glow bd-select pk-grid fb-count pg-text">
+<div class="ptag">PROTOTYPE · ONBOARDING · LOCKED</div>
+<div class="glow" aria-hidden="true"><div class="blob p"></div><div class="blob b"></div><div class="blob g"></div></div>
+<div id="bg" aria-hidden="true"></div>
+<header class="top"><span class="logo">The Birthday Run</span><button class="pause" id="pause"><svg viewBox="0 0 16 16" fill="currentColor"></svg><span></span></button></header>
+<div class="wrap"><div class="card" id="card"></div></div>
+<canvas id="conf"></canvas>
+
+<div class="panel" id="panel">
+  <div class="tp"><b>Onboarding options (prototype only)</b><button id="min">Hide</button></div>
+  <div class="rows">
+    <div class="prow"><span>1 Background</span><div data-k="bg"><button data-v="float">Logos floating (pick 2)</button><button data-v="wall">Tilted wall</button><button data-v="glow">Glow only</button></div></div>
+    <div class="prow"><span>2 Progress</span><div data-k="pg"><button data-v="steps">Step tabs</button><button data-v="bar">Pink bar</button><button data-v="text">"Step 1 of 2"</button></div></div>
+    <div class="prow"><span>3 Birthday</span><div data-k="bd"><button data-v="select">Month + day menus</button><button data-v="tiles">Tap month, tap day</button></div></div>
+    <div class="prow"><span>4 Programs</span><div data-k="pk"><button data-v="grid">Logo grid</button><button data-v="list">List with rewards</button></div></div>
+    <div class="prow"><span>5 When picked</span><div data-k="fb"><button data-v="tray">Logos fly into a tray</button><button data-v="ring">Spinning ring (pick 3)</button><button data-v="count">Count only</button></div></div>
+    <div class="prow"><span>Jump to</span><div><button id="go1">Step 1</button><button id="go2">Step 2</button><button id="go3">Finish</button></div></div>
+    <div class="now" id="now"></div>
+  </div>
+</div>
+
+<script>
+const LOGO_DIR="../../../public/retailers/";
+const R=window.RETAILERS.slice().sort((a,b)=>(b.p-a.p)||a.n.localeCompare(b.n));
+const esc=t=>String(t??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const CAT={food_drink:"Food & drink",retail:"Shopping",beauty:"Beauty",entertainment:"Fun & movies"};
+const MONTHS=["January","February","March","April","May","June","July","August","September","October","November","December"];
+const DIM=[31,29,31,30,31,30,31,31,30,31,30,31];
+const W={bg:{float:"logos floating",wall:"tilted wall",glow:"glow only"},pg:{steps:"step tabs",bar:"pink bar",text:"step text"},bd:{select:"month + day menus",tiles:"tap month, tap day"},pk:{grid:"logo grid",list:"list with rewards"},fb:{tray:"tray",ring:"spinning ring",count:"count only"}};
+const st={bg:"glow",pg:"text",bd:"select",pk:"grid",fb:"count",step:1,m:null,d:null,cat:"all",q:""};
+new URLSearchParams(location.search).forEach((v,k)=>{if(W[k]&&W[k][v])st[k]=v});
+const sp=new URLSearchParams(location.search).get("step");if(/^[123]$/.test(sp||""))st.step=+sp;
+const chosen=new Set();
+const tz=Intl.DateTimeFormat().resolvedOptions().timeZone||"America/New_York";
+const lg=(r,c)=>r.l?`<img src="${LOGO_DIR+esc(r.l)}" alt="" onerror="this.outerHTML='<span class=ini>${esc(r.n[0])}</span>'">`:`<span class="ini">${esc(r.n[0])}</span>`;
+
+/* background */
+let raf=null;
+function buildBg(){const bg=document.getElementById("bg");bg.innerHTML="";cancelAnimationFrame(raf);
+  if(st.bg==="wall"){const w=document.createElement("div");w.className="wall";for(let i=0;i<7;i++){const s=R.slice(i*12,i*12+12);w.insertAdjacentHTML("beforeend",`<div class="row ${i%2?"rev":""}">${[...s,...s].map(r=>`<div>${lg(r)}</div>`).join("")}</div>`)}bg.appendChild(w)}
+  if(st.bg==="float"){const items=R.slice(0,18).map((r,i)=>{const el=document.createElement("div");el.className="ft";el.innerHTML=lg(r);bg.appendChild(el);return{el,bx:Math.random(),by:Math.random(),ph:Math.random()*6.28,amp:30+Math.random()*40,rot:(Math.random()-.5)*16}});
+    const loop=t=>{if(!document.body.classList.contains("paused"))items.forEach(o=>{const x=o.bx*(innerWidth-96)+Math.sin(t*.00018+o.ph)*o.amp,y=o.by*(innerHeight-64)+Math.cos(t*.00023+o.ph)*o.amp;o.el.style.transform=`translate(${x}px,${y}px) rotate(${o.rot+Math.sin(t*.0004+o.ph)*4}deg)`});raf=requestAnimationFrame(loop)};raf=requestAnimationFrame(loop)}}
+
+function prog(){const n=st.step>2?2:st.step;
+  if(st.pg==="bar")return `<div class="prog" role="progressbar" aria-valuemin="1" aria-valuemax="2" aria-valuenow="${n}"><i style="width:${st.step>2?100:n*50}%"></i><span>Step ${n} of 2</span></div>`;
+  if(st.pg==="text")return `<p class="prog">Step ${n} of 2</p>`;
+  return `<div class="prog"><b class="${st.step===1?"on":"done"}">1 · Birthday</b><b class="${st.step===2?"on":st.step>2?"done":""}">2 · Your programs</b></div>`}
+
+function step1(){const C=document.getElementById("card");const ok=st.m!==null&&st.d!==null;
+  C.innerHTML=`${prog()}<h1>When's your <span class="hl">birthday?</span></h1><p class="lead">We only need the month and day, never the year.</p>
+  <div class="sel"><label>Month<select id="sm"><option value="">Month</option>${MONTHS.map((m,i)=>`<option value="${i}" ${st.m===i?"selected":""}>${m}</option>`).join("")}</select></label>
+  <label>Day<select id="sd"><option value="">Day</option>${st.m===null?"":Array.from({length:DIM[st.m]},(_,i)=>`<option ${st.d===i+1?"selected":""}>${i+1}</option>`).join("")}</select></label></div>
+  <div class="grids"><h3>Month</h3><div class="months">${MONTHS.map((m,i)=>`<button data-m="${i}" class="${st.m===i?"on":""}" aria-pressed="${st.m===i}">${m.slice(0,3)}</button>`).join("")}</div>
+  ${st.m===null?"":`<h3>Day</h3><div class="days">${Array.from({length:DIM[st.m]},(_,i)=>`<button data-d="${i+1}" class="${st.d===i+1?"on":""}" aria-pressed="${st.d===i+1}">${i+1}</button>`).join("")}</div>`}</div>
+  <p class="picked">${ok?`<span class="hl">${MONTHS[st.m]} ${st.d}</span>`:""}</p>
+  ${st.m===1&&st.d===29?'<p class="note feb">In years without Feb 29 we count Feb 28. Some brands use Mar 1, so check their app.</p>':""}
+  <p class="tz">Time zone: ${esc(tz)}. You can change it in Settings.</p>
+  <div class="row-end"><button class="btn" id="next" ${ok?"":"disabled"}>Continue</button></div>`;
+  const sm=document.getElementById("sm");sm.onchange=()=>{st.m=sm.value===""?null:+sm.value;if(st.d&&st.m!==null&&st.d>DIM[st.m])st.d=null;step1()};
+  document.getElementById("sd").onchange=e=>{st.d=e.target.value?+e.target.value:null;step1()};
+  C.querySelectorAll("[data-m]").forEach(b=>b.onclick=()=>{st.m=+b.dataset.m;if(st.d>DIM[st.m])st.d=null;step1()});
+  C.querySelectorAll("[data-d]").forEach(b=>b.onclick=()=>{st.d=+b.dataset.d;step1()});
+  document.getElementById("next").onclick=()=>flipTo(2,1)}
+
+function step2(){const C=document.getElementById("card");
+  C.innerHTML=`<button class="link backlink" id="back">← Change birthday</button>${prog()}<div class="s2top"><div><h1>Which programs <span class="hl">are you in?</span></h1><p class="lead">Pick the ones you've joined. You can add more later on Discover.</p></div>
+  <input id="q" type="search" placeholder="Search programs" aria-label="Search programs" value="${esc(st.q)}"></div>
+  <div class="cats" id="cats"></div><div class="ringwrap" id="ringwrap"></div><div class="picks" id="picks" role="group" aria-label="Programs"></div>
+  <div class="foot"><div class="tray" id="tray" aria-hidden="true"></div><button class="link" id="skip">Skip for now</button><button class="btn" id="save"></button></div>`;
+  document.getElementById("q").oninput=e=>{st.q=e.target.value;list()};
+  document.getElementById("skip").onclick=()=>{chosen.clear();flipTo(3,1)};
+  document.getElementById("save").onclick=()=>{if(chosen.size)flipTo(3,1)};
+  document.getElementById("back").onclick=()=>flipTo(1,-1);
+  cats();list();feedback()}
+function cats(){const C=document.getElementById("cats");C.innerHTML=["all",...Object.keys(CAT)].map(c=>`<button class="c-${c} ${st.cat===c?"on":""}" style="${c==="all"?"--cc:#fff":""}" aria-pressed="${st.cat===c}" data-c="${c}">${c==="all"?"All":CAT[c]}</button>`).join("");
+  C.querySelectorAll("button").forEach(b=>b.onclick=()=>{st.cat=b.dataset.c;cats();list()})}
+function list(){const q=st.q.toLowerCase();const rows=R.filter(r=>(st.cat==="all"||r.c===st.cat)&&(!q||r.n.toLowerCase().includes(q)));const P=document.getElementById("picks");
+  P.innerHTML=rows.length?rows.map(r=>`<label class="pk ${chosen.has(r.id)?"on":""}"><input type="checkbox" value="${esc(r.id)}" ${chosen.has(r.id)?"checked":""}><span class="lg">${lg(r)}</span><span><span class="nm">${esc(r.n)}</span><br><span class="rw">${esc(r.r)}</span></span><span class="bx" aria-hidden="true">${chosen.has(r.id)?"✓":""}</span></label>`).join(""):`<p class="lead">No programs match that search.</p>`;
+  P.querySelectorAll("input").forEach(i=>i.onchange=()=>{i.checked?chosen.add(i.value):chosen.delete(i.value);const l=i.closest(".pk");l.classList.toggle("on",i.checked);l.querySelector(".bx").textContent=i.checked?"✓":"";feedback(i.checked?i.value:null)})}
+function feedback(added){const s=document.getElementById("save");if(!s)return;
+  s.textContent=chosen.size?`Save ${chosen.size} program${chosen.size===1?"":"s"}`:"Choose programs to continue";s.disabled=!chosen.size;
+  const ids=[...chosen];const T=document.getElementById("tray");
+  T.innerHTML=ids.length?ids.map(id=>{const r=R.find(x=>x.id===id);return `<div class="t" ${id===added?"":'style="animation:none"'}>${lg(r)}</div>`}).join(""):'<span class="empty">Your picks land here</span>';
+  T.scrollLeft=T.scrollWidth;
+  const RW=document.getElementById("ringwrap");if(st.fb==="ring"){const n=ids.length,rad=Math.max(120,n*22);const col=["#FFD6E5","#D6EBFF","#D3F5E1","#E6DEFF"];
+    RW.style.height=(n?170:80)+"px";RW.innerHTML=n?`<div class="ring">${ids.map((id,i)=>{const r=R.find(x=>x.id===id);return `<div class="rc" style="background:${col[i%4]};transform:rotateY(${i*360/n}deg) translateZ(${rad}px)">${lg(r)}<span>${esc(r.r)}</span></div>`}).join("")}</div>`:'<p class="ringempty">The programs you pick spin here</p>'}}
+
+function step3(){const C=document.getElementById("card");const n=chosen.size;
+  C.innerHTML=`${prog()}<div class="done"><h1>You're <span class="hl">all set!</span></h1><p class="lead">${n?`${n} program${n===1?"":"s"} saved. We'll count each one down for your birthday, ${MONTHS[st.m??11]} ${st.d??6}.`:`No programs yet. Add them any time from Discover.`}</p>
+  <div class="row-end" style="justify-content:center"><button class="btn">Go to my dashboard</button></div></div>`;confetti()}
+
+
+/* turn the card around to the next step; instant when motion is paused or reduced */
+function flipTo(step,dir){const C=document.getElementById("card");
+  if(document.body.classList.contains("paused")){st.step=step;render();return}
+  const out=dir>0?"fo":"fob",inn=dir>0?"fi":"fib";
+  C.classList.add(out);
+  // timers, not animationend, so a skipped animation can never leave the card stuck half-turned
+  setTimeout(()=>{C.classList.remove(out);st.step=step;render();C.classList.add(inn);
+    setTimeout(()=>{C.classList.remove(inn);const f=C.querySelector("h1");if(f){f.setAttribute("tabindex","-1");f.focus({preventScroll:true})}},440)},350)}
+function render(){document.body.classList.toggle("step2",st.step===2);if(st.step===1)step1();else if(st.step===2)step2();else step3()}
+
+function confetti(){if(document.body.classList.contains("paused"))return;const c=document.getElementById("conf"),x=c.getContext("2d");c.width=innerWidth;c.height=innerHeight;
+  const ps=Array.from({length:120},()=>({x:innerWidth/2+(Math.random()-.5)*200,y:innerHeight*.4,vx:(Math.random()-.5)*14,vy:-Math.random()*14-4,r:Math.random()*6.28,vr:(Math.random()-.5)*.3,c:["#FF9EC4","#8EC5FF","#8FE3B0","#FFD6E5","#D6EBFF"][Math.floor(Math.random()*5)],w:6+Math.random()*6}));
+  let t=0;(function f(){t++;x.clearRect(0,0,c.width,c.height);ps.forEach(p=>{p.vy+=.35;p.x+=p.vx;p.y+=p.vy;p.r+=p.vr;x.save();x.translate(p.x,p.y);x.rotate(p.r);x.fillStyle=p.c;x.fillRect(-p.w/2,-p.w/4,p.w,p.w/2);x.restore()});if(t<110)requestAnimationFrame(f);else x.clearRect(0,0,c.width,c.height)})()}
+
+const pb=document.getElementById("pause");
+function setPaused(p){document.body.classList.toggle("paused",p);pb.querySelector("span").textContent=p?"Play motion":"Pause motion";pb.setAttribute("aria-pressed",p);
+  pb.querySelector("svg").innerHTML=p?'<path d="M4 2.5v11l9-5.5z"/>':'<rect x="3" y="2" width="3.5" height="12" rx="1"/><rect x="9.5" y="2" width="3.5" height="12" rx="1"/>'}
+pb.onclick=()=>setPaused(!document.body.classList.contains("paused"));setPaused(matchMedia("(prefers-reduced-motion: reduce)").matches);
+
+function apply(changed){document.body.className=document.body.className.replace(/\b(bg|pg|bd|pk|fb)-\w+/g,"").trim()+` bg-${st.bg} pg-${st.pg} bd-${st.bd} pk-${st.pk} fb-${st.fb}`;
+  document.querySelectorAll(".panel [data-k]").forEach(g=>g.querySelectorAll("button").forEach(b=>b.classList.toggle("on",b.dataset.v===st[g.dataset.k])));
+  document.getElementById("now").innerHTML=`Showing: <b>${W.bg[st.bg]}</b> · ${W.pg[st.pg]} · ${W.bd[st.bd]} · ${W.pk[st.pk]} · ${W.fb[st.fb]}`;
+  if(!changed||changed==="bg")buildBg();render();const q=new URLSearchParams();for(const k in W)q.set(k,st[k]);history.replaceState(null,"","?"+q)}
+document.querySelectorAll(".panel [data-k]").forEach(g=>g.onclick=e=>{const b=e.target.closest("button");if(!b)return;st[g.dataset.k]=b.dataset.v;apply(g.dataset.k)});
+document.getElementById("go1").onclick=()=>{st.step=1;render()};
+document.getElementById("go2").onclick=()=>{if(st.m===null){st.m=11;st.d=6}st.step=2;["starbucks","sephora","chipotle"].forEach(i=>chosen.add(i));render()};
+document.getElementById("go3").onclick=()=>{st.step=3;render()};
+document.getElementById("min").onclick=e=>{const p=document.getElementById("panel");p.classList.toggle("min");e.target.textContent=p.classList.contains("min")?"Show":"Hide"};
+if(innerWidth<700){document.getElementById("panel").classList.add("min");document.getElementById("min").textContent="Show"}
+if(st.step===2){st.m=11;st.d=6;["starbucks","sephora","chipotle","panera-bread"].forEach(i=>chosen.add(i))}
+apply();
+</script>
+</body>
+</html>
