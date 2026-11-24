@@ -259,10 +259,11 @@ describe("unsubscribe tokens (D15, T-107)", () => {
     expect(verifyUnsubscribeToken("x".repeat(201), SECRET)).toBeNull();
     expect(verifyUnsubscribeToken(null, SECRET)).toBeNull();
   });
+  // "" stands for "not set": passing undefined would fall back to the real env value (set in CI).
   it("no secret → no token and nothing verifies", () => {
-    expect(createUnsubscribeToken(uid(7), undefined)).toBeNull();
+    expect(createUnsubscribeToken(uid(7), "")).toBeNull();
     expect(
-      verifyUnsubscribeToken(createUnsubscribeToken(uid(7), SECRET), undefined),
+      verifyUnsubscribeToken(createUnsubscribeToken(uid(7), SECRET), ""),
     ).toBeNull();
   });
 });
@@ -276,6 +277,6 @@ describe("checkCronAuth (D14)", () => {
     expect(checkCronAuth(req(`Bearer ${SECRET}x`), SECRET)).toBe(false);
     expect(checkCronAuth(req(SECRET), SECRET)).toBe(false);
     expect(checkCronAuth(req(), SECRET)).toBe(false);
-    expect(checkCronAuth(req("Bearer "), undefined)).toBe(false);
+    expect(checkCronAuth(req("Bearer "), "")).toBe(false);
   });
 });
