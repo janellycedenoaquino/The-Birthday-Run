@@ -1,25 +1,46 @@
-import { appConfig } from "@/config/app";
+import { readFile } from "node:fs/promises";
+import { join } from "node:path";
 
-// The generated brand mark for the icons (BUILD F-3): the app's first letter on the brand colour.
-// Plain JSX for next/og's ImageResponse (inline styles are its only styling, and it renders to a
-// PNG on the server, so the CSP doesn't apply).
-export function BrandMark({ size }: { size: number }) {
+// The brand mark for the icons (BUILD F-3, decision 0016): the owner's doll (afro, purple party
+// hat) on the pink circle. Plain JSX for next/og's ImageResponse (inline styles are its only
+// styling, and it renders to a PNG on the server, so the CSP doesn't apply). The head is a local
+// file, read once per server (Next's "local assets" pattern).
+const head = readFile(
+  join(process.cwd(), "public/brand/doll-head.png"),
+  "base64",
+).then((b64) => `data:image/png;base64,${b64}`);
+
+/** `circle`: the favicon and app icons. `square`: iOS home screen (it rounds the corners itself). */
+export async function BrandMark({
+  size,
+  shape = "circle",
+}: {
+  size: number;
+  shape?: "circle" | "square";
+}) {
+  const src = await head;
+  const inner = Math.round(size * 0.92);
   return (
     <div
       style={{
         width: size,
         height: size,
         display: "flex",
-        alignItems: "center",
+        alignItems: "flex-end",
         justifyContent: "center",
-        background: appConfig.brand.primary,
-        color: appConfig.brand.primaryForeground,
-        fontSize: size * 0.55,
-        fontWeight: 600,
-        borderRadius: size * 0.22,
+        background: "#FFD6E5",
+        borderRadius: shape === "circle" ? size / 2 : 0,
+        overflow: "hidden",
       }}
     >
-      {appConfig.name.trim().charAt(0).toUpperCase()}
+      {/* eslint-disable-next-line @next/next/no-img-element -- next/og renders plain <img> only */}
+      <img
+        src={src}
+        width={inner}
+        height={inner}
+        alt=""
+        style={{ marginBottom: -Math.round(size * 0.02) }}
+      />
     </div>
   );
 }
