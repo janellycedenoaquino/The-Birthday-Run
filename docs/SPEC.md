@@ -76,7 +76,7 @@ All priorities are **must**.
 | ID | Requirement | Acceptance | Priority |
 | --- | --- | --- | --- |
 | FR-1 | **[v1]** Retailers come from a CSV in the repo, loaded by an import script (no admin UI). Each has: a stable ID, unique name, category, description, reward description, timing (FR-11), last-checked date (FR-47), reward type (free item, discount, BOGO, points, free with purchase), purchase required (yes/no), purchase, membership and other requirements, sign-up lead time (FR-49), logo, website, store-finder link, available states ("all" or state codes), and a "popular" mark (shown to signed-out visitors, FR-2). | Import on an empty database loads every row (190 at launch); re-running changes nothing; an edited row updates its retailer (matched by its stable ID column). A bad row (missing required field, unknown type, bad state code, timing that doesn't fit FR-11's types or a length outside 1–31 days, **A-1**) is rejected with its row number and nothing is half-imported. | must |
-| FR-2 | **[v1]** Signed out, Discover shows only the **popular** retailers (marked in the CSV, FR-1); at the end of that list a sign-up prompt says how many more rewards there are. Signed in, Discover shows every retailer. | Each card shows name, logo (initials if missing or broken), category and reward. Signed out: no other retailer is in the page or reachable by URL or API (checked by test); the prompt shows the real count of the rest. (Changed: old showed a fixed set of 15 logos.) | must |
+| FR-2 | **[v1]** Discover shows every non-retired retailer to everyone, signed in or not (changed by decision 0017, so search engines can find each one); at the end of the signed-out list a sign-up prompt says what signing up adds. Signed in, Discover adds search, filters and the add/remove toggle. | Each card shows name, logo (initials if missing or broken), category and reward. Signed out: retired retailers are not in the page or reachable by URL or API (checked by test). (Changed: old showed a fixed set of 15 logos; until decision 0017, signed-out visitors saw only the popular ones.) | must |
 | FR-3 | **[v1]** Signed in, Discover can be filtered by category (all, food and drink, entertainment, retail, beauty) and searched by name. | Filters combine; clearing restores the list; no match → empty state. | must |
 | FR-45 | **[v2-premium]** Discover can be filtered by how long a reward lasts, in exclusive buckets: birthday only (1 day), up to a week (2–7 days), longer (8+ days or the whole birth month); plus a separate "starts before the birthday" toggle (timing per FR-11). | Combines with FR-3 and FR-5. Free users see FR-39 in its place; the server ignores the filter for them. | must |
 | FR-4 | **[v1]** A user can open a retailer's details. | Shows reward description; timing label from FR-11 (e.g. "birthday only", "7 days from your birthday", "all birth month", "starts 7 days before"); reward type with a one-line explanation; requirements when present; website link; add/remove when signed in (FR-8). | must |
@@ -192,7 +192,7 @@ Found in the old code:
 - Locking the map view to the user's state (old app did, via Google).
 - Users outside the US: states, ZIPs and store data are US-only (**A-8**).
 - Push or SMS reminders.
-- **Later, not in this plan's build:** public pages for the popular brands (what you get, timing, how to claim; ends in the sign-up prompt) to be found by search, and a launch write-up shared on Reddit and similar places by the owner, posted openly as the owner's project and within each community's self-promotion rules. Listed in ROADMAP's "after launch".
+- **Done early (decision 0017):** every retailer's page is public and in the sitemap, so it can be found by search. **Later, not in this plan's build:** a launch write-up shared on Reddit and similar places by the owner, posted openly as the owner's project and within each community's self-promotion rules. Listed in ROADMAP's "after launch".
 
 ### Assumptions
 Each is a value or rule carried over or guessed; the value itself lives in the row that cites it.
@@ -312,7 +312,7 @@ flowchart TD
 
 **C-102 Retailer card** (S-101, S-103)
 - Logo (`alt` = retailer name) or, if missing or it fails to load, the name's initials on `--muted`; name (h3); category label (M-170); reward description; reward-type label (M-180).
-- Whole card links to S-104 (signed out: popular ones only, FR-2).
+- Whole card links to S-104 (FR-2).
 - Signed in: toggle button M-103/M-104 (`aria-pressed`; its accessible name stays "Add {name}" so the state isn't read twice; focus stays on it after saving), F-3 `enroll`/`unenroll`; optimistic, reverts with the error inline on the card (M-5, M-7, BR-3).
 
 **C-103 Days-left badge** (S-105, S-106, E-102; FR-12, NFR-6)
@@ -375,13 +375,13 @@ flowchart TD
 
 #### S-103 Discover (`/discover`) · FR-2, FR-3, FR-5, FR-45
 - **Who:** anyone. Data by role (D3).
-- **Signed out shows:** h1 M-171a; text M-171b; popular C-102 cards (no toggle, no filters); at the end, card M-111 (`{count}` = the real number of other rewards) with "Sign up free" → Template S-5 (`next=/discover`) and "Sign in".
+- **Signed out shows:** h1 M-171a; text M-171b; every non-retired C-102 card (no toggle, no filters; decision 0017); at the end, card M-111 with "Sign up free" → Template S-5 (`next=/discover`) and "Sign in".
 - **Signed in shows:** h1 M-171a; search "Search by name"; category tabs (M-170); premium filters row: state filter (FR-5: needs C-105; on → M-172 with `{state}`, `{hidden}` and "Show all" M-173) and duration select (M-174–M-177) and checkbox M-177a (FR-45). Free users see one C-104 (M-131) in place of both. Then the grid of C-102 with M-178 (`{shown}` of `{total}`).
 - **Main action:** open S-104; toggle enrollment.
 - **States:** no match: M-179 with "Clear filters" · loading: skeleton · error: Template S-20 · not allowed: none (public).
 
 #### S-104 Retailer details (`/discover/[retailerId]`) · FR-4, FR-8, FR-48
-- **Who:** anyone for popular retailers; signed in for all. Others (and retired, unknown IDs) → Template S-19.
+- **Who:** anyone, for every non-retired retailer (decision 0017). Retired and unknown IDs → Template S-19.
 - **Shows:** back link M-171c; logo; h1 name; category; reward description; timing label (M-181–M-184, M-184a, M-184b); join-by line M-277 when the retailer has a lead time (FR-49); reward type with its explanation (M-180); requirements list when present (M-189a purchase, M-189b membership, M-189c other); website link (new tab). Signed in: enroll toggle (C-102 button) and C-107 trigger. Signed out: M-111 compact with "Sign up free".
 - **States:** error on toggle: inline (BR-3, M-5, M-7).
 
@@ -439,7 +439,7 @@ Template M-, API-, E- texts apply unchanged. Placeholders in `{braces}` are fill
 - M-109 (S-101 h1, step 2): "Which programs are you in?"
 - M-110: "Save {count} programs" (one: "Save 1 program") · M-111b: "Choose programs to continue" (disabled) · M-111c: "Skip for now"
 - M-118: "Step {step} of 2"
-- M-111 (S-103 / S-104 sign-up prompt): "And {count} more birthday rewards. Sign up free to see them all and track your own."
+- M-111 (S-103 / S-104 sign-up prompt): "Sign up free to track the rewards you're in, see how long each lasts and plan your run."
 
 **Rewards and pickups**
 - M-112 (C-109 title): "Mark {retailer} picked up"
@@ -468,7 +468,7 @@ Template M-, API-, E- texts apply unchanged. Placeholders in `{braces}` are fill
 
 **Discover and retailer details**
 - M-170 (categories): "All" · "Food and drink" · "Entertainment" · "Retail" · "Beauty"
-- M-171: "No programs match that search." · M-171a: "Discover" · M-171b: "Free birthday rewards from popular loyalty programs." · M-171c: "Back to Discover"
+- M-171: "No programs match that search." · M-171a: "Discover" · M-171b: "Free birthday rewards from loyalty programs, each checked on the brand's own page." · M-171c: "Back to Discover"
 - M-172: "Showing rewards available in {state}. {hidden} hidden." · M-172b (a start is already set; applies the filter): "Show only my state" · M-173: "Show all"
 - M-174–M-177 (duration select): "Any length" · "Birthday only" · "Up to a week" · "Up to a month" · M-177a (checkbox beside it): "Can start before my birthday"
 - M-178: "Showing {shown} of {total}"

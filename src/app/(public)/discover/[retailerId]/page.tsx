@@ -17,8 +17,8 @@ import { retailerIdSchema } from "@/lib/validation/retailers";
 import { enroll, unenroll } from "@/server/actions/enrollments";
 import { createClient } from "@/server/supabase/server";
 
-// S-104 Retailer details (SPEC §3.3, BUILD F-3: FR-4, FR-8, FR-49). Public for popular retailers,
-// signed in for all (D3: RLS returns nothing else, so it's a 404 like an unknown ID).
+// S-104 Retailer details (SPEC §3.3, BUILD F-3: FR-4, FR-8, FR-49). Public for every non-retired
+// retailer (D3, decision 0017); retired and unknown IDs are a 404.
 
 const load = cache(async (raw: string) => {
   const id = retailerIdSchema.safeParse(raw);
@@ -52,19 +52,8 @@ export default async function RetailerPage({
   } = await supabase.auth.getUser();
 
   let enrolled = false;
-  let more = 0;
   let joinBy: string | null = null;
-  if (!user) {
-    // M-111 compact: the real number of other rewards (FR-2).
-    const { data: counts, error: countError } = await supabase
-      .rpc("retailer_counts")
-      .single();
-    if (countError)
-      throw new Error("S-104: could not count retailers", {
-        cause: countError,
-      });
-    more = counts.total - counts.popular;
-  } else {
+  if (user) {
     const [{ data: row }, { data: profile }] = await Promise.all([
       supabase
         .from("enrollments")
@@ -169,11 +158,7 @@ export default async function RetailerPage({
           />
         ) : (
           <div className="flex flex-wrap items-center gap-3 rounded-lg border border-dashed p-4">
-            {more > 0 ? (
-              <p className="text-sm">
-                {msg("M-111").replace("{count}", String(more))}
-              </p>
-            ) : null}
+            <p className="text-sm">{msg("M-111")}</p>
             <Button asChild size="sm">
               <Link
                 href={`/sign-up?next=${encodeURIComponent(`/discover/${r.id}`)}`}

@@ -69,7 +69,7 @@ test("a new user: onboarding, Discover, then Settings (FR-3, FR-6, FR-7, FR-8, F
   await expect(page).toHaveURL(/\/discover$/);
   await expect(page.getByText(/^Showing \d+ of \d+$/)).toBeVisible();
 
-  // A non-popular retailer is open to signed-in users, with its details (FR-4).
+  // A retailer's details, signed in (FR-4).
   await page.goto("/discover/sugarfish");
   await expect(
     page.getByRole("heading", { name: "Sugarfish", level: 1 }),

@@ -20,7 +20,7 @@ Template decisions are cited as "Template Dn" and not restated; only what the ap
 **Consequences:** a CSV needing a new column waits for its migration (Template D19 order); the Action fails loudly otherwise.
 
 ### D3. Signed-out Discover is enforced by RLS
-**Decision:** Signed out, the page queries through the Template's server client with no session, so Postgres runs it as `anon`, and RLS gives `anon` only popular, non-retired retailers. The prompt's count comes from `public.retailer_counts()` (definer, returns numbers only). `authenticated` reads all retailers (retired too, for History).
+**Decision:** Signed out, the page queries through the Template's server client with no session, so Postgres runs it as `anon`, and RLS gives `anon` every non-retired retailer (decision 0017; it was popular ones only). `public.retailer_counts()` (definer, numbers only) fed the old prompt's count and is no longer called. `authenticated` reads all retailers (retired too, for History).
 **Why:** FR-2's "not reachable by URL or API" holds even if code forgets a filter; an RLS test proves it.
 **Alternatives:** filtering in the page: one missing `where` leaks. A copy table: duplicated data.
 
@@ -175,7 +175,7 @@ flowchart LR
 | Stripe | Customers, Checkout, Portal, subscription state (test mode until §5.6) | D8, F-8 |
 
 ### Data flows
-- **Flow 101, signed-out Discover (FR-2):** `/discover` → server client with no session → `anon` RLS returns popular rows → `retailer_counts()` for the prompt (D3).
+- **Flow 101, signed-out Discover (FR-2):** `/discover` → server client with no session → `anon` RLS returns every non-retired row (D3, decision 0017).
 - **Flow 102, onboarding (FR-6, FR-7):** guard `requireOnboarded` → `saveOnboarding` (month, day, detected zone) → enrollments upsert → dashboard (F-2).
 - **Flow 103, My Rewards (FR-10–FR-16):** page → profile + enrollments + pickups → timing module → list or out-of-window state (F-4).
 - **Flow 104, pickup (FR-17–FR-20):** action → timing module computes cycle bounds → `create_pickup` (lock, check, insert, remove group items) (D7, F-5).
@@ -261,7 +261,7 @@ Owner: the CSV (D2). Written only by the import, connecting as the database owne
 | `created_at`, `updated_at` | timestamptz | no | |
 
 A check constraint ties the timing columns to `timing_type`. Indexes: `category`, partial on `is_popular`.
-**RLS:** `anon` selects rows with `is_popular and retired_at is null`; `authenticated` selects all rows; no insert/update/delete grants. `retailer_counts()` (definer) returns the counts for FR-2's prompt.
+**RLS:** `anon` selects rows with `retired_at is null` (decision 0017); `authenticated` selects all rows; no insert/update/delete grants. `retailer_counts()` (definer) is unused since decision 0017.
 
 ### `public.retailer_stores` (not user data)
 Owner: the store import (D9).
@@ -404,7 +404,7 @@ Template T1–T22 apply to every app table and endpoint (Template DESIGN §4.2).
 | T-101 | Premium features | Free user calls a premium action, RPC or filter directly (own cookie, PostgREST) (E) | Free premium | `requirePremium` (BUILD §0.2); definer functions refuse non-premium (D11); limit triggers use `private.is_premium` (D6); server ignores FR-45/FR-5 filters; no premium data in free payloads; metric 2 tests (F-7) | Pure-TS premium logic (FR-29 clustering, FR-34 links) needs store data only `nearby_stores` returns, so it's useless without premium |
 | T-102 | Entitlement | Forge premium: write `premium_grants`/`subscriptions`, hit `/billing/return`, or send a customer ID in metadata (E, T) | Free premium | No write grants (D5, NFR-2 RLS test); success page never grants (NFR-8); user ↔ customer mapping only from the row the server created before Checkout (D8) | – |
 | T-103 | Entitlement, billing | Forged, replayed or out-of-order webhook (S, T) | Premium on/off wrongly | Signature + 5-minute tolerance; event-ID dedupe; snapshot fetched from Stripe, so order and replay converge (D8, NFR-8 tests) | If the snapshot fetch fails after the event ID is stored, Stripe's retry is absorbed as a duplicate; D8 deletes the claim on failure, so the retry runs |
-| T-104 | Catalogue | Signed-out scraping of non-popular retailers (I) | Curation copied without sign-up | `anon` RLS (D3); non-popular detail pages 404 (BUILD §0.2); counts only from `retailer_counts()` | Logos are static files at guessable `/retailers/<slug>.*` paths, so probing confirms which brands exist (accepted: names only). A free account sees everything by design (FR-2) |
+| T-104 | Catalogue | Signed-out copying of the catalogue (I) | Curation copied without sign-up | Accepted (decision 0017): the catalogue is public on purpose and already public in `data/retailers.csv`; facts can't be owned; the defence is staying the freshest. `anon` RLS still hides retired rows (D3) | Logos are static files at guessable `/retailers/<slug>.*` paths, so probing confirms which brands exist (accepted: names only). A free account sees everything by design (FR-2) |
 | T-105 | Plan, pickups | Parallel requests race past FR-24/FR-25 or create two pickups in one cycle (T) | Limits bypassed | Profile-row lock inside the trigger/function (D6, D7) | Forged cycle bounds affect only the caller's data (D7, accepted) |
 | T-106 | Cron and report routes | `CRON_SECRET` or `REPORTS_EXPORT_SECRET` leaks (E, D) | See residual | Constant-time bearer check (BUILD §0.2); routes return counts only (BUILD §0.7); claim-then-send makes extra reminder runs send nothing new (D15) | With `CRON_SECRET`: repeated runs burn Vercel CPU and DB queries (routes are unlimited, BUILD §0.4). With `REPORTS_EXPORT_SECRET`: read retailer/reason/count summaries and ack batches so reports never reach GitHub. Neither reads personal data. Rotate in Vercel (and GitHub) |
 | T-107 | Reminder setting | Unsubscribe token forwarded, guessed or forged (T) | Someone's reminders turned off | HMAC token (D15); `GET` only confirms, so scanners unsubscribe no one; same page for bad tokens; per-IP limit (BUILD §0.4) | A forwarded email lets its reader turn reminders off (they can be turned back on in settings). Tokens don't expire (CAN-SPAM needs ≥ 30 days, §4.4). Leak of the HMAC key lets anyone with a user ID turn reminders off; user IDs aren't public |

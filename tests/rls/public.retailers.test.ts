@@ -7,7 +7,7 @@ import {
   type TestUser,
 } from "./helpers";
 
-// public.retailers RLS and grants (BUILD F-1 "Tests": D3, FR-2). Rows are seeded as `postgres`
+// public.retailers RLS and grants (BUILD F-1 "Tests": D3, FR-2, decision 0017). Rows are seeded as `postgres`
 // (the import's role); every read goes through PostgREST like the app.
 const db = sql();
 const PREFIX = "rls-test-";
@@ -61,20 +61,17 @@ const seededIds = (rows: { id: string }[] | null) =>
     .sort();
 
 describe("public.retailers (D3, FR-2)", () => {
-  it("anon sees only popular, non-retired rows", async () => {
+  it("anon sees every non-retired row, popular or not (decision 0017)", async () => {
     const { data, error } = await publicClient().from("retailers").select("id");
     expect(error).toBeNull();
-    expect(seededIds(data)).toEqual([ids.popular]);
+    expect(seededIds(data)).toEqual([ids.hidden, ids.popular].sort());
   });
 
-  it.each([
-    ["non-popular", ids.hidden],
-    ["retired popular", ids.retiredPopular],
-  ])("anon gets 0 rows for a %s id", async (_, id) => {
+  it("anon gets 0 rows for a retired id", async () => {
     const { data } = await publicClient()
       .from("retailers")
       .select("id")
-      .eq("id", id);
+      .eq("id", ids.retiredPopular);
     expect(data).toEqual([]);
   });
 
