@@ -82,7 +82,7 @@ Why these colours: research on colour and emotion finds that brightness and satu
 
 **Small pages, loading and emails:**
 - Every small page (Template S-6, S-7, S-9, S-10, S-11, S-20; S-111, S-112) is one plain frosted card on the still glow with the tilted headline block and no picture.
-- Only three screens get a picture: "That link didn't work" (S-8: the girls over a map), "Page not found" (S-19: the three girls running) and the loading screen. Loading shows one of three pictures (the girls running, the girls over a map, and a third the owner will pick), a different one each time, with three bouncing pastel dots that stop under reduced motion. The gift-boxes picture (real brand logos) stays off public pages like the 404.
+- Only three screens get a picture: "That link didn't work" (S-8: the girls over a map), "Page not found" (S-19: the three girls running) and the loading screen. Loading shows one of three pictures (the girls running, the girls over a map, and the stacked gift boxes; the owner may swap the gift boxes for a new picture of the girls jumping rope), a different one each time, with three bouncing pastel dots that stop under reduced motion. The gift-boxes picture (real brand logos) stays off public pages like the 404.
 - Emails use a pastel gradient header (pink, blue, green) with the app name, a cream body, the tilted-block-free headline, reward rows with small badges, one sky-blue button with a navy outline, and the footer with the unsubscribe link (E- templates).
 
 **Retailer page (S-104), timing split:**
