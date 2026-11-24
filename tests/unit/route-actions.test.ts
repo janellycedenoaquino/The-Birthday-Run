@@ -61,7 +61,7 @@ vi.mock("@/server/auth/app-guards", async () => {
   };
 });
 
-const { findStops, getGroupRoute, lookupZip } =
+const { findStops, getGroupRoute, lookupZip, suggestGroups } =
   await import("@/server/actions/route");
 
 const HOBOKEN = { lat: 40.744, lng: -74.032 };
@@ -425,5 +425,92 @@ describe("getGroupRoute (FR-33)", () => {
     expect(r.data!.stops.map((s) => s.retailerName)).toEqual(["Near"]);
     const asked = db.rpc.mock.calls.find(([fn]) => fn === "nearby_stores")![1];
     expect(asked.p_retailer_ids).toEqual(["near"]);
+  });
+});
+
+describe("suggestGroups (FR-29)", () => {
+  const ids = ["a", "b", "c", "d", "e"];
+  /** Five enrolled, open rewards; stores for the first `withStores`, two tight pairs + one. */
+  const five = (withStores: number) => {
+    enrollIn(...ids.map((id) => retailer(id, id.toUpperCase())));
+    db.tables.reward_group_items = { data: [], error: null };
+    const spots: [number, number][] = [
+      [40.75, -74.03],
+      [40.751, -74.031],
+      [40.9, -74.2],
+      [40.901, -74.201],
+      [40.752, -74.03],
+    ];
+    db.rpc.mockImplementation(async (fn) =>
+      fn === "nearby_stores"
+        ? {
+            data: ids
+              .slice(0, withStores)
+              .map((id, i) => storeRow(id, i + 1, ...spots[i]!)),
+            error: null,
+          }
+        : { data: [], error: null },
+    );
+  };
+
+  it("free user → BR-2", async () => {
+    premium.value = false;
+    expect(await suggestGroups({ start: coords })).toEqual({
+      ok: false,
+      error: "BR-2",
+    });
+  });
+
+  it("fewer than 4 ungrouped rewards → not offered, without a store search", async () => {
+    five(5);
+    db.tables.reward_group_items = {
+      data: [{ retailer_id: "a" }, { retailer_id: "b" }],
+      error: null,
+    };
+    expect(await suggestGroups({ start: coords })).toEqual({
+      ok: true,
+      data: { offered: false, needed: 4 },
+    });
+    expect(db.rpc.mock.calls.some(([fn]) => fn === "nearby_stores")).toBe(
+      false,
+    );
+  });
+
+  it("only 3 with a store nearby → not offered (FR-29: 4 with store data)", async () => {
+    five(3);
+    expect(await suggestGroups({ start: coords })).toEqual({
+      ok: true,
+      data: { offered: false, needed: 4 },
+    });
+  });
+
+  it("4 with stores → groups by distance, default pickup, the 5th left out", async () => {
+    five(4);
+    const r = await suggestGroups({ start: coords });
+    if (!r.ok || !r.data?.offered) throw new Error("not offered");
+    expect(r.data.groups.map((g) => [...g.retailerIds].sort())).toEqual([
+      ["a", "b"],
+      ["c", "d"],
+    ]);
+    // Jun 15 birthday, today Jun 15: tomorrow at 10:00.
+    expect(r.data.groups[0]).toMatchObject({
+      pickupDate: "2026-06-16",
+      pickupTime: "10:00",
+    });
+    expect(r.data.groups[0]!.stops[0]!.n).toBe(1);
+    expect(r.data.leftOut).toEqual([{ retailerId: "e", retailerName: "E" }]);
+  });
+
+  it("store search down → BR-13, nothing offered", async () => {
+    five(5);
+    db.rpc.mockResolvedValue({
+      data: null,
+      error: { message: "timeout", code: "57014" },
+    });
+    expect(await suggestGroups({ start: coords })).toEqual({
+      ok: true,
+      message: "BR-13",
+      data: { offered: false, needed: 4 },
+    });
   });
 });

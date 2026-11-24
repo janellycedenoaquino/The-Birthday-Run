@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { LocalDate } from "@/lib/birthday/timing";
 import { plannable } from "@/lib/rewards/plan";
-import { copyNames } from "@/lib/validation/plan";
+import { copyNames, runNames } from "@/lib/validation/plan";
 
 // BUILD F-6 "Tests": createGroup/addToGroup/duplicateGroup results (FR-23–FR-26, FR-28). The plan
 // context, Supabase, the guard and the limiter are the faked boundaries; the triggers and
@@ -70,11 +70,23 @@ const nameClash = {
     'duplicate key value violates unique constraint "reward_groups_user_name_key"',
 };
 const fakeClient = {
+  rpc: async (fn: string, args: unknown) => {
+    state.writes.push(`rpc ${fn} ${JSON.stringify(args)}`);
+    return state.groupError
+      ? { data: null, error: state.groupError }
+      : { data: ["g1", "g2"], error: null };
+  },
   from: (table: string) => ({
     select: () => ({
       eq: () => ({
         maybeSingle: async () => ({ data: state.source, error: null }),
       }),
+      // applySuggestions reads every group name (M-215's "Run n" must be unique).
+      then: (ok: (v: unknown) => unknown) =>
+        Promise.resolve({
+          data: [...state.takenNames].map((name) => ({ name })),
+          error: null,
+        }).then(ok),
     }),
     insert: (rows: { name?: string }) => {
       state.writes.push(`insert ${table} ${JSON.stringify(rows)}`);
@@ -124,7 +136,8 @@ vi.mock(
 );
 vi.mock("next/cache", () => ({ revalidatePath: () => {} }));
 
-const { createGroup, duplicateGroup } = await import("@/server/actions/groups");
+const { applySuggestions, createGroup, duplicateGroup } =
+  await import("@/server/actions/groups");
 const form = (fields: Record<string, string | string[]>) => {
   const fd = new FormData();
   for (const [k, v] of Object.entries(fields))
@@ -383,5 +396,135 @@ describe("addToGroup: foreign keys (FR-26)", async () => {
         'insert or update on table "reward_group_items" violates foreign key constraint "reward_group_items_user_id_retailer_id_fkey"',
     };
     expect(await add()).toEqual({ ok: false, error: "BR-22" });
+  });
+});
+
+describe("applySuggestions (FR-29 Apply all)", () => {
+  const two = {
+    groups: [
+      {
+        retailerIds: ["week", "one"],
+        pickupDate: "2026-06-16",
+        pickupTime: "10:00",
+      },
+      { retailerIds: ["week"], pickupDate: "2026-06-17", pickupTime: "10:00" },
+    ],
+  };
+  it("one database call with every group, named Run n, skipping taken names", async () => {
+    state.takenNames.add("Run 1");
+    expect(await applySuggestions(two)).toMatchObject({
+      ok: true,
+      data: { groupIds: ["g1", "g2"] },
+    });
+    const calls = state.writes.filter((w) => w.startsWith("rpc"));
+    expect(calls).toHaveLength(1);
+    const { p_groups } = JSON.parse(
+      calls[0]!.replace("rpc apply_group_suggestions ", ""),
+    );
+    expect(p_groups.map((g: { name: string }) => g.name)).toEqual([
+      "Run 2",
+      "Run 3",
+    ]);
+    expect(p_groups[0].retailerIds).toEqual(["week", "one"]);
+  });
+
+  it("free user → BR-2, nothing written", async () => {
+    state.premium = false;
+    expect(await applySuggestions(two)).toEqual({ ok: false, error: "BR-2" });
+    expect(state.writes).toEqual([]);
+  });
+
+  it("a pickup outside the planned range → BR-8 before any write", async () => {
+    const r = await applySuggestions({
+      groups: [{ ...two.groups[0]!, pickupDate: "2027-01-01" }],
+    });
+    expect(r).toMatchObject({
+      ok: false,
+      error: "API-4",
+      fieldErrors: { pickupDate: [expect.any(String)] },
+    });
+    expect(state.writes).toEqual([]);
+  });
+
+  it("a picked-up reward → BR-10; the database's group limit → BR-4", async () => {
+    expect(
+      await applySuggestions({
+        groups: [{ ...two.groups[0]!, retailerIds: ["done"] }],
+      }),
+    ).toEqual({ ok: false, error: "BR-10" });
+    state.groupError = {
+      code: "P0001",
+      message: "plan_group_limit",
+      details: "3",
+    };
+    expect(await applySuggestions(two)).toEqual({
+      ok: false,
+      error: "API-4",
+      fieldErrors: { form: ["You've reached the free limit of 3 groups."] },
+    });
+  });
+
+  it("more than 4 groups or a bad shape → API-4", async () => {
+    expect(
+      await applySuggestions({ groups: Array(5).fill(two.groups[1]) }),
+    ).toEqual({ ok: false, error: "API-4" });
+    expect(await applySuggestions({ groups: [], extra: 1 })).toEqual({
+      ok: false,
+      error: "API-4",
+    });
+  });
+
+  it("sends each reward once; warns about rewards ending before the pickup (M-227)", async () => {
+    const r = await applySuggestions({
+      groups: [
+        // "one" lasts only the birthday (Jun 15): it ends before a Jun 16 pickup.
+        {
+          retailerIds: ["one", "one", "week"],
+          pickupDate: "2026-06-16",
+          pickupTime: "10:00",
+        },
+      ],
+    });
+    expect(r).toMatchObject({
+      ok: true,
+      message: expect.stringContaining("One Day"),
+    });
+    const call = state.writes.find((w) => w.startsWith("rpc"))!;
+    expect(
+      JSON.parse(call.replace("rpc apply_group_suggestions ", "")).p_groups[0]
+        .retailerIds,
+    ).toEqual(["one", "week"]);
+  });
+
+  it("the database's own refusals map: not premium → BR-2, a past-year date → M-235", async () => {
+    state.groupError = { code: "P0001", message: "not_premium" };
+    expect(await applySuggestions(two)).toEqual({ ok: false, error: "BR-2" });
+    state.source = {
+      name: "Last year",
+      pickup_date: "2025-06-16",
+      pickup_time: "10:00",
+      reward_group_items: [],
+    };
+    state.groupError = { code: "P0001", message: "pickup_out_of_cycle" };
+    expect(
+      await duplicateGroup(
+        null,
+        form({ groupId: "00000000-0000-4000-8000-000000000001" }),
+      ),
+    ).toEqual({
+      ok: false,
+      error: "API-4",
+      fieldErrors: {
+        form: ["This pickup is outside your birthday window. Change the date."],
+      },
+    });
+  });
+
+  it("runNames: Run 1, Run 2 … skipping taken ones", () => {
+    expect(runNames(3, ["Run 2", "Other"])).toEqual([
+      "Run 1",
+      "Run 3",
+      "Run 4",
+    ]);
   });
 });

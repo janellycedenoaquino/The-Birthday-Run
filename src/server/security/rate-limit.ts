@@ -55,6 +55,10 @@ export const LIMITS = {
   findStops: { user: [60, HOUR] },
   getGroupRoute: { user: [60, HOUR] },
   lookupZip: { user: [60, HOUR] },
+  // BUILD §0.4: Smart Grouping suggestions, 30 per user per hour.
+  suggestGroups: { user: [30, HOUR] },
+  // "Plan and pickup writes": Smart Grouping's "Apply all" (F-11).
+  applySuggestions: { user: [300, HOUR] },
   authConfirm: { ip: [30, 10 * MIN] },
   authCallback: { ip: [30, 10 * MIN] },
 } as const satisfies Record<string, Limit>;

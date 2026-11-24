@@ -96,6 +96,16 @@ const VALID: Record<string, Record<string, string>> = {
 
 // Actions called from code with one JSON input instead of a form (F-10's route actions).
 const JSON_INPUT: Record<string, unknown> = {
+  suggestGroups: { start: { kind: "zip", zip: "10001" } },
+  applySuggestions: {
+    groups: [
+      {
+        retailerIds: ["starbucks"],
+        pickupDate: "2026-06-15",
+        pickupTime: "10:00",
+      },
+    ],
+  },
   lookupZip: { start: { kind: "zip", zip: "10001" } },
   findStops: {
     start: { kind: "coords", lat: 40.713, lng: -74.006 },

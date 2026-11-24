@@ -164,6 +164,12 @@ export const M = {
   "M-226": "{count} selected",
   "M-227": "These end before your pickup: {retailers}. You can still save.",
   "M-228": "Add to group",
+  "M-215": "Run {n}",
+  "M-229": "Suggest groups",
+  "M-230":
+    "Smart Grouping needs at least {needed} rewards with store locations that aren't in a group yet.",
+  "M-231": "Left out (no store location): {retailers}",
+  "M-232": "Apply all",
   "M-233": "Your groups",
   "M-234": "Pickup: {date} at {time}",
   "M-235": "This pickup is outside your birthday window. Change the date.",

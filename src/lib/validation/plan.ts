@@ -59,3 +59,33 @@ export function copyNames(name: string, tries = 20): string[] {
     return base.join("").trimEnd() + suffix;
   });
 }
+
+/** FR-29 "Apply all": the suggested groups as the dialog sends them (at most 4, FR-25's size). */
+export const applySuggestionsSchema = z
+  .object({
+    groups: z
+      .array(
+        z
+          .object({
+            retailerIds: retailerIdsSchema.max(GROUP_ITEMS_MAX),
+            pickupDate: groupFields.pickupDate,
+            pickupTime: groupFields.pickupTime,
+          })
+          .strict(),
+      )
+      .min(1)
+      .max(4),
+  })
+  .strict();
+
+/** M-215's default names, "Run 1", "Run 2" …, skipping names already taken. */
+export function runNames(count: number, taken: Iterable<string>): string[] {
+  // The database's unique name check ignores case (BR-6), so this does too.
+  const used = new Set([...taken].map((t) => t.toLowerCase()));
+  const names: string[] = [];
+  for (let n = 1; names.length < count; n++) {
+    const name = msg("M-215").replace("{n}", String(n));
+    if (!used.has(name.toLowerCase())) names.push(name);
+  }
+  return names;
+}

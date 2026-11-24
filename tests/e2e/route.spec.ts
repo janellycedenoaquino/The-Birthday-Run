@@ -15,6 +15,7 @@ test.use(ownIp(23));
 const ZIP = "00599"; // not a real ZIP: this spec's own centroid
 const NEAR = ["16-handles", "altard-state"]; // birth_month rewards: open on a birthday today
 const NO_STORE = "amc-theatres";
+const FAR = ["american-eagle", "ann-taylor"]; // only the Smart Grouping test enrolls these
 const TILES = "https://tiles.openfreemap.org/**";
 
 const db = sql();
@@ -26,6 +27,9 @@ test.beforeAll(async () => {
   const stores: [string, number, number][] = [
     [NEAR[0]!, 40.72, -74.0],
     [NEAR[1]!, 40.73, -73.99],
+    // A second cluster ~10 km north, for Smart Grouping (FR-29).
+    [FAR[0]!, 40.81, -73.95],
+    [FAR[1]!, 40.812, -73.952],
   ];
   for (const [id, lat, lng] of stores)
     await db`insert into public.retailer_stores (retailer_id, source, source_ref, name, address, city, state, location)
@@ -269,5 +273,66 @@ test("Discover state filter: set a start → only that state; Show all clears; n
   ).toBeVisible();
   await expect(free.getByRole("region", { name: "Your state" })).toHaveCount(0);
   await expect(free.getByLabel("ZIP code")).toHaveCount(0);
+  await ctx.close();
+});
+
+test("Smart Grouping: two nearby pairs → Apply all creates both groups; free gets C-104 (FR-29, metric 2)", async ({
+  page,
+  browser,
+}) => {
+  test.setTimeout(90_000);
+  const user = await createUser("e2e-smart");
+  await birthdayTodayWith(user, [...NEAR, ...FAR, NO_STORE]);
+  await setPremium(db, user.email, "grant");
+  await passwordSignIn(page, user.email, PASSWORD);
+  await expect(page).toHaveURL(/\/dashboard$/);
+  await page.goto("/plan");
+  const smart = page.getByRole("region", { name: "Smart Grouping" });
+  await smart.getByRole("button", { name: "Suggest groups" }).click();
+  const dialog = page.getByRole("dialog");
+  await dialog.getByLabel("ZIP code").fill(ZIP);
+  await dialog.getByRole("button", { name: "Use ZIP" }).click();
+  await expect(dialog.getByRole("heading", { name: "Run 1" })).toBeVisible();
+  await expect(dialog.getByRole("heading", { name: "Run 2" })).toBeVisible();
+  await expect(
+    dialog.getByText(/^Left out \(no store location\): AMC Theatres$/),
+  ).toBeVisible();
+
+  // Cancel creates nothing.
+  await dialog.getByRole("button", { name: "Cancel" }).click();
+  await expect(
+    page.getByRole("heading", { name: "Run 1", exact: true }),
+  ).toHaveCount(0);
+
+  await smart.getByRole("button", { name: "Suggest groups" }).click();
+  await expect(dialog.getByRole("heading", { name: "Run 1" })).toBeVisible();
+  await dialog.getByRole("button", { name: "Apply all" }).click();
+  await expect(dialog).toHaveCount(0);
+  const groups = page.getByRole("region", { name: "Your groups" });
+  const card = (name: string) =>
+    groups
+      .getByRole("listitem")
+      .filter({ has: page.getByRole("heading", { name, exact: true }) });
+  await expect(card("Run 1")).toBeVisible();
+  await expect(card("Run 2")).toBeVisible();
+  // The pairs stay together: each group holds one cluster.
+  const near = card("Run 1")
+    .or(card("Run 2"))
+    .filter({ hasText: "16 Handles" });
+  await expect(near).toContainText("Altar'd State");
+  await expect(near).not.toContainText("American Eagle");
+
+  // Free: C-104 in its place, no button.
+  const ctx = await browser.newContext(ownIp(23));
+  const free = await ctx.newPage();
+  await setup(free, "e2e-smart-free", false);
+  await free.goto("/plan");
+  const freeSmart = free.getByRole("region", { name: "Smart Grouping" });
+  await expect(
+    freeSmart.getByText("Smart Grouping is part of Premium"),
+  ).toBeVisible();
+  await expect(
+    free.getByRole("button", { name: "Suggest groups" }),
+  ).toHaveCount(0);
   await ctx.close();
 });

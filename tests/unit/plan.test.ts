@@ -3,6 +3,7 @@ import type { LocalDate } from "@/lib/birthday/timing";
 import {
   defaultPickup,
   endingBefore,
+  suggestionPickup,
   outsideWindow,
   pickupProblem,
   plannable,
@@ -172,6 +173,44 @@ describe("defaultPickup (FR-23)", () => {
     expect(defaultPickup(out, "14:20")).toEqual({
       date: "2027-06-15",
       time: "12:00",
+    });
+  });
+});
+
+describe("suggestionPickup (FR-29): tomorrow at 10:00 inside the planned range", () => {
+  // Planned range for a Jun 15 birthday: through Jul 15.
+  const at = (today: string) =>
+    plannable({
+      birthday: JUN15,
+      today: d(today),
+      enrolled: [r("week")],
+      pickups: [],
+    }).window;
+  it("in the window: tomorrow at 10:00", () => {
+    expect(suggestionPickup(at("2026-06-17"), "14:20")).toEqual({
+      date: "2026-06-18",
+      time: "10:00",
+    });
+  });
+  it("before the window: its first day at 10:00", () => {
+    expect(suggestionPickup(at("2026-06-01"), "09:00")).toEqual({
+      date: "2026-06-15",
+      time: "10:00",
+    });
+  });
+  it("on the last day: today, at 10:00 or the next hour once 10:00 has passed", () => {
+    const w = at("2026-07-15");
+    expect(suggestionPickup(w, "09:15")).toEqual({
+      date: "2026-07-15",
+      time: "10:00",
+    });
+    expect(suggestionPickup(w, "14:20")).toEqual({
+      date: "2026-07-15",
+      time: "15:00",
+    });
+    expect(suggestionPickup(w, "23:30")).toEqual({
+      date: "2026-07-15",
+      time: "23:59",
     });
   });
 });

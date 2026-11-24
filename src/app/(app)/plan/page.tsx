@@ -7,10 +7,16 @@ import { PlanRewards, type PlanListRow } from "@/components/plan/plan-rewards";
 import { Button } from "@/components/ui/button";
 import { formatDate, planRange, type LocalDate } from "@/lib/birthday/timing";
 import { msg } from "@/lib/messages";
-import { defaultPickup, outsideWindow } from "@/lib/rewards/plan";
+import {
+  defaultPickup,
+  outsideWindow,
+  PLAN_LIMITS,
+  SMART_GROUPING,
+} from "@/lib/rewards/plan";
 import {
   addToGroup,
   createGroup,
+  applySuggestions,
   deleteGroup,
   duplicateGroup,
   removeFromGroup,
@@ -21,19 +27,28 @@ import { requireOnboarded } from "@/server/auth/app-guards";
 import { getEntitlement } from "@/server/premium/entitlement";
 import { UpgradePrompt } from "@/components/billing/upgrade-prompt";
 import { GroupRoute, LockedRoute } from "@/components/map/group-route";
-import { getGroupRoute, lookupZip } from "@/server/actions/route";
+import { SmartGrouping } from "@/components/plan/smart-grouping";
+import {
+  getGroupRoute,
+  lookupZip,
+  suggestGroups,
+} from "@/server/actions/route";
 import { loadPlanContext } from "@/server/rewards/plan-context";
 
 // S-106 Plan (SPEC §3.3, BUILD F-6: FR-22–FR-27, FR-9, FR-40). `onboarded` level. Group routes
-// (FR-33, F-10) and Duplicate (FR-28) are premium; Smart Grouping (FR-29) is still to come.
+// (FR-33, F-10), Duplicate (FR-28) and Smart Grouping (FR-29, F-11) are premium.
 export const metadata: Metadata = {
   title: "Plan",
   robots: { index: false },
 };
 
-const FREE_GROUPS = 3; // FR-24
-const FREE_ITEMS = 5; // FR-25
-const PREMIUM_ITEMS = 10; // FR-25
+const {
+  freeGroups: FREE_GROUPS,
+  freeItems: FREE_ITEMS,
+  premiumItems: PREMIUM_ITEMS,
+} = PLAN_LIMITS;
+/** FR-29: offered at 4 or more ungrouped rewards (suggestGroups checks again, with stores). */
+const SMART_GROUPING_MIN = SMART_GROUPING.minOffered;
 
 const searchSchema = z.object({
   deleteGroup: z.uuid().optional().catch(undefined),
@@ -103,6 +118,13 @@ export default async function PlanPage({ searchParams }: PageProps<"/plan">) {
   const groupsFull = !premium && thisYear.length >= FREE_GROUPS;
   const groupFull =
     !premium && groups.some((g) => g.reward_group_items.length >= FREE_ITEMS);
+  // FR-29: plannable, not picked up, in no group this birthday year. Stores are checked in the dialog.
+  const grouped = new Set(
+    thisYear.flatMap((g) => g.reward_group_items.map((i) => i.retailer_id)),
+  );
+  const ungrouped = ctx.rows.filter(
+    (r) => !r.pickedUp && !grouped.has(r.id),
+  ).length;
   const confirmGroup = confirming
     ? groups.find((g) => g.id === confirming)
     : undefined;
@@ -182,6 +204,28 @@ export default async function PlanPage({ searchParams }: PageProps<"/plan">) {
           addToGroup={addToGroup}
         />
       )}
+
+      <section aria-labelledby="smart-grouping" className="mt-10 grid gap-3">
+        <h2 id="smart-grouping" className="text-lg font-semibold">
+          {msg("M-135")}
+        </h2>
+        {!premium ? (
+          <UpgradePrompt supabase={supabase} feature="M-135" compact />
+        ) : ungrouped >= SMART_GROUPING_MIN ? (
+          <div>
+            <SmartGrouping
+              range={{ min: range.min, max: range.max }}
+              suggestGroups={suggestGroups}
+              applySuggestions={applySuggestions}
+              lookupZip={lookupZip}
+            />
+          </div>
+        ) : (
+          <p className="text-sm text-muted-foreground">
+            {msg("M-230").replace("{needed}", String(SMART_GROUPING_MIN))}
+          </p>
+        )}
+      </section>
 
       <section aria-labelledby="plan-groups" className="mt-10">
         <h2 id="plan-groups" className="text-lg font-semibold">

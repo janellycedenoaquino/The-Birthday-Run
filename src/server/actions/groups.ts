@@ -11,7 +11,9 @@ import { formInput, parseForm } from "@/lib/validation/form";
 import {
   addToGroupSchema,
   createGroupSchema,
+  applySuggestionsSchema,
   copyNames,
+  runNames,
   deleteGroupSchema,
   duplicateGroupSchema,
   removeFromGroupSchema,
@@ -81,6 +83,10 @@ function mapPgError(error: Pg): Refusal | null {
   if (error.message === "stale_group_order")
     return { ok: false, error: "BR-17" };
   if (error.message === "group_not_found") return { ok: false, error: "BR-11" };
+  if (error.message === "not_premium") return { ok: false, error: "BR-2" };
+  // A new group dated before this birthday year (e.g. duplicating last year's run).
+  if (error.message === "pickup_out_of_cycle")
+    return { ok: false, error: "API-4", fieldErrors: { form: [msg("M-235")] } };
   if (error.message === "retailer_retired") return { ok: false, error: "BR-3" };
   if (error.message === "pickup_exists") return { ok: false, error: "BR-10" };
   if (
@@ -482,5 +488,68 @@ export async function duplicateGroup(
     }
     done();
     return { ok: true, data: { groupId: copyId } };
+  });
+}
+
+/**
+ * FR-29 "Apply all" (premium, BUILD F-11 flow 7): creates every suggested group in one database
+ * call, so the limit triggers and FR-26 run for each and the first refusal creates nothing.
+ * Names are M-215's "Run n", made unique; each pickup is checked like FR-23's (BR-8).
+ */
+export async function applySuggestions(
+  input: unknown,
+): Promise<ActionResult<{ groupIds: string[] }>> {
+  const parsed = applySuggestionsSchema.safeParse(input);
+  if (!parsed.success) return { ok: false, error: "API-4" };
+  const { groups } = parsed.data;
+
+  return runAction("applySuggestions", async () => {
+    const { supabase, user, profile } = await requirePremium();
+    const limit = await rateLimit("applySuggestions", { userId: user.id });
+    if (!limit.ok) return limit;
+    const ctx = await loadPlanContext(supabase, profile);
+    for (const g of groups) {
+      const problem = pickupProblem(
+        ctx.window,
+        g.pickupDate as LocalDate,
+        g.pickupTime,
+        ctx.nowTime,
+      );
+      if (problem) return bad8(problem);
+      const chosen = chosenRows(ctx.rows, g.retailerIds);
+      if ("error" in chosen) return { ok: false, error: chosen.error! };
+    }
+    // M-227 (FR-23): rewards that end before their group's pickup, for the first such group.
+    const ending = groups
+      .map((g) =>
+        warning(
+          ctx.rows.filter((r) => g.retailerIds.includes(r.id)),
+          g.pickupDate,
+        ),
+      )
+      .find(Boolean);
+    const { data: existing, error: readError } = await supabase
+      .from("reward_groups")
+      .select("name");
+    if (readError)
+      throw new Error("applySuggestions: could not read group names", {
+        cause: readError,
+      });
+    const names = runNames(
+      groups.length,
+      existing.map((g) => g.name),
+    );
+    const { data: ids, error } = await supabase.rpc("apply_group_suggestions", {
+      p_groups: groups.map((g, i) => ({
+        ...g,
+        retailerIds: [...new Set(g.retailerIds)],
+        name: names[i]!,
+      })),
+    });
+    const refused = mapPgError(error);
+    if (refused) return refused;
+    if (error) throw new Error("applySuggestions failed", { cause: error });
+    done();
+    return { ok: true, data: { groupIds: ids }, message: ending };
   });
 }
