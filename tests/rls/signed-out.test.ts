@@ -93,6 +93,19 @@ const VALID: Record<string, Record<string, string>> = {
   },
 };
 
+// Actions called from code with one JSON input instead of a form (F-10's route actions).
+const JSON_INPUT: Record<string, unknown> = {
+  lookupZip: { start: { kind: "zip", zip: "10001" } },
+  findStops: {
+    start: { kind: "coords", lat: 40.713, lng: -74.006 },
+    retailerIds: ["starbucks"],
+  },
+  getGroupRoute: {
+    start: { kind: "zip", zip: "10001" },
+    groupId: "00000000-0000-4000-8000-000000000000",
+  },
+};
+
 const form = (entries: Record<string, string> = {}) => {
   const fd = new FormData();
   for (const [k, v] of Object.entries(entries)) fd.set(k, v);
@@ -101,8 +114,12 @@ const form = (entries: Record<string, string> = {}) => {
 
 type Action = (prev: unknown, fd: FormData) => Promise<unknown>;
 
-async function outcome(action: Action, fd: FormData) {
+async function outcome(action: Action, fd: FormData, name = "", empty = false) {
   try {
+    if (name in JSON_INPUT)
+      return await (action as unknown as (input: unknown) => Promise<unknown>)(
+        empty ? {} : JSON_INPUT[name],
+      );
     return await action(null, fd);
   } catch (error) {
     const digest = (error as { digest?: string }).digest ?? "";
@@ -136,21 +153,23 @@ describe("every server action refuses a signed-out caller (NFR-3)", async () => 
   const guarded = () => actions.filter(([name]) => !SIGNED_OUT_LEVEL.has(name));
 
   it("has well-formed input for every guarded action", () => {
-    for (const [name] of guarded()) expect(VALID, name).toHaveProperty(name);
+    for (const [name] of guarded())
+      expect(name in VALID || name in JSON_INPUT, name).toBe(true);
   });
 
   // Zod usually refuses this first; it still shows no action answers an empty post with success.
   it.each(files)("%s: empty FormData → refused", async (file) => {
     for (const [name, action, from] of guarded())
       if (from === file)
-        expect(refused((await outcome(action, form())) as object), name).toBe(
-          true,
-        );
+        expect(
+          refused((await outcome(action, form(), name, true)) as object),
+          name,
+        ).toBe(true);
   });
 
   it("well-formed input, no session → API-1 (the guard, not Zod)", async () => {
     for (const [name, action] of guarded())
-      expect(await outcome(action, form(VALID[name])), name).toEqual({
+      expect(await outcome(action, form(VALID[name]), name), name).toEqual({
         ok: false,
         error: "API-1",
       });
