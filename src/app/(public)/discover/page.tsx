@@ -13,6 +13,12 @@ import { filterRetailers, type FilterRow } from "@/lib/retailers/filter";
 import { CATEGORIES, CATEGORY_LABELS } from "@/lib/retailers/labels";
 import { enroll, unenroll } from "@/server/actions/enrollments";
 import { getEntitlement } from "@/server/premium/entitlement";
+import {
+  StateCount,
+  StateFilter,
+  StateScoped,
+} from "@/components/location/state-filter";
+import { lookupZip } from "@/server/actions/route";
 import { createClient } from "@/server/supabase/server";
 
 // S-103 Discover (SPEC §3.3, BUILD F-3: FR-2, FR-3). Public. RLS decides the data (D3): signed
@@ -27,7 +33,8 @@ const CARD_COLUMNS =
 
 // BUILD F-3: bad values are dropped, never an error. The premium filters (FR-45: length and
 // "starts early") are read only for premium users; free users' URLs with them get the plain list
-// and C-104 (FR-39, metric 2). The state filter (FR-5) needs the start location (Phase 5).
+// and C-104 (FR-39, metric 2). The state filter (FR-5) runs in the browser (decision 0014): it
+// is never a URL parameter, so the server never sees a location (NFR-3).
 const searchSchema = z.object({
   q: z.string().trim().max(100).optional().catch(undefined),
   category: z
@@ -115,9 +122,11 @@ export default async function DiscoverPage({
     // Length/early only filter with a birthday to measure from (filterRetailers ignores them).
     (premium && occurrence && (filters.length || filters.early)),
   );
-  const href = (category?: string) => {
+  /** The current filters as a query, `over` replacing some (premium ones only for premium). */
+  const query = (over: { category?: string }) => {
     const p = new URLSearchParams();
     if (filters.q) p.set("q", filters.q);
+    const category = "category" in over ? over.category : filters.category;
     if (category) p.set("category", category);
     if (premium && occurrence && filters.length)
       p.set("length", filters.length);
@@ -125,6 +134,15 @@ export default async function DiscoverPage({
     const s = p.toString();
     return s ? `/discover?${s}` : "/discover";
   };
+  const href = (category?: string) => query({ category });
+  // FR-5 in the browser: only what the filter needs, for premium users only.
+  const stateRows = premium
+    ? shown.map(({ id, states_scope, state_codes }) => ({
+        id,
+        states_scope,
+        state_codes,
+      }))
+    : [];
 
   return (
     <Shell>
@@ -176,7 +194,11 @@ export default async function DiscoverPage({
           </>
         ) : null}
       </form>
-      {premium ? null : (
+      {premium ? (
+        <section aria-label="Your state" className="mt-4">
+          <StateFilter lookupZip={lookupZip} rows={stateRows} />
+        </section>
+      ) : (
         <div className="mt-4">
           <UpgradePrompt supabase={supabase} feature="M-131" compact />
         </div>
@@ -199,11 +221,15 @@ export default async function DiscoverPage({
           })}
         </ul>
       </nav>
-      <p className="mt-4 text-sm text-muted-foreground" aria-live="polite">
-        {msg("M-178")
-          .replace("{shown}", String(shown.length))
-          .replace("{total}", String(total))}
-      </p>
+      {premium ? (
+        <StateCount rows={stateRows} total={total} />
+      ) : (
+        <p className="mt-4 text-sm text-muted-foreground" aria-live="polite">
+          {msg("M-178")
+            .replace("{shown}", String(shown.length))
+            .replace("{total}", String(total))}
+        </p>
+      )}
       {shown.length === 0 ? (
         <div className="mt-6 rounded-lg border border-border/70 p-6">
           <p>{filtered ? msg("M-179") : msg("M-171")}</p>
@@ -218,13 +244,22 @@ export default async function DiscoverPage({
         </div>
       ) : (
         <ul className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {shown.map((r) => (
-            <RetailerCard
-              key={r.id}
-              retailer={r}
-              toggle={{ enrolled: enrolledIds.has(r.id), enroll, unenroll }}
-            />
-          ))}
+          {shown.map((r) => {
+            const card = (
+              <RetailerCard
+                key={r.id}
+                retailer={r}
+                toggle={{ enrolled: enrolledIds.has(r.id), enroll, unenroll }}
+              />
+            );
+            return premium ? (
+              <StateScoped key={r.id} row={r}>
+                {card}
+              </StateScoped>
+            ) : (
+              card
+            );
+          })}
         </ul>
       )}
     </Shell>

@@ -77,10 +77,7 @@ export function filterRetailers<T extends FilterRow>(
     }
     // Last, so M-172's {hidden} counts only rows the state alone hides (FR-5).
     if (filters.state) {
-      const inState =
-        row.states_scope !== "listed" ||
-        row.state_codes.includes(filters.state);
-      if (!inState) {
+      if (!inState(row, filters.state)) {
         hiddenByState++;
         return false;
       }
@@ -88,4 +85,12 @@ export function filterRetailers<T extends FilterRow>(
     return true;
   });
   return { shown, total: rows.length, hiddenByState };
+}
+
+/** FR-5: shown for a state when marked "all", unknown, or listing that state. */
+export function inState(
+  row: Pick<FilterRow, "states_scope" | "state_codes">,
+  state: string,
+): boolean {
+  return row.states_scope !== "listed" || row.state_codes.includes(state);
 }

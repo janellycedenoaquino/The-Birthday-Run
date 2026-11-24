@@ -216,3 +216,58 @@ test("group route keeps the group's order; free users get C-104 (FR-33, metric 2
   await expect(route(free).getByLabel("ZIP code")).toHaveCount(0);
   await ctx.close();
 });
+
+test("Discover state filter: set a start → only that state; Show all clears; never in a URL (FR-5, NFR-3, metric 2)", async ({
+  page,
+  browser,
+}) => {
+  test.setTimeout(90_000);
+  await stubGeolocation(page, false);
+  await setup(page, "e2e-state", true);
+  // Listed only in other states, so hidden in NY; Tim Hortons lists NY.
+  const elsewhere = page.getByRole("heading", { name: "Caribou Coffee" });
+  const inNy = page.getByRole("heading", { name: "Tim Hortons" });
+  const urls: string[] = [];
+  page.on("request", (r) => urls.push(r.url()));
+
+  await page.goto("/discover");
+  expect(await geoCalls(page)).toEqual([]); // nothing on load (FR-5)
+  await expect(elsewhere).toBeVisible();
+  const filter = page.getByRole("region", { name: "Your state" });
+  await filter.getByLabel("ZIP code").fill(ZIP);
+  await filter.getByRole("button", { name: "Use ZIP" }).click();
+  await expect(
+    page.getByText(/^Showing rewards available in NY\. [1-9]\d* hidden\.$/),
+  ).toBeVisible();
+  await expect(elsewhere).toHaveCount(0);
+  await expect(inNy).toBeVisible();
+
+  // Category links keep the filter (memory, not the URL).
+  await page.getByRole("link", { name: "Food and drink" }).click();
+  await expect(page).toHaveURL(/category=food_drink/);
+  await expect(
+    page.getByText(/^Showing rewards available in NY/),
+  ).toBeVisible();
+  await expect(elsewhere).toHaveCount(0);
+
+  // "Show all" turns it off and it stays off; the start is kept, so M-172b offers it again.
+  await filter.getByRole("button", { name: "Show all" }).click();
+  await expect(elsewhere).toBeVisible();
+  await filter.getByRole("button", { name: "Show only my state" }).click();
+  await expect(elsewhere).toHaveCount(0);
+
+  // NFR-3: neither the state nor the ZIP ever went into a URL.
+  expect(urls.filter((u) => /state=|00599/.test(u))).toEqual([]);
+
+  // Free: no state control.
+  const ctx = await browser.newContext(ownIp(23));
+  const free = await ctx.newPage();
+  await setup(free, "e2e-state-free", false);
+  await free.goto("/discover");
+  await expect(
+    free.getByRole("heading", { name: "Caribou Coffee" }),
+  ).toBeVisible();
+  await expect(free.getByRole("region", { name: "Your state" })).toHaveCount(0);
+  await expect(free.getByLabel("ZIP code")).toHaveCount(0);
+  await ctx.close();
+});
