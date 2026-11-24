@@ -23,6 +23,12 @@ export type EnrolledRetailer = {
   signup_lead_days: number | null;
 };
 
+/** What availability needs from a retailer row. */
+export type EnrolledTiming = Pick<
+  EnrolledRetailer,
+  "id" | "name" | "timing_type" | "days_before" | "days_after"
+>;
+
 export type RewardItem = EnrolledRetailer & { daysLeft: number };
 
 export type MyRewards = {
@@ -39,17 +45,19 @@ export type MyRewards = {
 /** S-105's list size per "Show more" step (BUILD F-4: a build constant). */
 export const REWARDS_PAGE_SIZE = 20;
 
-export function myRewards(input: {
+/**
+ * The rewards available today (FR-12), most urgent first (FR-13, ties by name): S-105's list and
+ * the route's candidates (FR-32) share it.
+ */
+export function availableRewards<R extends EnrolledTiming>(input: {
   birthday: Birthday;
   today: LocalDate;
-  enrolled: EnrolledRetailer[];
+  enrolled: R[];
   pickups: { retailerId: string; date: LocalDate }[];
-  filters: { q?: string; within?: 1 | 7 | 14; page?: number };
-}): MyRewards {
-  const { birthday, today, enrolled, pickups, filters } = input;
+}): { window: BirthdayWindow; open: (R & { daysLeft: number })[] } {
+  const { birthday, today, enrolled, pickups } = input;
   const timings = enrolled.map(timingOf);
   const w = windowFor(birthday, timings, today);
-
   const open = enrolled
     .map((r, i) => {
       const own = pickups
@@ -60,6 +68,18 @@ export function myRewards(input: {
     .filter((x) => x.status === "available")
     .map(({ r, t }) => ({ ...r, daysLeft: daysLeft(t, w) }))
     .sort((a, b) => a.daysLeft - b.daysLeft || a.name.localeCompare(b.name));
+  return { window: w, open };
+}
+
+export function myRewards(input: {
+  birthday: Birthday;
+  today: LocalDate;
+  enrolled: EnrolledRetailer[];
+  pickups: { retailerId: string; date: LocalDate }[];
+  filters: { q?: string; within?: 1 | 7 | 14; page?: number };
+}): MyRewards {
+  const { enrolled, filters } = input;
+  const { window: w, open } = availableRewards(input);
 
   const q = filters.q ? fold(filters.q) : "";
   const matching = open.filter(

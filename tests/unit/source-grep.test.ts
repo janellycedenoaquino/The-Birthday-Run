@@ -16,6 +16,7 @@ const SKIPPED = [
   "src/config/app.ts",
   "public/brand/",
   "public/retailers/",
+  "public/vendor/", // third-party build copies, gitignored (decision 0013)
   "supabase/templates/",
   "supabase/.temp/",
   "supabase/.branches/",

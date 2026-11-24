@@ -1,0 +1,245 @@
+import "../rls/load-env";
+import AxeBuilder from "@axe-core/playwright";
+import { expect, test, type Page } from "@playwright/test";
+import { setPremium } from "../../scripts/grant-premium";
+import { ownIp, passwordSignIn, watchCsp } from "./support";
+
+// The map and route in a real browser (BUILD F-10 "Tests": D11, NFR-7, FR-30, NFR-3, NFR-6,
+// FR-33, metric 2). Store and ZIP rows are this spec's own fixtures (the local DB has no import),
+// removed afterwards.
+const { birthdayTodayWith, createUser, dayFromToday, PASSWORD, sql } =
+  await import("../rls/helpers");
+
+test.use(ownIp(23));
+
+const ZIP = "00599"; // not a real ZIP: this spec's own centroid
+const NEAR = ["16-handles", "altard-state"]; // birth_month rewards: open on a birthday today
+const NO_STORE = "amc-theatres";
+const TILES = "https://tiles.openfreemap.org/**";
+
+const db = sql();
+test.beforeAll(async () => {
+  await db`delete from public.retailer_stores where source_ref like 'e2e-route-%'`;
+  await db`delete from public.zip_centroids where zip = ${ZIP}`;
+  await db`insert into public.zip_centroids (zip, state, location)
+           values (${ZIP}, 'NY', extensions.st_setsrid(extensions.st_makepoint(-74.006, 40.713), 4326)::extensions.geography)`;
+  const stores: [string, number, number][] = [
+    [NEAR[0]!, 40.72, -74.0],
+    [NEAR[1]!, 40.73, -73.99],
+  ];
+  for (const [id, lat, lng] of stores)
+    await db`insert into public.retailer_stores (retailer_id, source, source_ref, name, address, city, state, location)
+             values (${id}, 'atp', ${`e2e-route-${id}`}, ${`${id} test store`}, '1 Test St', 'New York', 'NY',
+                     extensions.st_setsrid(extensions.st_makepoint(${lng}, ${lat}), 4326)::extensions.geography)`;
+});
+test.afterAll(async () => {
+  await db`delete from public.retailer_stores where source_ref like 'e2e-route-%'`;
+  await db`delete from public.zip_centroids where zip = ${ZIP}`;
+  await db.end();
+});
+
+/** A user with a birthday today and the three programs; premium when asked. */
+async function setup(page: Page, label: string, premium: boolean) {
+  const user = await createUser(label);
+  await birthdayTodayWith(user, [...NEAR, NO_STORE]);
+  if (premium) await setPremium(db, user.email, "grant");
+  await passwordSignIn(page, user.email, PASSWORD);
+  await expect(page).toHaveURL(/\/dashboard$/);
+  return user;
+}
+
+/** Records geolocation calls; `deny` makes them fail like a refused prompt. */
+const stubGeolocation = (page: Page, deny: boolean) =>
+  page.addInitScript((deny) => {
+    const calls: string[] = [];
+    (window as unknown as { geoCalls: string[] }).geoCalls = calls;
+    Object.defineProperty(navigator, "geolocation", {
+      value: {
+        getCurrentPosition: (
+          ok: PositionCallback,
+          fail: PositionErrorCallback,
+        ) => {
+          calls.push("get");
+          if (deny)
+            fail({ code: 1, message: "denied" } as GeolocationPositionError);
+          else
+            ok({
+              coords: { latitude: 40.71281, longitude: -74.00602 },
+            } as GeolocationPosition);
+        },
+        watchPosition: () => calls.push("watch"),
+      },
+    });
+  }, deny);
+
+const route = (page: Page) => page.getByRole("region", { name: "Route" });
+const geoCalls = (page: Page) =>
+  page.evaluate(() => (window as unknown as { geoCalls: string[] }).geoCalls);
+
+test("premium: ZIP start → map, numbered stops, no-pin row and one Google link (FR-30–FR-34, D11)", async ({
+  page,
+}) => {
+  test.setTimeout(90_000);
+  const csp = await watchCsp(page);
+  await stubGeolocation(page, false);
+  await setup(page, "e2e-route", true);
+  const worker = page.waitForRequest(
+    /\/vendor\/maplibre\/[\d.]+\/maplibre-gl-worker\.mjs/,
+  );
+  await page.goto("/rewards");
+  // NFR-3: nothing asks for the location on load.
+  expect(await geoCalls(page)).toEqual([]);
+
+  const r = route(page);
+  await r.getByLabel("ZIP code").fill("12345");
+  await r.getByRole("button", { name: "Use ZIP" }).click();
+  await expect(r.getByText("We don't recognise that ZIP code.")).toBeVisible();
+
+  await r.getByLabel("ZIP code").fill(ZIP);
+  await r.getByRole("button", { name: "Use ZIP" }).click();
+  await expect(r.getByText(`Starting from ${ZIP}`)).toBeVisible();
+  const stops = r.locator("ol").getByRole("listitem");
+  await expect(stops).toHaveCount(2);
+  await expect(r.getByText(/mi straight-line from your start/)).toBeVisible();
+  await expect(r.getByRole("heading", { name: "No map pin" })).toBeVisible();
+  await expect(
+    r.getByRole("link", { name: "No store found nearby. Find a store" }),
+  ).toHaveAttribute("rel", "noopener noreferrer");
+  const link = r.getByRole("link", { name: "Open in Google Maps" });
+  await expect(link).toHaveAttribute("href", new RegExp(`origin=${ZIP}`));
+  await expect(
+    r.getByRole("img", {
+      name: "Map of 2 stops. The same stops are listed below.",
+    }),
+  ).toBeVisible();
+  await worker; // same-origin worker (D11)
+  await expect(page.locator(".maplibregl-canvas")).toBeVisible();
+  // Nothing to tab into inside the image; the OSM credit is a plain link outside it (NFR-6).
+  await expect(page.locator(".maplibregl-canvas")).toHaveAttribute(
+    "tabindex",
+    "-1",
+  );
+  await expect(
+    r.getByRole("link", { name: "© OpenStreetMap contributors" }),
+  ).toBeVisible();
+  expect(csp).toEqual([]);
+  // NFR-6: the route view with its map has no serious or critical axe issues.
+  const axe = await new AxeBuilder({ page })
+    .withTags(["wcag2a", "wcag2aa", "wcag21aa", "wcag22aa"])
+    .analyze();
+  expect(
+    axe.violations
+      .filter((v) => v.impact === "serious" || v.impact === "critical")
+      .map(
+        (v) => `${v.id}: ${v.nodes.map((n) => n.target.join(" ")).join(", ")}`,
+      ),
+  ).toEqual([]);
+
+  // Browser location: never in the link (D10).
+  await r.getByRole("button", { name: "Change" }).click();
+  await r.getByRole("button", { name: "Use my location" }).click();
+  await expect(r.getByText("Starting from your location")).toBeVisible();
+  await expect(link).toBeVisible();
+  const href = (await link.getAttribute("href")) ?? "";
+  expect(href).not.toContain("origin=");
+  expect(href).not.toContain("40.71");
+
+  // Nothing kept in web storage (D10, NFR-3).
+  expect(
+    await page.evaluate(() => localStorage.length + sessionStorage.length),
+  ).toBe(0);
+});
+
+test("tiles blocked: M-162, while the stop list and link still work (NFR-7)", async ({
+  page,
+}) => {
+  test.setTimeout(90_000);
+  await page.route(TILES, (r) => r.abort());
+  await setup(page, "e2e-route-tiles", true);
+  await page.goto("/rewards");
+  const r = route(page);
+  await r.getByLabel("ZIP code").fill(ZIP);
+  await r.getByRole("button", { name: "Use ZIP" }).click();
+  await expect(
+    r.getByText(
+      "The map couldn't load. Your stops and directions below still work.",
+    ),
+  ).toBeVisible();
+  await expect(
+    r.getByRole("link", { name: "Open in Google Maps" }),
+  ).toBeVisible();
+  await expect(r.getByText("altard-state test store")).toBeVisible();
+});
+
+test("location denied → M-154 and the ZIP field focused (FR-30)", async ({
+  page,
+}) => {
+  test.setTimeout(60_000);
+  await stubGeolocation(page, true);
+  await setup(page, "e2e-route-denied", true);
+  await page.goto("/rewards");
+  const r = route(page);
+  await r.getByRole("button", { name: "Use my location" }).click();
+  await expect(
+    r.getByText("We couldn't get your location. Enter a ZIP code instead."),
+  ).toBeVisible();
+  await expect(r.getByLabel("ZIP code")).toBeFocused();
+});
+
+test("group route keeps the group's order; free users get C-104 (FR-33, metric 2)", async ({
+  page,
+  browser,
+}) => {
+  test.setTimeout(90_000);
+  const user = await setup(page, "e2e-route-group", true);
+  const { data: group, error } = await user.client
+    .from("reward_groups")
+    .insert({
+      user_id: user.id,
+      name: "Route run",
+      pickup_date: dayFromToday(0),
+      pickup_time: "23:30",
+    })
+    .select("id")
+    .single();
+  if (error) throw new Error(error.message);
+  // The farther store first: the group's order wins over the shorter one.
+  const { error: iError } = await user.client
+    .from("reward_group_items")
+    .insert([
+      {
+        group_id: group.id,
+        user_id: user.id,
+        retailer_id: NEAR[1]!,
+        position: 1,
+      },
+      {
+        group_id: group.id,
+        user_id: user.id,
+        retailer_id: NEAR[0]!,
+        position: 2,
+      },
+    ]);
+  if (iError) throw new Error(iError.message);
+  await page.goto("/plan");
+  const card = page
+    .getByRole("listitem")
+    .filter({ has: page.getByRole("heading", { name: "Route run" }) });
+  await card.getByText("Show route").click();
+  await card.getByLabel("ZIP code").fill(ZIP);
+  await card.getByRole("button", { name: "Use ZIP" }).click();
+  const stops = card.locator("details ol").getByRole("listitem");
+  await expect(stops).toHaveCount(2);
+  await expect(stops.first()).toContainText("Altar'd State");
+
+  // Free: no route controls, C-104 where they would be.
+  const ctx = await browser.newContext(ownIp(23));
+  const free = await ctx.newPage();
+  await setup(free, "e2e-route-free", false);
+  await free.goto("/rewards");
+  await expect(
+    route(free).getByText("The map and route is part of Premium"),
+  ).toBeVisible();
+  await expect(route(free).getByLabel("ZIP code")).toHaveCount(0);
+  await ctx.close();
+});

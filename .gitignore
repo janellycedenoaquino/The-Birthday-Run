@@ -32,3 +32,6 @@ npm-debug.log*
 /.email-out/
 # Deployed e2e run: links pasted by hand (BUILD CI "Mailbox adapter")
 /playwright/.manual-link
+
+# MapLibre worker, copied at dev/build time (decision 0013)
+/public/vendor/maplibre/

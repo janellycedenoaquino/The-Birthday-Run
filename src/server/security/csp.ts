@@ -1,4 +1,5 @@
 import "server-only";
+import { MAP_HOSTS } from "@/config/map";
 
 // The Content-Security-Policy for one request (BUILD F-2, D5, NFR-13). The proxy builds it with a
 // fresh nonce per request and sets it on both the request (Next reads the nonce from it) and the
@@ -29,6 +30,8 @@ export function buildCsp({
   stylePolicy?: typeof STYLE_POLICY;
 }): string {
   const supabase = new URL(supabaseUrl).origin;
+  // D11: the map's style, tiles, glyphs and sprites come from these hosts only.
+  const map = MAP_HOSTS.join(" ");
   const styles =
     stylePolicy === "split"
       ? [
@@ -41,9 +44,9 @@ export function buildCsp({
     // The Cloudflare host is the CSP2 fallback for Turnstile; 'unsafe-eval' is for React in dev.
     `script-src 'self' 'nonce-${nonce}' 'strict-dynamic' https://challenges.cloudflare.com${dev ? " 'unsafe-eval'" : ""}`,
     ...styles,
-    `img-src 'self' data: blob:`,
+    `img-src 'self' data: blob: ${map}`,
     `font-src 'self'`,
-    `connect-src 'self'`,
+    `connect-src 'self' ${map}`,
     `frame-src https://challenges.cloudflare.com`,
     // Chrome applies form-action to redirects after a form POST (the Google button before
     // hydration), so Supabase and Google are listed.

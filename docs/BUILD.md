@@ -50,7 +50,7 @@ vercel.json                        # adds the reminders cron (D14)
 
 **Import boundaries (additions):** the admin client may also be imported by `api/stripe/webhook/route.ts`, `server/billing/sync.ts`, `server/reminders/run.ts`, `api/reminders/unsubscribe/route.ts` and `server/reports/summary.ts` (per-file ESLint override, rule 6). `maplibre-gl` and `@dnd-kit/*` are imported only from `"use client"` files under `components/map/` and `components/plan/`. `scripts/*` never import `@/server/*`.
 
-**npm scripts (additions):** `import:retailers`, `import:stores`, `import:zips`, `grant-premium <email>`, `revoke-premium <email>`, `check:stale-retailers`; `prebuild` runs `copy-maplibre-worker.mjs`. Scripts read `SUPABASE_DB_URL` (Template BUILD §0.6) and default to the local DB; production needs an explicit `--target=production`.
+**npm scripts (additions):** `import:retailers`, `import:stores`, `import:zips`, `grant-premium <email>`, `revoke-premium <email>`, `check:stale-retailers`; `predev` and `prebuild` run `copy-maplibre-worker.mjs`. Scripts read `SUPABASE_DB_URL` (Template BUILD §0.6) and default to the local DB; production needs an explicit `--target=production`.
 
 ### 0.2 Operation shape (additions)
 Result type, action order, `runAction` and route-handler rules: Template BUILD §0.2, unchanged. Signed-in app actions add one step: Zod → guard → **entitlement (premium operations)** → rate limit → Supabase call → result.
@@ -1269,7 +1269,7 @@ Sources (2026-10-06): https://data.alltheplaces.xyz/runs/latest.json (fields `ru
 ## F-10 Location, map and route · FR-30–FR-34, NFR-7 · screens C-105, C-106 (in S-105, S-106) · decisions D10, D11, D12
 
 ### Data
-None new (reads F-9's functions, enrollments, groups). Config `src/config/map.ts`: `MAP_STYLE_URL = 'https://tiles.openfreemap.org/styles/liberty'`, `MAP_HOSTS = ['https://tiles.openfreemap.org']` (read by `buildCsp`, §0.7), `MAPLIBRE_WORKER_URL = '/vendor/maplibre/' + version + '/maplibre-gl-worker.mjs'` with `version` from `maplibre-gl/package.json` (exported by the package).
+None new (reads F-9's functions, enrollments, groups). Config `src/config/map.ts`: `MAP_STYLE_URL = 'https://tiles.openfreemap.org/styles/liberty'`, `MAP_HOSTS = ['https://tiles.openfreemap.org']` (read by `buildCsp`, §0.7), `maplibreWorkerPath(version)` → `/vendor/maplibre/<version>/maplibre-gl-worker.mjs`, with `version` from MapLibre's own `getVersion()` at runtime (decision 0013).
 
 ### Operations
 #### Start location context (`components/location/start-location.tsx`, client)
@@ -1309,9 +1309,9 @@ type RouteResult = {
   - `deviceFromHeaders`: `Sec-CH-UA-Mobile: ?1`, or user agent matching `/Mobi|Android|iPhone|iPod/` → `mobile`; else `desktop`.
 
 #### Map `components/map/route-map.tsx` (`"use client"`, loaded with `next/dynamic({ ssr: false })` only for premium)
-- On mount: `const maplibregl = await import('maplibre-gl')`; `maplibregl.setWorkerUrl(new URL(MAPLIBRE_WORKER_URL, location.origin).href)` before `new maplibregl.Map({ container, style: MAP_STYLE_URL, attributionControl: { compact: false } })`. A same-origin URL makes MapLibre 6.12 start `new Worker(url, { type: 'module' })` directly; only cross-origin URLs go through a `blob:` (package source `workerFactory`, 2026-10-06), so `worker-src 'self'` holds (D11). CSS: `maplibre-gl/dist/maplibre-gl.css`.
+- On mount: `const maplibregl = await import('maplibre-gl')`; `maplibregl.setWorkerUrl(new URL(maplibreWorkerPath(maplibregl.getVersion()), location.origin).href)` before `new maplibregl.Map({ container, style: MAP_STYLE_URL, attributionControl: { compact: false } })`. A same-origin URL makes MapLibre 6.12 start `new Worker(url, { type: 'module' })` directly; only cross-origin URLs go through a `blob:` (package source `workerFactory`, 2026-10-06), so `worker-src 'self'` holds (D11). CSS: `maplibre-gl/dist/maplibre-gl.css`.
 - Numbered `Marker`s built with DOM and `textContent` (never HTML strings), start marker M-160, `fitBounds` with padding. `map.on('error')` for style/tile failures → M-162 overlay; the list and links are unaffected (NFR-7).
-- `scripts/copy-maplibre-worker.mjs` (`prebuild`, §0.1): copies `node_modules/maplibre-gl/dist/maplibre-gl-worker.mjs` **and** `maplibre-gl-shared.mjs` (the worker imports `./maplibre-gl-shared.mjs`) to `public/vendor/maplibre/<version>/`; fails the build if either is missing.
+- `scripts/copy-maplibre-worker.mjs` (`predev` and `prebuild`, §0.1): copies `node_modules/maplibre-gl/dist/maplibre-gl-worker.mjs` to `public/vendor/maplibre/<version>/` (gitignored); fails if it is missing, empty or imports another chunk; removes old version folders. Since 6.19 the worker is standalone (decision 0013).
 
 ### Flow
 **`findStops`** (S-105 route section; FR-32 default = the 10 most urgent available rewards, picked on the client)
@@ -1350,7 +1350,7 @@ type RouteResult = {
 | Location denied → M-154 and ZIP field; Discover and My Rewards trigger no location prompt on load | e2e | C-105 | FR-30, NFR-3 |
 | Keyboard: stop list is an `<ol>`, map wrapper has M-161 label; axe 0 serious | e2e | S-105 | NFR-6 |
 
-Sources (2026-10-06): `maplibre-gl` 6.12.0 package (`exports`, `dist/` file list, `maplibre-gl-dev.mjs` `workerFactory`/`setWorkerUrl`, worker's import of `maplibre-gl-shared.mjs`) · https://developers.google.com/maps/documentation/urls/get-started (`/maps/dir/?api=1`, waypoints 3 mobile / 9 otherwise, `|` separator, 2,048-character limit). **Unverified:** Google's behaviour when `origin` is omitted (re-check before build).
+Sources (2026-10-06): `maplibre-gl` 6.12.0 package (`exports`, `dist/` file list, `maplibre-gl-dev.mjs` `workerFactory`/`setWorkerUrl`, worker's import of `maplibre-gl-shared.mjs`) · https://developers.google.com/maps/documentation/urls/get-started (`/maps/dir/?api=1`, waypoints 3 mobile / 9 otherwise, `|` separator, 2,048-character limit). Checked 2026-11-24 (A-23): an omitted `origin` "defaults to most relevant starting location, such as device location, if available"; commas encode as `%2C`.
 
 ## F-11 Smart Grouping · FR-29 · screens S-106 (Smart Grouping dialog), C-105, C-104 · decisions D12
 

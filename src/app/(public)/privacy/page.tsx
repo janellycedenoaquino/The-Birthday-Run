@@ -11,7 +11,7 @@ export const metadata: Metadata = {
 
 export default function PrivacyPage() {
   return (
-    <LegalPage title="Privacy policy" updated="2026-09-29">
+    <LegalPage title="Privacy policy" updated="2026-11-24">
       <section>
         <h2>What we collect</h2>
         <p>
@@ -38,6 +38,14 @@ export default function PrivacyPage() {
           <li>Cloudflare Turnstile: telling people from bots on our forms</li>
           <li>Sentry: error reports, with personal data removed</li>
           <li>Google: only if you sign in with Google</li>
+          <li>
+            OpenFreeMap: map images for the area a Premium map shows. Your start
+            location stays on your device and is never stored.
+          </li>
+          <li>
+            Google Maps: only when you open a directions link. A ZIP code start
+            is part of the link; your device&apos;s location never is.
+          </li>
         </ul>
       </section>
       <section>

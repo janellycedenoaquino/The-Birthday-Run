@@ -207,6 +207,32 @@ export const M = {
   "BR-18": "Choose a real date.",
   "BR-19": "Choose a time zone from the list.",
   "BR-3": "That program is no longer listed.",
+
+  // Location and route (C-105, C-106)
+  "M-150": "Use my location",
+  "M-151": "Use ZIP",
+  "M-152":
+    "Your location stays on this device and is forgotten when you reload.",
+  "M-153": "Finding you…",
+  "M-154": "We couldn't get your location. Enter a ZIP code instead.",
+  "M-155": "Starting from {place}",
+  "M-156": "your location",
+  "M-157": "Change",
+  "M-160": "Start",
+  "M-161": "Map of {count} stops. The same stops are listed below.",
+  "M-162": "The map couldn't load. Your stops and directions below still work.",
+  "M-163": "{distance} mi straight-line from the previous stop",
+  "M-163b": "{distance} mi straight-line from your start",
+  "M-164": "No map pin",
+  "M-165": "No store found nearby. Find a store",
+  "M-167": "Open in Google Maps",
+  "M-168": "Leg {n} of {total}: open in Google Maps",
+  "M-169": "Finding stores near you…",
+  "M-210": "Route",
+  "M-238": "Show route",
+  "BR-12": "We don't recognise that ZIP code.",
+  "BR-13":
+    "We couldn't look up stores right now, so these stops have no map pin. Try again later.",
 } as const;
 
 export type MessageId = keyof typeof M;

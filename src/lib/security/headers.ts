@@ -1,5 +1,6 @@
 // Static security headers on every route (BUILD F-2, NFR-13), applied by next.config.ts. The CSP
-// is per request and set by the proxy. HSTS preload is a per-app domain decision, so it's left out.
+// is per request and set by the proxy. geolocation=(self): the start location's button (D10,
+// decision 0013); no frame can ask. HSTS preload is a per-app domain decision, so it's left out.
 export const SECURITY_HEADERS = [
   {
     key: "Strict-Transport-Security",
@@ -10,7 +11,7 @@ export const SECURITY_HEADERS = [
   {
     key: "Permissions-Policy",
     value:
-      "camera=(), microphone=(), geolocation=(), payment=(), usb=(), browsing-topics=()",
+      "camera=(), microphone=(), geolocation=(self), payment=(), usb=(), browsing-topics=()",
   },
   { key: "X-Frame-Options", value: "DENY" },
   { key: "Cross-Origin-Opener-Policy", value: "same-origin" },
