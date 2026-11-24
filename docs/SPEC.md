@@ -358,6 +358,9 @@ flowchart TD
 - Hero h1 `appConfig.name`, `appConfig.description`; primary "Get started" → Template S-5; secondary M-102 → S-103. Signed in: Template behaviour. No feature grid.
 - **Look:** decision 0016: a 3D tunnel of retailer logos behind a frosted card, a "Pause motion" control, hovering a logo shows its name and reward and freezes the motion, nothing below the hero (one screen), and an optional game in a pink pull-up tab at the bottom that pauses the motion while it's played.
 
+#### Template S-4 Sign in and S-5 Sign up (changed look)
+- **Look:** decision 0016: the tilted wall of retailer cards behind one frosted card with "Create account" / "Sign in" tabs (links between the two routes, keeping `next`), a rotating "waiting for you" reward under the tabs, and a confetti burst with the "Check your email" panel. Everything else as Template S-4 and S-5.
+
 #### S-101 Onboarding (`/onboarding`) · FR-6, FR-7, FR-10
 - **Who:** signed in, no birthday (onboarded users go to S-102).
 - **Shows:** M-118 step label; h1 M-105.

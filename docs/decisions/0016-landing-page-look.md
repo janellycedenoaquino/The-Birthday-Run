@@ -17,6 +17,13 @@ The look was picked with three throwaway prototypes on the `prototype/landing` b
 - **Headline:** Plus Jakarta Sans, weight 800, large, tight letter spacing (-0.035em) and line height (1.06). The last words ("one run.") sit in a filled colour block, tilted about -2°.
 - **Below the hero:** nothing. The page stays one screen (the owner's rule: no long landing page).
 - **Game:** a 30-second "catch the prizes" game (falling retailer logos, a runner steered by mouse, touch or arrow keys, confetti on a catch, best score kept on the device) lives in a pink "Catch the prizes" tab fixed to the bottom of the screen on every size: 640px wide and centred on a laptop, full width on a phone. Tapping the tab slides the game up over the page; the headline and buttons stay visible. Pressing Play pauses the tunnel and the background (too much movement at once); they resume when the round ends unless the visitor had already paused them.
+- **Runner:** the owner's own character, drawn on the canvas from her reference: a girl with a big dark-brown afro (`#2A0C0D`), medium-brown skin (`#D3874A`), a tilted purple party hat (`#9B6E9E`) with a lilac pompom, a pink tee (`#C04350`), blue shorts (`#437893`), white socks and white shoes. She runs (alternating knee lift, swinging arms, a small bob) and her eyes look the way she moves.
+
+**Sign in and sign up (Template S-4, S-5):**
+- **Background:** the tilted wall of retailer cards (7 rows rotated -8°, sliding in alternating directions, 44–58 s per loop), with the logos in their own colours, each card showing its reward, the same hover (green border, name and reward, everything freezes) and the same "Pause motion" control over the pastel glow.
+- **Card:** one frosted card, centred, with "Create account" / "Sign in" tabs at the top.
+- **What you get** (the owner's rule: signing up or in reminds people what's waiting): under the tabs, one reward at a time (logo, "Waiting for you", the reward, the brand), changing every 2.6 s and stopping when motion is paused.
+- **After Continue:** the plain "Check your email" panel with one confetti burst in the brand colours (pink, sky blue, spring green), skipped when motion is paused or reduced.
 
 **Brand tokens for the whole app:**
 
@@ -41,8 +48,10 @@ Why these colours: research on colour and emotion finds that brightness and satu
 - **Game or three steps under the hero:** the owner prefers nothing under the hero.
 - **Game inside the card** (between the text and the buttons): fits a laptop, but on a phone it pushes "Get started" off the first screen. Phone layouts tried: tap-to-play link, buttons first, compact (no subtext); the pull-up tab won and is used on the laptop too.
 - **Rolling waves, still background:** flowing glow at slow speed picked.
+- **Sign in / sign up:** 3D tunnel, two-row marquee and glow-only backgrounds; the card with the reminder at its side or under it; a brand count by category or a sample checklist as the reminder; a link at the bottom to switch (the Template's way); and pick 8's "your birthday run" preview checklist after Continue. The owner kept the confetti from that preview but not the checklist.
 
 ## Consequences
+- Sign in and sign up keep their own routes (`/sign-in`, `/sign-up`); the tabs are links between them that keep `next`, so every existing link and redirect still works. Fields, text, Turnstile and states stay as Template S-4/S-5. The rotating reward is decoration (`aria-hidden`), so screen readers aren't interrupted every 2.6 s.
 - SPEC §3.6 now allows gradients and motion with a pause, and records the brand tokens; SPEC §1 and S-1 point here. The urgency colours, shadcn components and other pages are unchanged until each page's look is picked with the owner.
 - The game is optional decoration: nothing in it is needed to use the app. In the build its tab is a real button with `aria-expanded`, the sheet closes on Escape, and the game must be playable by keyboard (arrow keys). The best score stays in the browser (`localStorage` holds only a number, no personal data).
 - The tunnel is decoration (`aria-hidden`); every retailer and reward stays reachable in Discover (S-103), so nothing is lost when motion is paused or hidden.
