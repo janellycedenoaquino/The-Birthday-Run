@@ -356,7 +356,7 @@ flowchart TD
 
 #### Template S-1 Landing (changed body) · FR-2
 - Hero h1 `appConfig.name`, `appConfig.description`; primary "Get started" → Template S-5; secondary M-102 → S-103. Signed in: Template behaviour. No feature grid.
-- **Look:** decision 0016: a 3D tunnel of retailer logos behind a frosted card, a "Pause motion" control, hovering a logo shows its name and reward and freezes the motion, and nothing below the hero (one screen).
+- **Look:** decision 0016: a 3D tunnel of retailer logos behind a frosted card, a "Pause motion" control, hovering a logo shows its name and reward and freezes the motion, nothing below the hero (one screen), and an optional game in a pink pull-up tab at the bottom that pauses the motion while it's played.
 
 #### S-101 Onboarding (`/onboarding`) · FR-6, FR-7, FR-10
 - **Who:** signed in, no birthday (onboarded users go to S-102).

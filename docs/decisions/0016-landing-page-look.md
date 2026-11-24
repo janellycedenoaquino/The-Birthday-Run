@@ -5,7 +5,7 @@ Date: 2026-11-24 · Status: accepted
 ## Context
 SPEC §1 planned a redesign at the end, page by page with the owner. The owner chose to start with the landing page (S-1) and take every other page's colours, font and feel from it. SPEC §3.6 still rejected "gradients, bouncing or pulsing animation", a rule written against the old app's look; it does not match what the owner wants (she rejects the generic AI look, not colour or motion).
 
-The look was picked with three throwaway prototypes on the `prototype/landing` branch (`docs/prototypes/landing/`): one with every option switchable, one with a colour picker, and one with the locked result (`3-background-locked.html`). The owner's picks and references are on her design board, outside the repo.
+The look was picked with three throwaway prototypes on the `prototype/landing` branch (`docs/prototypes/landing/`): one with every option switchable, one with a colour picker, and one with the locked result (`3-background-locked.html`), and later the game prototypes (`6-game-pull-up-tab.html` is the final page; `6-laptop-and-phone.html` shows both sizes). The owner's picks and references are on her design board, outside the repo.
 
 ## Decision
 **Landing page (S-1):**
@@ -16,6 +16,7 @@ The look was picked with three throwaway prototypes on the `prototype/landing` b
 - **Frosted card:** cream at 58% opacity with a 14px backdrop blur.
 - **Headline:** Plus Jakarta Sans, weight 800, large, tight letter spacing (-0.035em) and line height (1.06). The last words ("one run.") sit in a filled colour block, tilted about -2°.
 - **Below the hero:** nothing. The page stays one screen (the owner's rule: no long landing page).
+- **Game:** a 30-second "catch the prizes" game (falling retailer logos, a runner steered by mouse, touch or arrow keys, confetti on a catch, best score kept on the device) lives in a pink "Catch the prizes" tab fixed to the bottom of the screen on every size: 640px wide and centred on a laptop, full width on a phone. Tapping the tab slides the game up over the page; the headline and buttons stay visible. Pressing Play pauses the tunnel and the background (too much movement at once); they resume when the round ends unless the visitor had already paused them.
 
 **Brand tokens for the whole app:**
 
@@ -37,11 +38,13 @@ Why these colours: research on colour and emotion finds that brightness and satu
 - **Two-row logo marquee, floating drift:** shown, not picked.
 - **Poster colours (cobalt, tangerine, acid lime), Golden Hour, light and airy with one gold accent:** the owner kept only the poster font and headline block; no yellow.
 - **Logos in one shared tone, or tone until hover:** own brand colours picked.
-- **Catch-the-prizes mini-game or three steps under the hero:** the owner prefers the page without them.
+- **Game or three steps under the hero:** the owner prefers nothing under the hero.
+- **Game inside the card** (between the text and the buttons): fits a laptop, but on a phone it pushes "Get started" off the first screen. Phone layouts tried: tap-to-play link, buttons first, compact (no subtext); the pull-up tab won and is used on the laptop too.
 - **Rolling waves, still background:** flowing glow at slow speed picked.
 
 ## Consequences
 - SPEC §3.6 now allows gradients and motion with a pause, and records the brand tokens; SPEC §1 and S-1 point here. The urgency colours, shadcn components and other pages are unchanged until each page's look is picked with the owner.
+- The game is optional decoration: nothing in it is needed to use the app. In the build its tab is a real button with `aria-expanded`, the sheet closes on Escape, and the game must be playable by keyboard (arrow keys). The best score stays in the browser (`localStorage` holds only a number, no personal data).
 - The tunnel is decoration (`aria-hidden`); every retailer and reward stays reachable in Discover (S-103), so nothing is lost when motion is paused or hidden.
 - Build work (later ticket): the tunnel and glow need a performance check on phones, the font is self-hosted with `next/font` (no third-party font request, keeps the CSP as is), and the logos stay local files from `public/retailers/`.
 - Dark mode for the new look is not decided yet.
