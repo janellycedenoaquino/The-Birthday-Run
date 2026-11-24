@@ -118,9 +118,9 @@ export default async function PlanPage({ searchParams }: PageProps<"/plan">) {
   const groupsFull = !premium && thisYear.length >= FREE_GROUPS;
   const groupFull =
     !premium && groups.some((g) => g.reward_group_items.length >= FREE_ITEMS);
-  // FR-29: plannable, not picked up, in no group. Stores are checked when the dialog runs.
+  // FR-29: plannable, not picked up, in no group this birthday year. Stores are checked in the dialog.
   const grouped = new Set(
-    groups.flatMap((g) => g.reward_group_items.map((i) => i.retailer_id)),
+    thisYear.flatMap((g) => g.reward_group_items.map((i) => i.retailer_id)),
   );
   const ungrouped = ctx.rows.filter(
     (r) => !r.pickedUp && !grouped.has(r.id),

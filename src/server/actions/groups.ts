@@ -83,6 +83,10 @@ function mapPgError(error: Pg): Refusal | null {
   if (error.message === "stale_group_order")
     return { ok: false, error: "BR-17" };
   if (error.message === "group_not_found") return { ok: false, error: "BR-11" };
+  if (error.message === "not_premium") return { ok: false, error: "BR-2" };
+  // A new group dated before this birthday year (e.g. duplicating last year's run).
+  if (error.message === "pickup_out_of_cycle")
+    return { ok: false, error: "API-4", fieldErrors: { form: [msg("M-235")] } };
   if (error.message === "retailer_retired") return { ok: false, error: "BR-3" };
   if (error.message === "pickup_exists") return { ok: false, error: "BR-10" };
   if (
@@ -515,6 +519,15 @@ export async function applySuggestions(
       const chosen = chosenRows(ctx.rows, g.retailerIds);
       if ("error" in chosen) return { ok: false, error: chosen.error! };
     }
+    // M-227 (FR-23): rewards that end before their group's pickup, for the first such group.
+    const ending = groups
+      .map((g) =>
+        warning(
+          ctx.rows.filter((r) => g.retailerIds.includes(r.id)),
+          g.pickupDate,
+        ),
+      )
+      .find(Boolean);
     const { data: existing, error: readError } = await supabase
       .from("reward_groups")
       .select("name");
@@ -527,12 +540,16 @@ export async function applySuggestions(
       existing.map((g) => g.name),
     );
     const { data: ids, error } = await supabase.rpc("apply_group_suggestions", {
-      p_groups: groups.map((g, i) => ({ ...g, name: names[i]! })),
+      p_groups: groups.map((g, i) => ({
+        ...g,
+        retailerIds: [...new Set(g.retailerIds)],
+        name: names[i]!,
+      })),
     });
     const refused = mapPgError(error);
     if (refused) return refused;
     if (error) throw new Error("applySuggestions failed", { cause: error });
     done();
-    return { ok: true, data: { groupIds: ids } };
+    return { ok: true, data: { groupIds: ids }, message: ending };
   });
 }

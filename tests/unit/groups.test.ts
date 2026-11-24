@@ -412,7 +412,7 @@ describe("applySuggestions (FR-29 Apply all)", () => {
   };
   it("one database call with every group, named Run n, skipping taken names", async () => {
     state.takenNames.add("Run 1");
-    expect(await applySuggestions(two)).toEqual({
+    expect(await applySuggestions(two)).toMatchObject({
       ok: true,
       data: { groupIds: ["g1", "g2"] },
     });
@@ -471,6 +471,52 @@ describe("applySuggestions (FR-29 Apply all)", () => {
     expect(await applySuggestions({ groups: [], extra: 1 })).toEqual({
       ok: false,
       error: "API-4",
+    });
+  });
+
+  it("sends each reward once; warns about rewards ending before the pickup (M-227)", async () => {
+    const r = await applySuggestions({
+      groups: [
+        // "one" lasts only the birthday (Jun 15): it ends before a Jun 16 pickup.
+        {
+          retailerIds: ["one", "one", "week"],
+          pickupDate: "2026-06-16",
+          pickupTime: "10:00",
+        },
+      ],
+    });
+    expect(r).toMatchObject({
+      ok: true,
+      message: expect.stringContaining("One Day"),
+    });
+    const call = state.writes.find((w) => w.startsWith("rpc"))!;
+    expect(
+      JSON.parse(call.replace("rpc apply_group_suggestions ", "")).p_groups[0]
+        .retailerIds,
+    ).toEqual(["one", "week"]);
+  });
+
+  it("the database's own refusals map: not premium → BR-2, a past-year date → M-235", async () => {
+    state.groupError = { code: "P0001", message: "not_premium" };
+    expect(await applySuggestions(two)).toEqual({ ok: false, error: "BR-2" });
+    state.source = {
+      name: "Last year",
+      pickup_date: "2025-06-16",
+      pickup_time: "10:00",
+      reward_group_items: [],
+    };
+    state.groupError = { code: "P0001", message: "pickup_out_of_cycle" };
+    expect(
+      await duplicateGroup(
+        null,
+        form({ groupId: "00000000-0000-4000-8000-000000000001" }),
+      ),
+    ).toEqual({
+      ok: false,
+      error: "API-4",
+      fieldErrors: {
+        form: ["This pickup is outside your birthday window. Change the date."],
+      },
     });
   });
 

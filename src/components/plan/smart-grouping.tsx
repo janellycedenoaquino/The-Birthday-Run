@@ -1,11 +1,13 @@
 "use client";
 
 import { useEffect, useId, useState, useTransition } from "react";
+import { toast } from "sonner";
 import { useStartLocation } from "@/components/location/start-location";
 import {
   errorText,
   StartLocationForm,
 } from "@/components/location/start-location-form";
+import { messageText } from "@/components/plan/result-toast";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -18,6 +20,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import type { ActionResult } from "@/lib/action-result";
+import { formatDate, type LocalDate } from "@/lib/birthday/timing";
 import { msg } from "@/lib/messages";
 import type { SuggestResult } from "@/lib/route/result";
 
@@ -137,6 +140,13 @@ function Suggestions({
   const apply = () =>
     startApplying(async () => {
       setApplyError(null);
+      // A cleared date or time: say which range is allowed (BR-8b), before asking the server.
+      if (pickups.some((p) => !p.date || !p.time))
+        return setApplyError(
+          msg("BR-8b")
+            .replace("{start}", formatDate(range.min as LocalDate, "short"))
+            .replace("{end}", formatDate(range.max as LocalDate, "short")),
+        );
       let r: ActionResult<{ groupIds: string[] }>;
       try {
         r = await applySuggestions({
@@ -149,7 +159,11 @@ function Suggestions({
       } catch {
         r = { ok: false, error: "M-7" };
       }
-      if (r.ok) return onDone(); // the new groups show on the page (revalidated)
+      if (r.ok) {
+        // M-227: some rewards end before their pickup. The groups show on the page (revalidated).
+        if (r.message) toast.warning(messageText(r.message));
+        return onDone();
+      }
       const field = Object.values(r.fieldErrors ?? {})[0]?.[0];
       setApplyError(field ?? errorText(r.error));
     });

@@ -333,9 +333,12 @@ export async function suggestGroups(
       };
 
       const ctx = await loadPlanContext(supabase, profile);
+      // Only this birthday year's groups count, as for FR-24: a reward left in last year's group
+      // can be suggested again.
       const { data: items, error } = await supabase
         .from("reward_group_items")
-        .select("retailer_id");
+        .select("retailer_id, group:reward_groups!inner(pickup_date)")
+        .gte("group.pickup_date", ctx.window.current.cycleStart);
       if (error)
         throw new Error("suggestGroups: could not read group items", {
           cause: error,

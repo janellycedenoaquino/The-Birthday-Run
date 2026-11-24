@@ -1,5 +1,6 @@
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import {
+  adminClient,
   birthdayTodayWith,
   createUser,
   dayFromToday,
@@ -64,14 +65,17 @@ describe("public.reward_groups (FR-23, FR-24, D6)", () => {
     const c = await createUser("groups-old");
     try {
       await birthdayTodayWith(c, []);
-      // Three groups from a past year (written as the owner would see them; no date rule in the DB).
+      // Three groups from a past year. Users can't date a new group back there any more
+      // (pickup_out_of_cycle), so they're written as last year's would have been: by the service role.
       for (const name of ["Old 1", "Old 2", "Old 3"]) {
-        const { error } = await c.client.from("reward_groups").insert({
-          user_id: c.id,
-          name,
-          pickup_date: dayFromToday(-400),
-          pickup_time: "12:00",
-        });
+        const { error } = await adminClient()
+          .from("reward_groups")
+          .insert({
+            user_id: c.id,
+            name,
+            pickup_date: dayFromToday(-400),
+            pickup_time: "12:00",
+          });
         expect(error).toBeNull();
       }
       for (const name of ["New 1", "New 2", "New 3"])

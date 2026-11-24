@@ -1374,7 +1374,7 @@ None.
 4. Fewer than `minOffered` with stores → `{ offered: false, needed: minOffered }`.
 5. One store per reward: `chooseStops` (F-10), then `suggestGroups`.
 6. Default pickup (FR-29): date = tomorrow in the user's time zone, clamped into the window being planned (timing module, F-2); time 10:00; if that is already past (window ends today), the next full hour. The dialog lets the user change each (FR-23 rules apply on save).
-7. **Apply all** (M-232): one server action `applySuggestions` (premium; Zod: an array of F-6's create-group input, at most the FR-29 suggestion count) calls `apply_group_suggestions(groups jsonb)`, a **security invoker** function that inserts every group and its items in **one transaction**, so F-6's limit triggers and FR-23/FR-26 rules run for each and the first failure rolls back all (BR-4/BR-5/BR-6/BR-8 shown, nothing created). Default names are M-215 ("Run {n}"), made unique like FR-28's copies. Cancel creates nothing.
+7. **Apply all** (M-232): one server action `applySuggestions` (premium; Zod: an array of F-6's create-group input, at most the FR-29 suggestion count) calls `apply_group_suggestions(groups jsonb)`, a **security invoker** function that also refuses free users (`not_premium`, T-101), and that inserts every group and its items in **one transaction**, so F-6's limit triggers and FR-23/FR-26 rules run for each and the first failure rolls back all (BR-4/BR-5/BR-6/BR-8 shown, nothing created). Default names are M-215 ("Run {n}"), made unique like FR-28's copies. Cancel creates nothing.
 
 ### States and edge cases
 - A reward grouped in another tab between suggestion and apply: F-6 accepts it (FR-26 allows several groups), so it may end up in two groups.
