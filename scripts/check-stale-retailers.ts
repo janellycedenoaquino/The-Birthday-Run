@@ -39,7 +39,9 @@ export function staleRetailers<R extends Row>(
     );
 }
 
-const cell = (s: string) => s.replace(/\|/g, "\\|");
+// One table row per retailer: escape pipes and fold any line break into a space.
+const cell = (s: string) =>
+  s.replace(/\|/g, "\\|").replace(/\s*[\r\n]+\s*/g, " ");
 
 export function staleBody(rows: Row[]): string {
   return [

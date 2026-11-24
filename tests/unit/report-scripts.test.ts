@@ -163,6 +163,24 @@ describe("forward-reports (NFR-11, D16)", () => {
     expect(a.calls).toHaveLength(1);
   });
 
+  it("an ack of 0 (another claim overlapped) fails the run", async () => {
+    const sink = memoryIssues();
+    const a = api(summary);
+    a.fetch = (async (url: string | URL | Request, init?: RequestInit) =>
+      String(url).endsWith("/ack")
+        ? Response.json({ acked: 0 })
+        : api(summary).fetch(url, init)) as typeof fetch;
+    await expect(
+      forwardReports({
+        siteUrl: "https://site.example",
+        secret: "s3cret",
+        sink: sink.sink,
+        csvText: CSV,
+        fetch: a.fetch,
+      }),
+    ).rejects.toThrow(/acked nothing/);
+  });
+
   it("a failed ack fails the run", async () => {
     const { result } = run(summary, memoryIssues(), 500);
     await expect(result).rejects.toThrow(/ack: HTTP 500/);

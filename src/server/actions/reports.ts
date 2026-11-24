@@ -27,6 +27,16 @@ export async function reportReward(
     const { supabase, user, profile } = await requireOnboarded();
     const limit = await rateLimit("reportReward", { userId: user.id });
     if (!limit.ok) return limit;
+    // BR-3: the retailer must exist and be listed (read as the user; retired rows are visible).
+    const { data: retailer, error: rError } = await supabase
+      .from("retailers")
+      .select("id")
+      .eq("id", input.data.retailerId)
+      .is("retired_at", null)
+      .maybeSingle();
+    if (rError)
+      throw new Error("reportReward: retailer read failed", { cause: rError });
+    if (!retailer) return { ok: false, error: "BR-3" };
     const cycleStart = windowFor(
       profile.birthday,
       [],
@@ -39,9 +49,8 @@ export async function reportReward(
       cycle_start: cycleStart,
     });
     if (error?.code === "23505") return { ok: false, error: "BR-14" };
-    // The insert policy refuses retired retailers (42501); an unknown ID fails the FK (23503).
-    if (error?.code === "42501" || error?.code === "23503")
-      return { ok: false, error: "BR-3" };
+    // Anything else (a policy refusal, a retailer retired since the read above) is unexpected:
+    // logged, and the user sees M-7 rather than a message that may not be true.
     if (error) throw new Error("reportReward failed", { cause: error });
     revalidatePath("/rewards");
     revalidatePath(`/discover/${input.data.retailerId}`);

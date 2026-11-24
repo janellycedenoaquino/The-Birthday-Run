@@ -133,6 +133,12 @@ export async function forwardReports({
   const { acked } = z
     .object({ acked: z.number().int() })
     .parse(await ack.json());
+  // 0 means a newer claim re-stamped these reports (someone else called /pending meanwhile):
+  // the issues were written but the reports will be offered again, so fail the run to say so.
+  if (acked === 0)
+    throw new Error(
+      "POST /api/reports/ack acked nothing: another claim overlapped this run",
+    );
   return { retailers: byRetailer.size, acked };
 }
 

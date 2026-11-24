@@ -43,6 +43,14 @@ test("report a reward: reason required, thanks, then Reported (FR-48)", async ({
   await expect(dialog.getByRole("radio")).toHaveCount(4);
   await expect(dialog.getByRole("textbox")).toHaveCount(0);
 
+  // Escape closes it and focus goes back to "More" (SPEC §3.3 dialogs); then reopen.
+  await page.keyboard.press("Escape");
+  await expect(dialog).toBeHidden();
+  const more = page.getByRole("button", { name: `More for ${retailer!.name}` });
+  await expect(more).toBeFocused();
+  await more.click();
+  await page.getByRole("menuitem", { name: "Report a problem" }).click();
+
   await dialog.getByRole("button", { name: "Send report" }).click();
   await expect(dialog.getByText("Choose a reason.")).toBeVisible();
 
@@ -63,6 +71,19 @@ test("report a reward: reason required, thanks, then Reported (FR-48)", async ({
   await expect(
     page.getByRole("button", { name: "Report a problem" }),
   ).toHaveCount(0);
+
+  // S-104's button for another retailer: Cancel returns focus to it.
+  const [other] = await db<{ id: string; name: string }[]>`
+    select id, name from public.retailers
+    where retired_at is null and id <> ${retailer!.id} order by id limit 1`;
+  await page.goto(`/discover/${other!.id}`);
+  const button = page.getByRole("button", { name: "Report a problem" });
+  await button.click();
+  await page
+    .getByRole("dialog")
+    .getByRole("button", { name: "Cancel" })
+    .click();
+  await expect(button).toBeFocused();
 
   const rows =
     await db`select reason from public.reward_reports where user_id = ${user.id}`;

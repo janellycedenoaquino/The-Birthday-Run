@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState, useCallback, useState } from "react";
+import { useActionState, useCallback, useRef, useState, type Ref } from "react";
 import { toast } from "sonner";
 import { FormAlert, formError } from "@/components/auth/form-alert";
 import { messageText } from "@/components/plan/result-toast";
@@ -56,6 +56,10 @@ export function ReportDialog({
   // Shown straight away; the server render that follows (revalidated) says the same.
   const [sent, setSent] = useState(false);
   const done = reported || sent;
+  // The dialog is opened from code (a menu item, or a button replaced by M-198 once sent), so
+  // Radix has no trigger to refocus: on close, focus goes back to "More", the button, or the
+  // M-198 text that took the button's place (SPEC §3.3 dialogs: return focus to the trigger).
+  const returnTo = useRef<HTMLElement>(null);
   const onSent = useCallback(() => {
     setSent(true);
     setOpen(false);
@@ -65,7 +69,12 @@ export function ReportDialog({
     trigger === "menu" ? (
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
-          <Button variant="ghost" size="sm" aria-label={`More for ${retailer}`}>
+          <Button
+            ref={returnTo as Ref<HTMLButtonElement>}
+            variant="ghost"
+            size="sm"
+            aria-label={`More for ${retailer}`}
+          >
             More
           </Button>
         </DropdownMenuTrigger>
@@ -76,9 +85,20 @@ export function ReportDialog({
         </DropdownMenuContent>
       </DropdownMenu>
     ) : done ? (
-      <p className="text-sm text-muted-foreground">{msg("M-198")}</p>
+      <p
+        ref={returnTo as Ref<HTMLParagraphElement>}
+        tabIndex={-1}
+        className="text-sm text-muted-foreground"
+      >
+        {msg("M-198")}
+      </p>
     ) : (
-      <Button variant="ghost" size="sm" onClick={() => setOpen(true)}>
+      <Button
+        ref={returnTo as Ref<HTMLButtonElement>}
+        variant="ghost"
+        size="sm"
+        onClick={() => setOpen(true)}
+      >
         {msg("M-190")}
       </Button>
     );
@@ -87,7 +107,12 @@ export function ReportDialog({
     <>
       {opener}
       <Dialog open={open} onOpenChange={setOpen}>
-        <DialogContent>
+        <DialogContent
+          onCloseAutoFocus={(e) => {
+            e.preventDefault();
+            returnTo.current?.focus();
+          }}
+        >
           <DialogHeader>
             <DialogTitle>
               {msg("M-191").replace("{retailer}", retailer)}
@@ -130,9 +155,14 @@ function ReportForm({
   );
   const { form, id } = useDialogForm(state, onSent);
   const [missing, setMissing] = useState(false);
-  // M-199: nothing chosen, caught here or (a direct call) refused by the server's schema.
-  const reasonError =
-    missing || (state?.ok === false && state.error === "API-4");
+  // M-199: nothing chosen, caught here or refused by the server's schema for `reason`. Any other
+  // field error (the hidden retailer ID) is a page fault: M-7.
+  const fieldErrors = state?.ok === false ? state.fieldErrors : undefined;
+  const reasonError = missing || Boolean(fieldErrors?.reason?.length);
+  const otherError =
+    state?.ok === false && state.error === "API-4" && !fieldErrors?.reason
+      ? "M-7"
+      : formError(state);
 
   return (
     <form
@@ -185,7 +215,7 @@ function ReportForm({
           </p>
         ) : null}
       </fieldset>
-      <FormAlert id={formError(state)} />
+      <FormAlert id={otherError} />
       <DialogFooter>
         <Button type="button" variant="outline" size="lg" onClick={onCancel}>
           Cancel

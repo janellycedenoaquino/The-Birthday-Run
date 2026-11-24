@@ -6,11 +6,22 @@ import { GuardError } from "@/server/auth/guards";
 const state = {
   guard: null as GuardError | null,
   insertError: null as { code: string } | null,
+  listed: true, // the retailer exists and isn't retired
   limited: false,
   rows: [] as Record<string, unknown>[],
 };
 const fakeClient = {
   from: () => ({
+    select: () => ({
+      eq: () => ({
+        is: () => ({
+          maybeSingle: async () => ({
+            data: state.listed ? { id: "starbucks" } : null,
+            error: null,
+          }),
+        }),
+      }),
+    }),
     insert: async (row: Record<string, unknown>) => {
       if (!state.insertError) state.rows.push(row);
       return { error: state.insertError };
@@ -46,6 +57,7 @@ const form = (fields: Record<string, string>) => {
 beforeEach(() => {
   state.guard = null;
   state.insertError = null;
+  state.listed = true;
   state.limited = false;
   state.rows = [];
 });
@@ -96,18 +108,26 @@ describe("reportReward (FR-48, NFR-11)", () => {
     ).toEqual({ ok: false, error: "BR-14" });
   });
 
-  it.each([["42501"], ["23503"]])(
-    "a retired or unknown retailer (%s) → BR-3",
-    async (code) => {
-      state.insertError = { code };
-      expect(
-        await reportReward(
-          null,
-          form({ retailerId: "gone", reason: "store_closed" }),
-        ),
-      ).toEqual({ ok: false, error: "BR-3" });
-    },
-  );
+  it("a retired or unknown retailer → BR-3, nothing stored", async () => {
+    state.listed = false;
+    expect(
+      await reportReward(
+        null,
+        form({ retailerId: "gone", reason: "store_closed" }),
+      ),
+    ).toEqual({ ok: false, error: "BR-3" });
+    expect(state.rows).toEqual([]);
+  });
+
+  it("a policy refusal on insert is M-7, not BR-3 (it may be MFA, not the retailer)", async () => {
+    state.insertError = { code: "42501" };
+    expect(
+      await reportReward(
+        null,
+        form({ retailerId: "starbucks", reason: "expired" }),
+      ),
+    ).toEqual({ ok: false, error: "M-7" });
+  });
 
   it("rate limited → M-5, nothing stored", async () => {
     state.limited = true;
