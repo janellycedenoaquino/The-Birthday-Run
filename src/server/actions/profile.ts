@@ -8,10 +8,12 @@ import {
   birthdaySchema,
   onboardingBirthdaySchema,
   onboardingProgramsSchema,
+  remindersSchema,
   timeZoneInputSchema,
 } from "@/lib/validation/profile";
 import { parseForm } from "@/lib/validation/form";
 import { requireUser } from "@/server/auth/guards";
+import { requirePremium } from "@/server/auth/app-guards";
 import { runAction } from "@/server/run-action";
 import { rateLimit, type RateLimitAction } from "@/server/security/rate-limit";
 
@@ -199,5 +201,32 @@ export async function updateTimeZone(
     if (refused) return refused;
     for (const path of DATE_PAGES) revalidatePath(path);
     return { ok: true, message: "M-257" };
+  });
+}
+
+/** S-109 (F-12, FR-42): turn reminder emails on or off. Premium only (free users get none). */
+export async function setReminders(
+  _prev: ActionResult | null,
+  formData: FormData,
+): Promise<ActionResult> {
+  const input = parseForm(remindersSchema, formData);
+  if (!input.ok) return input.result;
+
+  return runAction("setReminders", async () => {
+    const { supabase, user } = await requirePremium();
+    const limit = await rateLimit("setReminders", { userId: user.id });
+    if (!limit.ok) return limit;
+    const enabled = input.data.enabled === "on";
+    const { data: rows, error } = await supabase
+      .from("profiles")
+      .update({ reminders_enabled: enabled })
+      .eq("id", user.id)
+      .select("id");
+    if (error || rows?.length !== 1)
+      throw new Error("setReminders: not exactly one row", {
+        cause: error ?? `${rows?.length ?? 0} rows`,
+      });
+    revalidatePath("/settings");
+    return { ok: true, message: enabled ? "M-259" : "M-260" };
   });
 }

@@ -212,6 +212,17 @@ export const M = {
   "M-139": "Premium is coming soon. Everything else in the app stays free.",
   "M-140": "Upgrade to unlock it. You can cancel any time from Settings.",
   "M-261": "You have Premium.",
+  "M-258":
+    "One email a week before your birthday, and one when rewards are about to end.",
+  "M-259": "Reminders on.",
+  "M-260": "Reminders off.",
+  "M-270": "Turn off reminder emails?",
+  "M-271":
+    "You'll stop getting birthday reminder emails. You can turn them back on in Settings.",
+  "M-272": "Turn off reminders",
+  "M-273": "Reminders are off",
+  "M-274":
+    "You won't get more reminder emails. Changed your mind? Turn them on in Settings.",
   "BR-2": "That's part of Premium.",
   "BR-1": "Add your birthday first.",
   "BR-18": "Choose a real date.",

@@ -38,6 +38,7 @@ export const LIMITS = {
   saveOnboarding: { user: [30, HOUR] },
   updateBirthday: { user: [30, HOUR] },
   updateTimeZone: { user: [30, HOUR] },
+  setReminders: { user: [30, HOUR] },
   // "Plan and pickup writes": 300 per user per hour, a separate key each (§0.4).
   enroll: { user: [300, HOUR] },
   unenroll: { user: [300, HOUR] },
@@ -59,6 +60,8 @@ export const LIMITS = {
   suggestGroups: { user: [30, HOUR] },
   // "Plan and pickup writes": Smart Grouping's "Apply all" (F-11).
   applySuggestions: { user: [300, HOUR] },
+  // BUILD §0.4: the reminder turn-off POST, per IP (no account: the token is the only key).
+  reminderUnsubscribe: { ip: [30, 10 * MIN] },
   authConfirm: { ip: [30, 10 * MIN] },
   authCallback: { ip: [30, 10 * MIN] },
 } as const satisfies Record<string, Limit>;

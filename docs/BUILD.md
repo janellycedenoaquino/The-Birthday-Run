@@ -121,7 +121,7 @@ Extends Template BUILD §0.4's table; same keys, checking and fail-closed rules.
 | `createCheckoutSession`, `createPortalSession` | – | 10 / hour |
 | `saveOnboarding`, `updateBirthday`, `updateTimeZone`, `setReminders` | – | 30 / hour |
 | Plan and pickup writes (`enroll`, `unenroll`, group, item, reorder, pickup actions; a separate key each) | – | 300 / hour |
-| `POST /api/reminders/unsubscribe` (`reminderUnsubscribe`) | 30 / 10 min | – |
+| `POST /api/reminders/unsubscribe` (`reminderUnsubscribe`), page form only: one-click POSTs come from mail providers' shared IPs and need a valid token to write (F-12 review) | 30 / 10 min | – |
 
 Unlimited: `POST /api/stripe/webhook` (signature first; dropping Stripe retries would lose events; duplicates are absorbed by D8), the reminders cron route and the two report routes (bearer check). Read-only pages are not limited (Template).
 
@@ -1502,6 +1502,8 @@ stateDiagram-v2
 | GET page changes nothing; POST page form → 303 done; one-click body → 200, no redirect; bad token → same responses | unit, e2e | S-112 page and POST route | FR-42, D15 |
 | Settings switch toggles and persists; free user sees C-104 (M-137) | e2e | S-109 | FR-42, FR-39 |
 | One reminder arrives in Mailpit with both headers | e2e | cron route called with the bearer + mailbox adapter | FR-41 |
+
+**As built (2026-11-24, decision 0015):** the job reads its users' rewards and pickups through two more service_role-only definer functions, `reminder_rewards(user_ids)` and `reminder_pickups(user_ids, since)`, instead of admin table reads (production has auto-grant off, and service_role has no grants on `enrollments`/`pickups`). `CRON_SECRET` and `REMINDER_UNSUBSCRIBE_SECRET` are optional in the env schema and fail closed (no secret: the route answers 401; no token, so nothing is sent). The secret-key client is imported by the two route handlers; `runReminders` takes it as a parameter. Mailpit's `/api/v1/send` `Headers` field is checked by `tests/e2e/reminders.spec.ts`. Review fixes: sends carry a Resend `Idempotency-Key` (`reminder:<user>:<kind>:<cycle start or day>`), so a send that timed out but went through isn't repeated by the retry; the run stops starting sends after 40 s (`RUN_TIME_BUDGET_MS`, the rest deferred) to stay inside `maxDuration`; the budget order rotates daily (hash of user and UTC date); one user's bad data fails only that user; a failed turn-off update never answers "off" (page `?error=failed`, one-click `500`); `reminder_candidates` returns no display name.
 
 Sources (2026-10-06): https://www.rfc-editor.org/rfc/rfc8058.html (`List-Unsubscribe=One-Click`, one HTTPS URI, no cookies/auth, no redirect, DKIM must cover both headers) · https://vercel.com/docs/cron-jobs/manage-cron-jobs (`Authorization: Bearer <CRON_SECRET>`, no retries, may fire twice, Hobby fires anywhere in the hour). **Unverified:** that Resend's DKIM signature covers custom headers (RFC 8058 requires it); Mailpit's `/api/v1/send` `Headers` field; Hobby's current function duration limit for `maxDuration = 60`.
 

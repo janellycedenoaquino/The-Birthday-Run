@@ -91,6 +91,20 @@ isOneToOne: false
                   Relationships: [
                     
                   ]
+                },"reminder_log": {
+                  Row: {
+                    "created_at": string,"cycle_start": string,"id": string,"kind": Database["public"]['Enums']["reminder_kind"],"sent_on": string,"user_id": string
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "created_at"?: string,"cycle_start": string,"id"?: string,"kind": Database["public"]['Enums']["reminder_kind"],"sent_on": string,"user_id": string
+                  }
+                  Update: {
+                    "created_at"?: string,"cycle_start"?: string,"id"?: string,"kind"?: Database["public"]['Enums']["reminder_kind"],"sent_on"?: string,"user_id"?: string
+                  }
+                  Relationships: [
+                    
+                  ]
                 },"retailer_stores": {
                   Row: {
                     "address": string | null,"city": string | null,"id": number,"imported_at": string,"location": unknown,"name": string,"postal_code": string | null,"retailer_id": string,"source": Database["public"]['Enums']["store_source"],"source_ref": string,"state": string | null
@@ -225,6 +239,21 @@ isOneToOne: false
 "release_welcome_email":
 { Args: { "p_user_id": string }; Returns: undefined
                            },
+"reminder_candidates":
+{ Args: Record<PropertyKey, never>; Returns: {
+              "birth_day": number,"birth_month": number,"email": string,"time_zone": string,"user_id": string
+            }[]
+                           },
+"reminder_pickups":
+{ Args: { "p_since": string,"p_user_ids": (string)[] }; Returns: {
+              "picked_up_on": string,"retailer_id": string,"user_id": string
+            }[]
+                           },
+"reminder_rewards":
+{ Args: { "p_user_ids": (string)[] }; Returns: {
+              "days_after": number,"days_before": number,"name": string,"retailer_id": string,"reward_description": string,"timing_type": Database["public"]['Enums']["timing_type"],"user_id": string
+            }[]
+                           },
 "reorder_group_items":
 { Args: { "p_expected": (string)[],"p_group_id": string,"p_item_ids": (string)[] }; Returns: undefined
                            },
@@ -244,7 +273,7 @@ isOneToOne: false
                            }
           }
           Enums: {
-            "retailer_category": "food_drink"|"entertainment"|"retail"|"beauty","reward_type": "free_item"|"discount"|"bogo"|"points"|"free_with_purchase","states_scope": "all"|"listed"|"unknown","store_source": "atp"|"overture","timing_type": "from_birthday"|"birth_month"|"around_birthday"|"month_start"|"to_month_end"
+            "reminder_kind": "plan_ahead"|"expiring","retailer_category": "food_drink"|"entertainment"|"retail"|"beauty","reward_type": "free_item"|"discount"|"bogo"|"points"|"free_with_purchase","states_scope": "all"|"listed"|"unknown","store_source": "atp"|"overture","timing_type": "from_birthday"|"birth_month"|"around_birthday"|"month_start"|"to_month_end"
           }
           CompositeTypes: {
             [_ in never]: never
@@ -364,7 +393,7 @@ export const Constants = {
           }
         },"public": {
           Enums: {
-            "retailer_category": ["food_drink", "entertainment", "retail", "beauty"],"reward_type": ["free_item", "discount", "bogo", "points", "free_with_purchase"],"states_scope": ["all", "listed", "unknown"],"store_source": ["atp", "overture"],"timing_type": ["from_birthday", "birth_month", "around_birthday", "month_start", "to_month_end"]
+            "reminder_kind": ["plan_ahead", "expiring"],"retailer_category": ["food_drink", "entertainment", "retail", "beauty"],"reward_type": ["free_item", "discount", "bogo", "points", "free_with_purchase"],"states_scope": ["all", "listed", "unknown"],"store_source": ["atp", "overture"],"timing_type": ["from_birthday", "birth_month", "around_birthday", "month_start", "to_month_end"]
           }
         }
 } as const

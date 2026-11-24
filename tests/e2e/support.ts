@@ -8,7 +8,7 @@ const DEPLOYED = process.env.E2E_TARGET === "deployed";
 const MAILPIT = process.env.MAILPIT_URL ?? "http://127.0.0.1:54424";
 const MANUAL_LINK = "playwright/.manual-link";
 
-export type Mail = { subject: string; html: string };
+export type Mail = { id: string; subject: string; html: string };
 
 /**
  * The newest email to `to` whose subject matches, from Mailpit (local, CI). A deployed run has no
@@ -28,7 +28,7 @@ export async function newestMail(to: string, subject: RegExp): Promise<Mail> {
       const message = await (
         await fetch(`${MAILPIT}/api/v1/message/${hit.ID}`)
       ).json();
-      return { subject: message.Subject, html: message.HTML };
+      return { id: hit.ID, subject: message.Subject, html: message.HTML };
     }
     await new Promise((r) => setTimeout(r, 250));
   }
@@ -155,4 +155,11 @@ export async function confirmDelete(page: Page, title: string) {
   await expect(confirm.getByRole("heading", { name: title })).toBeVisible();
   await expect(confirm.getByRole("button", { name: "Cancel" })).toBeFocused();
   await confirm.getByRole("button", { name: "Delete" }).click();
+}
+
+/** A Mailpit message's headers, each as a list of values (F-12's List-Unsubscribe check). */
+export async function mailHeaders(
+  id: string,
+): Promise<Record<string, string[]>> {
+  return (await fetch(`${MAILPIT}/api/v1/message/${id}/headers`)).json();
 }

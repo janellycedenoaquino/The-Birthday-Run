@@ -17,7 +17,12 @@ import {
   deleteAccount,
   updateDisplayName,
 } from "@/server/actions/account";
-import { updateBirthday, updateTimeZone } from "@/server/actions/profile";
+import { RemindersSwitch } from "@/components/settings/reminders-switch";
+import {
+  setReminders,
+  updateBirthday,
+  updateTimeZone,
+} from "@/server/actions/profile";
 import {
   confirmMfaEnrollment,
   disableMfa,
@@ -78,7 +83,9 @@ async function loadSettings() {
   const { supabase, user, claims } = await requireUser();
   const { data: profile, error } = await supabase
     .from("profiles")
-    .select("display_name, password_set_at, birth_month, birth_day, time_zone")
+    .select(
+      "display_name, password_set_at, birth_month, birth_day, time_zone, reminders_enabled",
+    )
     .eq("id", user.id)
     .maybeSingle();
   if (error || !profile)
@@ -166,6 +173,16 @@ export default async function SettingsPage({
             timeZone={profile.time_zone}
             zones={["UTC", ...Intl.supportedValuesOf("timeZone")]}
           />
+        </Card>
+        <Card id="reminders" title="Reminders">
+          {premium ? (
+            <RemindersSwitch
+              enabled={profile.reminders_enabled}
+              setReminders={setReminders}
+            />
+          ) : (
+            <UpgradePrompt supabase={supabase} feature="M-137" />
+          )}
         </Card>
         {hasPassword && (
           <Card id="password" title="Password">
