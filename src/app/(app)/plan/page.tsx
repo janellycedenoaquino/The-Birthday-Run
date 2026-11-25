@@ -186,7 +186,8 @@ export default async function PlanPage({ searchParams }: PageProps<"/plan">) {
 
       {/* Decision 0016: side by side on wide screens, "Rewards to plan" staying in view. */}
       <div className="mt-8 grid gap-10 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.15fr)] lg:items-start">
-        <div className="lg:sticky lg:top-20">
+        {/* Fits the screen and scrolls on its own, so no reward is out of reach while the groups scroll. */}
+        <div className="lg:sticky lg:top-20 lg:-m-1 lg:max-h-[calc(100vh-6rem)] lg:overflow-y-auto lg:overscroll-contain lg:p-1">
           {rows.length === 0 ? (
             <div className="frosted grid gap-4 rounded-[22px] p-6">
               <p>{msg("M-239")}</p>
