@@ -213,6 +213,17 @@ export const M = {
   "M-139": "Premium is coming soon. Everything else in the app stays free.",
   "M-140": "Upgrade to unlock it. You can cancel any time from Settings.",
   "M-261": "You have Premium.",
+  "M-262": "Premium renews on {date}.",
+  "M-263": "Premium ends on {date}.",
+  "M-264": "Thanks",
+  "M-265":
+    "We're confirming your payment with Stripe. Premium turns on as soon as it's confirmed, usually within a minute.",
+  "M-266": "Premium is on.",
+  "M-141": "Upgrade to Premium",
+  "M-142": "Opening checkout…",
+  "M-143": "Manage subscription",
+  "BR-15": "Premium isn't available yet.",
+  "BR-16": "You already have Premium.",
   "M-258":
     "One email when it's time to plan (up to a month before your birthday), and one when rewards are about to end.",
   "M-259": "Reminders on.",

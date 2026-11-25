@@ -30,6 +30,7 @@ import {
 } from "@/server/actions/mfa";
 import { isRecentSignIn, requireUser } from "@/server/auth/guards";
 import { getEntitlement } from "@/server/premium/entitlement";
+import { PremiumStatus } from "@/components/billing/premium-status";
 import { UpgradePrompt } from "@/components/billing/upgrade-prompt";
 
 // S-13 Settings (SPEC §3.3, BUILD F-11, FR-19): one card per section, each with its own form.
@@ -95,7 +96,7 @@ async function loadSettings() {
   const mfaEnabled = (user.factors ?? []).some(
     (f) => f.factor_type === "totp" && f.status === "verified",
   );
-  // S-110 (FR-35): grant states only until F-8 adds the paid ones.
+  // S-110 (FR-35, FR-37): free, granted or paid (components/billing/premium-status.tsx).
   const { premium } = await getEntitlement(supabase);
   return {
     premium,
@@ -213,11 +214,11 @@ export default async function SettingsPage({
           )}
         </Card>
         <Card id="premium" title="Premium">
-          {premium ? (
-            <p>{msg("M-261")}</p>
-          ) : (
-            <UpgradePrompt supabase={supabase} feature="M-138" />
-          )}
+          <PremiumStatus
+            supabase={supabase}
+            premium={premium}
+            timeZone={profile.time_zone}
+          />
         </Card>
         <Card id="your-data" title="Your data">
           <p className="mb-4">

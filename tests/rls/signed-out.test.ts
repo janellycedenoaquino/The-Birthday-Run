@@ -10,6 +10,8 @@ vi.mock("next/headers", () => ({
   headers: async () => new Headers({ "x-pathname": "/settings" }),
   cookies: async () => ({ getAll: () => [], set: () => {}, has: () => false }),
 }));
+// Billing actions check the payments flag before the guard (FR-38); on here, so the guard runs.
+vi.mock("@/server/billing/flag", () => ({ paymentsEnabled: () => true }));
 vi.mock("next/cache", () => ({
   revalidatePath: () => {},
   revalidateTag: () => {},
@@ -47,6 +49,8 @@ const VALID: Record<string, Record<string, string>> = {
   updateTimeZone: { timeZone: "America/New_York" },
   setReminders: { enabled: "off" },
   reportReward: { retailerId: "starbucks", reason: "expired" },
+  createCheckoutSession: { from: "/plan" },
+  createPortalSession: {},
   enroll: { retailerId: "starbucks" },
   unenroll: { retailerId: "starbucks" },
   createPickup: { retailerId: "starbucks" },

@@ -199,6 +199,20 @@ isOneToOne: false
       referencedColumns: ["id"]
     }
                   ]
+                },"stripe_events": {
+                  Row: {
+                    "id": string,"received_at": string,"type": string
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "id": string,"received_at"?: string,"type": string
+                  }
+                  Update: {
+                    "id"?: string,"received_at"?: string,"type"?: string
+                  }
+                  Relationships: [
+                    
+                  ]
                 },"subscriptions": {
                   Row: {
                     "cancel_at_period_end": boolean,"current_period_end": string | null,"status": string | null,"stripe_customer_id": string,"stripe_subscription_id": string | null,"synced_at": string,"user_id": string

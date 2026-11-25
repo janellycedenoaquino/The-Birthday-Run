@@ -60,6 +60,9 @@ export const LIMITS = {
   suggestGroups: { user: [30, HOUR] },
   // BUILD §0.4: reward reports, 10 per user per hour (FR-48).
   reportReward: { user: [10, HOUR] },
+  // BUILD §0.4: billing sessions, 10 per user per hour (F-8).
+  createCheckoutSession: { user: [10, HOUR] },
+  createPortalSession: { user: [10, HOUR] },
   // "Plan and pickup writes": Smart Grouping's "Apply all" (F-11).
   applySuggestions: { user: [300, HOUR] },
   // BUILD §0.4: the reminder turn-off POST, per IP (no account: the token is the only key).

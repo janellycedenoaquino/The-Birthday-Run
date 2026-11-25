@@ -13,6 +13,8 @@ import { parseForm } from "@/lib/validation/form";
 import { requireRecentSignIn, requireUser } from "@/server/auth/guards";
 import { logError, toUserMessage } from "@/server/errors";
 import { runAction } from "@/server/run-action";
+import { getStripe } from "@/server/billing/stripe";
+import { cancelForDeletion } from "@/server/billing/sync";
 import { getAdminClient } from "@/server/supabase/admin";
 import { rateLimit } from "@/server/security/rate-limit";
 
@@ -132,7 +134,16 @@ export async function deleteAccount(
     const limit = await rateLimit("deleteAccount", { userId: user.id });
     if (!limit.ok) return limit;
 
-    const { error } = await getAdminClient().auth.admin.deleteUser(user.id);
+    // F-8 (FR-37, T-117): cancel any subscription and delete the Stripe Customer first; if
+    // Stripe can't be reached, nothing is deleted (M-7), so no one keeps paying for no account.
+    const admin = getAdminClient();
+    const billing = await cancelForDeletion(user.id, {
+      stripe: getStripe(),
+      admin,
+    });
+    if (!billing.ok) return { ok: false, error: "M-7" };
+
+    const { error } = await admin.auth.admin.deleteUser(user.id);
     if (error) throw new Error("deleteAccount failed", { cause: error });
 
     // The account is gone; end this device's session whatever Supabase answers.

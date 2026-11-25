@@ -93,10 +93,10 @@ describe("buildCsp", () => {
     expect(dev.match(/unsafe-eval/g)).toHaveLength(1);
   });
 
-  it("form-action allows the Supabase origin (not its path) and Google", () => {
+  it("form-action allows the Supabase origin (not its path), Google and Stripe's two hosts", () => {
     const d = directives(buildCsp({ ...base, dev: false }));
     expect(d.get("form-action")).toBe(
-      "'self' http://127.0.0.1:54321 https://accounts.google.com",
+      "'self' http://127.0.0.1:54321 https://accounts.google.com https://checkout.stripe.com https://billing.stripe.com",
     );
   });
 

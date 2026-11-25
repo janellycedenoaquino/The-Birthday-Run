@@ -52,6 +52,23 @@ test("free → granted → revoked: prompts, filters and Settings follow (FR-35,
       ),
     ).toBeVisible();
     await expect(card.getByRole("heading")).toHaveText(["Premium"]);
+    // F-8, payments off (FR-38): no checkout or portal control anywhere, and the return page
+    // only says "coming soon".
+    await expect(card.getByRole("button")).toHaveCount(0);
+    await page.goto("/rewards");
+    await expect(
+      page.getByRole("button", { name: /upgrade|manage subscription/i }),
+    ).toHaveCount(0);
+    await page.goto("/billing/return");
+    await expect(
+      page.getByText(
+        "Premium is coming soon. Everything else in the app stays free.",
+      ),
+    ).toBeVisible();
+    await expect(page.getByRole("link", { name: "Check again" })).toHaveCount(
+      0,
+    );
+    await page.goto("/settings#premium");
 
     // Granted: the next request is premium.
     expect((await setPremium(db, user.email, "grant")).outcome).toBe("granted");
