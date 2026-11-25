@@ -37,10 +37,10 @@ const NAME = escaped(appConfig.name);
 const SUPPORT = `mailto:${appConfig.supportEmail}`;
 
 describe("C-1 site header, signed out", () => {
-  it("links the logo and name home, with Sign in and Sign up", () => {
-    const html = header("/");
-    expect(html).toContain(`alt="${escaped(appConfig.logo.alt)}"`);
-    expect(html).toMatch(/src="\/brand\/logo.svg"/);
+  it("links the name home, with Sign in and Sign up", () => {
+    const html = header("/discover");
+    // The name only, on a cream pill: no logo image (decision 0016 prototypes).
+    expect(html).not.toContain("<img");
     // C-101's Discover link (M-101) is public, so it shows signed out too.
     expect(links(html)).toEqual([
       ["/", NAME],
@@ -48,6 +48,16 @@ describe("C-1 site header, signed out", () => {
       ["/sign-in", "Sign in"],
       ["/sign-up", "Sign up"],
     ]);
+  });
+
+  it("floats over the landing page with only Sign in (decision 0016)", () => {
+    const html = header("/");
+    expect(html).toMatch(/<header class="pointer-events-none absolute /);
+    expect(links(html)).toEqual([
+      ["/", NAME],
+      ["/sign-in", "Sign in"],
+    ]);
+    expect(header("/discover")).toMatch(/<header class="relative /);
   });
 
   it("hides its own button on S-4 and S-5", () => {
@@ -70,8 +80,8 @@ describe("C-1 site header, signed out", () => {
       "/auth/reauthenticate",
     ]) {
       const html = header(path, { email: "a@example.com", displayName: null });
-      // Signed in, so the logo goes to the dashboard (SPEC §3.2); the guards own the step itself.
-      expect(links(html)).toEqual([["/dashboard", NAME]]);
+      // Signed in, so the name goes to My Rewards (decision 0018); the guards own the step itself.
+      expect(links(html)).toEqual([["/rewards", NAME]]);
       expect(html).not.toContain("a@example.com");
       expect(html).not.toContain("<button");
     }
@@ -79,13 +89,13 @@ describe("C-1 site header, signed out", () => {
 });
 
 describe("C-1 site header, signed in", () => {
-  it("links home to the dashboard and always shows the email (D24.9)", () => {
+  it("links the name to My Rewards and always shows the email (D24.9, decision 0018)", () => {
     const html = header("/settings", {
       email: "someone@example.com",
       displayName: "Sam",
     });
     expect(links(html)).toEqual([
-      ["/dashboard", NAME],
+      ["/rewards", NAME],
       ["/discover", "Discover"],
       ["/rewards", "My Rewards"],
       ["/plan", "Plan"],
