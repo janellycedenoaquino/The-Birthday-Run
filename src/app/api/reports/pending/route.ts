@@ -20,8 +20,15 @@ export async function GET(request: Request) {
     );
   try {
     const admin = getAdminClient();
+    // Read before the claim, and never fatal: a failed read reports null ("never ran"), which
+    // fails the Action after it forwards, so the heartbeat can't hold reports back.
+    const lastReminderRunAt = await lastHeartbeat(admin, "reminders").catch(
+      (error: unknown) => {
+        logError(error, { op: "reports.heartbeat" });
+        return null;
+      },
+    );
     const summary = await claimPendingSummary({ admin });
-    const lastReminderRunAt = await lastHeartbeat(admin, "reminders");
     return Response.json(
       { ...summary, lastReminderRunAt },
       { headers: NO_STORE },

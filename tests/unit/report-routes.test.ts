@@ -95,6 +95,19 @@ describe("GET /api/reports/pending (D16)", () => {
     });
   });
 
+  it("a failed heartbeat read → null; the reports still go out", async () => {
+    lastHeartbeat.mockRejectedValueOnce(new Error("heartbeat down"));
+    rpc.mockResolvedValue({
+      data: [{ retailer_id: "starbucks", reason: "expired", report_count: 1 }],
+      error: null,
+    });
+    const res = await get(`Bearer ${SECRET}`);
+    expect(res.status).toBe(200);
+    const body = await res.json();
+    expect(body.lastReminderRunAt).toBeNull();
+    expect(body.items).toHaveLength(1);
+  });
+
   it("a database error → 500 with no details", async () => {
     rpc.mockResolvedValue({ data: null, error: { message: "boom" } });
     const res = await get(`Bearer ${SECRET}`);

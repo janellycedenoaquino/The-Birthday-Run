@@ -1,5 +1,6 @@
 # Checker PR scope (DESIGN D16, BUILD F-13 "Checker contract", NFR-11). The overnight checker's
-# branches (`checker/…`) may change only data/retailers.csv. Its own workflow, with no
+# branches (`checker/<retailer-id>-<yyyy-mm-dd>`) may change only that retailer's row of
+# data/retailers.csv (scripts/check-checker-scope.sh). Its own workflow, with no
 # paths-ignore, so a docs-only push from a checker branch is checked too. The checker's token
 # has no Workflows permission, so it can't edit this file to switch the check off.
 name: Checker scope
@@ -24,15 +25,11 @@ jobs:
         with:
           fetch-depth: 0
           persist-credentials: false
-      # Every file the branch changes since it left main (added, edited, renamed, deleted).
-      - name: Only data/retailers.csv changed
+      - name: Only this retailer's row of data/retailers.csv changed
+        env:
+          BRANCH: ${{ github.ref_name }}
+        # main's copy of the script, never the branch's: the checker can edit non-workflow files.
         run: |
-          base=$(git merge-base origin/main HEAD)
-          changed=$(git diff --name-only --no-renames "$base" HEAD)
-          others=$(printf '%s\n' "$changed" | grep -vx 'data/retailers.csv' | grep -v '^$' || true)
-          if [ -n "$others" ]; then
-            echo "::error::A checker branch may change only data/retailers.csv (D16). Also changed:"
-            printf '%s\n' "$others"
-            exit 1
-          fi
-          echo "checker scope: only data/retailers.csv changed" >> "$GITHUB_STEP_SUMMARY"
+          git show origin/main:scripts/check-checker-scope.sh > "$RUNNER_TEMP/scope.sh"
+          bash "$RUNNER_TEMP/scope.sh" "$BRANCH" origin/main
+          echo "checker scope: OK" >> "$GITHUB_STEP_SUMMARY"

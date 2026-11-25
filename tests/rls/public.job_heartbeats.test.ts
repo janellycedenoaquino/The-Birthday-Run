@@ -5,6 +5,7 @@ import {
   createUser,
   deleteUsers,
   publicClient,
+  sql,
   type TestUser,
 } from "./helpers";
 
@@ -15,7 +16,10 @@ beforeAll(async () => {
   a = await createUser("heartbeats");
 });
 afterAll(async () => {
-  await adminClient().from("job_heartbeats").delete().eq("job", "reminders");
+  // service_role has no delete grant, so clean up as the database owner.
+  const db = sql();
+  await db`delete from public.job_heartbeats where job = 'reminders'`;
+  await db.end();
   await deleteUsers(a);
 });
 
