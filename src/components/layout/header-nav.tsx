@@ -10,7 +10,7 @@ import { AccountMenu, type Account } from "./account-menu";
 // C-1's right side (SPEC §3.2). A client component because it depends on the current path, and
 // the root layout isn't re-rendered on client-side navigation: a path read on the server would
 // stay at the first page loaded. The step pages show no nav, so the step can't be skipped from
-// here (the guards still enforce it). S-4/S-5 show no nav: their card's tabs switch between them.
+// here (the guards still enforce it). Signed out, the Discover link reads "Rewards" (M-101e).
 const STEP_PAGES = ["/auth/set-password", "/auth/mfa", "/auth/reauthenticate"];
 // Pages whose own motion fills the screen (decision 0016): C-1 floats over it, and the page puts
 // "Pause motion" in the top-right corner. Sign in and sign up switch with tabs in their card.
@@ -33,7 +33,7 @@ export function HeaderShell({ children }: { children: ReactNode }) {
       }
     >
       <div
-        className={`mx-auto flex h-16 w-full items-center justify-between gap-4 px-4 sm:px-6 ${floating ? "pr-16 sm:pr-[184px] [&>*]:pointer-events-auto" : "max-w-5xl"}`}
+        className={`mx-auto flex h-16 w-full items-center justify-between ${floating ? "gap-2 pr-[60px] pl-3 sm:gap-4 sm:pr-[184px] sm:pl-6 [&>*]:pointer-events-auto" : "max-w-5xl gap-4 px-4 sm:px-6"}`}
       >
         {children}
       </div>
@@ -48,15 +48,25 @@ const CURRENT =
 export function HeaderNav({ account }: { account: Account | null }) {
   const path = usePathname();
   if (STEP_PAGES.includes(path)) return null;
-  if (CARD_TABS.includes(path) && !account) return null;
-  // The landing card has "Browse rewards" and the sign-up button, so signed out only "Sign in"
-  // stays up here (decision 0016).
-  if (path === "/" && !account) {
+  // The floating pages, signed out (decision 0016): "Rewards" (Discover) and, on the landing
+  // page, "Sign in". Sign in and sign up switch with their card's tabs.
+  if (FLOATING.includes(path) && !account) {
     return (
-      <nav aria-label="Account" className="flex shrink-0 items-center">
-        <Link href="/sign-in" className="pill-link">
-          Sign in
+      <nav
+        aria-label="Account"
+        className="flex shrink-0 items-center gap-1.5 sm:gap-2"
+      >
+        <Link
+          href="/discover"
+          className="rounded-[10px] bg-background/70 px-3 py-2 text-[15px] font-bold outline-none hover:shadow-[inset_0_0_0_2px_var(--spring)] focus-visible:ring-3 focus-visible:ring-ring/50 max-sm:px-2.5 max-sm:text-sm"
+        >
+          {msg("M-101e")}
         </Link>
+        {CARD_TABS.includes(path) ? null : (
+          <Link href="/sign-in" className="pill-link">
+            Sign in
+          </Link>
+        )}
       </nav>
     );
   }
@@ -70,7 +80,7 @@ export function HeaderNav({ account }: { account: Account | null }) {
             href="/discover"
             aria-current={path.startsWith("/discover") ? "page" : undefined}
           >
-            {msg("M-101")}
+            {msg(account ? "M-101" : "M-101e")}
           </Link>
         </Button>
       )}

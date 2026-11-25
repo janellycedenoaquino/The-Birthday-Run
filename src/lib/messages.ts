@@ -84,6 +84,8 @@ export const M = {
   "M-278":
     "In years without Feb 29 we count Feb 28. Some brands use Mar 1, so check their app.",
   "M-101": "Discover",
+  // C-101 signed out: the same Discover link, named for what's there (owner, 2026-11-25).
+  "M-101e": "Rewards",
   "M-103": "Add",
   "M-104": "Added",
   "M-109": "Which programs are you in?",

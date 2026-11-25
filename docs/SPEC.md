@@ -307,8 +307,8 @@ flowchart TD
 **C-101 App navigation** (all pages; extends Template C-1)
 - Signed in: links Discover · My Rewards · Plan · History in a row under the header on wider screens (no Dashboard, decision 0018); current page `aria-current="page"`. Settings stays in the Template account menu.
 - **Phones (decision 0016):** the links move to a bottom tab bar fixed to the bottom of the screen: four tabs (Discover, My Rewards, Plan, History) with an icon and a label, the current one on the pink block. The account menu stays on the round initial top right (Settings, Birthday & reminders, Premium, Sign out). Page content keeps room above the bar.
-- Signed out: "Discover" next to Template C-1's Sign in / Sign up.
-- **Header look (decision 0016 prototypes; owner, 2026-11-25):** no bar and no logo image: the app name on a cream pill (signed out → S-1, signed in → S-105, decision 0018), links on the page's own background; it scrolls with the page. The current link and "Sign in" sit on a white pill with the navy ring. On S-1 the header floats over the logo tunnel with only "Sign in" signed out, left of the page's pause button; on Template S-4/S-5 it floats over the card wall with the name only (the card's tabs switch between them).
+- Signed out: the Discover link reads "Rewards" (M-101e; owner, 2026-11-25), next to Template C-1's Sign in / Sign up.
+- **Header look (decision 0016 prototypes; owner, 2026-11-25):** no bar and no logo image: the app name on a cream pill (signed out → S-1, signed in → S-105, decision 0018), links on the page's own background; it scrolls with the page. The current link and "Sign in" sit on a white pill with the navy ring. On S-1 the header floats over the logo tunnel with "Rewards" and "Sign in" signed out, left of the page's pause button; on Template S-4/S-5 it floats over the card wall with "Rewards" only (the card's tabs switch between them).
 - Hidden on S-101 (onboarding has one job) and on Template S-9–S-11.
 - Labels: M-101.
 
@@ -438,7 +438,7 @@ flowchart TD
 Template M-, API-, E- texts apply unchanged. Placeholders in `{braces}` are filled as text. Plurals: one message per form where shown (`{days}` = 1 uses the singular ID). Dates: "Oct 6" style in the user's time zone; times "10:00 AM".
 
 **Navigation and onboarding**
-- M-101 (C-101): "Discover" · "My Rewards" (M-101b) · "Plan" (M-101d) · "History" (M-101c)
+- M-101 (C-101): "Discover" · "My Rewards" (M-101b) · "Plan" (M-101d) · "History" (M-101c) · M-101e (C-101's Discover link, signed out): "Rewards"
 - M-102 (S-1): "Browse rewards"
 - M-282 / M-282b (S-1 h1, decision 0016; owner's wording 2026-11-25): "How many free things can you get" / "on your birthday?" (in the tilted block); phones break it as "How many / free things / can you get / on your / birthday?" · M-282c (S-1 main button): "Find my birthday freebies" · M-283: "Find every brand that treats you, join in time, and plan your stops so nothing expires." · M-284: "{count} brands waiting to treat you"
 - M-285 / M-285b (pause control, S-1 and S-4/S-5): "Pause motion" / "Play motion"

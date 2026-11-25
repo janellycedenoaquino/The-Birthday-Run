@@ -41,30 +41,34 @@ describe("C-1 site header, signed out", () => {
     const html = header("/discover");
     // The name only, on a cream pill: no logo image (decision 0016 prototypes).
     expect(html).not.toContain("<img");
-    // C-101's Discover link (M-101) is public, so it shows signed out too.
+    // C-101's Discover link is public, so it shows signed out too, as "Rewards" (M-101e).
     expect(links(html)).toEqual([
       ["/", NAME],
-      ["/discover", "Discover"],
+      ["/discover", "Rewards"],
       ["/sign-in", "Sign in"],
       ["/sign-up", "Sign up"],
     ]);
   });
 
-  it("floats over the landing page with only Sign in (decision 0016)", () => {
+  it("floats over the landing page with Rewards and Sign in (decision 0016)", () => {
     const html = header("/");
     expect(html).toMatch(/<header class="pointer-events-none absolute /);
     expect(links(html)).toEqual([
       ["/", NAME],
+      ["/discover", "Rewards"],
       ["/sign-in", "Sign in"],
     ]);
     expect(header("/discover")).toMatch(/<header class="relative /);
   });
 
-  it("floats with only the name on S-4 and S-5: the card's tabs switch (decision 0016)", () => {
+  it("floats with the name and Rewards on S-4 and S-5: the card's tabs switch (decision 0016)", () => {
     for (const path of ["/sign-in", "/sign-up"]) {
       const html = header(path);
       expect(html).toMatch(/<header class="pointer-events-none absolute /);
-      expect(links(html)).toEqual([["/", NAME]]);
+      expect(links(html)).toEqual([
+        ["/", NAME],
+        ["/discover", "Rewards"],
+      ]);
     }
   });
 
