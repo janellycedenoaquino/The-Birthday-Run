@@ -620,12 +620,12 @@ S-106 Plan: group card           C-106 Route view (premium)
 (Example names and numbers are illustrative only.)
 
 ### 3.6 Visual style
-Template §3.6 unchanged: shadcn/ui defaults, neutral base, light and dark, `appConfig.brand` primary, system fonts, `lucide-react` icons. App additions:
+Template §3.6 applies, except the base and the font (decision 0016): shadcn/ui components, light and dark (cocoa), `appConfig.brand` primary, `lucide-react` icons; the theme tokens in `globals.css` are the brand's (cream, navy, the pastel glow behind every page), and the font is Plus Jakarta Sans, self-hosted with `next/font` (Template §3.8's "apps may add one"). App additions:
 - **Urgency colours (C-103):** shadcn-style tokens `--urgent`, `--soon`, `--relaxed` (each with a `-foreground`), defined in `globals.css` for light and dark, used only by C-103 and the route pins; contrast per §3.7.
 - **Feel:** plain and adult. One primary button per screen (S-105: none outside dialogs; the per-card action is outline). No emoji in UI or emails.
 - **Map (decision 0016):** OpenFreeMap's light style (D11) recoloured to the pastels at load (cream land, baby-blue water, mint parks, white roads with pink edges); each stop is a round white pin with the brand logo and a pink number badge; the route is a pink line; the start is a navy "S". In dark mode the map uses the cocoa colours.
 - **Theme (decision 0016, changes Template FR-21):** light for everyone by default, whatever the device's setting; the footer's theme select (Template C-2) stays where it is and lets a person switch to dark (cocoa) or back. The choice is kept in the browser.
-- **Brand look:** decision 0016 sets the brand colours, the headline font and the motion rules. Pages move to it one at a time with the owner; until then they keep the Template look.
+- **Brand look:** decision 0016 sets the brand colours, the headline font and the motion rules. The tokens, font, still glow, primary button, frosted card (`frosted`) and headline block (`headline`, `headline-block`) apply app-wide; each page's own layout moves to its locked look one at a time.
 
 **Patterns to reject** (whole app): Template §3.6's list, plus the old app's look: bouncing or pulsing animation, motion that can't be paused, emoji as icons or headings, rounded "pill" badges with shadows, exclamation-heavy copy. **Exception** to the Template list: deleting a pickup or a group uses C-108, because FR-20 and FR-27 require asking first.
 

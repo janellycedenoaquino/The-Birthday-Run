@@ -1,5 +1,6 @@
 import { Analytics } from "@vercel/analytics/next";
 import type { Metadata } from "next";
+import { Plus_Jakarta_Sans } from "next/font/google";
 import { Suspense } from "react";
 import { headers } from "next/headers";
 import "./globals.css";
@@ -16,6 +17,14 @@ import { createClient } from "@/server/supabase/server";
 
 // Titles "{Page} · {name}" (FR-24, SPEC §3.7). Pages set their own title and, for protected and
 // auth pages, `robots: { index: false }`.
+// The brand font (decision 0016), self-hosted by next/font: the files are fetched at build time
+// and served from this site, so the CSP needs no font host.
+const jakarta = Plus_Jakarta_Sans({
+  subsets: ["latin"],
+  display: "swap",
+  variable: "--font-jakarta",
+});
+
 export const metadata: Metadata = {
   title: { default: appConfig.name, template: `%s · ${appConfig.name}` },
   description: appConfig.description,
@@ -39,14 +48,19 @@ export default async function RootLayout({ children }: LayoutProps<"/">) {
 
   // suppressHydrationWarning: next-themes sets the theme class on <html> before React hydrates.
   return (
-    <html lang="en" className="scroll-pt-16" suppressHydrationWarning>
+    <html
+      lang="en"
+      className={`scroll-pt-16 ${jakarta.variable}`}
+      suppressHydrationWarning
+    >
       <head>
         {nonce && <BrandStyle nonce={nonce} brand={appConfig.brand} />}
       </head>
       <body className="flex min-h-dvh flex-col">
         <ThemeProvider
           attribute="class"
-          defaultTheme="system"
+          // Light for everyone by default, whatever the device says (decision 0016, SPEC §3.6).
+          defaultTheme="light"
           enableSystem
           nonce={nonce ?? undefined}
         >
