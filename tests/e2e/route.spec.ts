@@ -238,6 +238,12 @@ test("Discover state filter: set a start → only that state; Show all clears; n
   expect(await geoCalls(page)).toEqual([]); // nothing on load (FR-5)
   await expect(elsewhere).toBeVisible();
   const filter = page.getByRole("region", { name: "Your state" });
+  // The filters sit behind "More filters" (owner, 2026-11-25).
+  const openFilters = async () => {
+    if (!(await filter.isVisible()))
+      await page.getByText("More filters").click();
+  };
+  await openFilters();
   await filter.getByLabel("ZIP code").fill(ZIP);
   await filter.getByRole("button", { name: "Use ZIP" }).click();
   await expect(
@@ -255,6 +261,7 @@ test("Discover state filter: set a start → only that state; Show all clears; n
   await expect(elsewhere).toHaveCount(0);
 
   // "Show all" turns it off and it stays off; the start is kept, so M-172b offers it again.
+  await openFilters();
   await filter.getByRole("button", { name: "Show all" }).click();
   await expect(elsewhere).toBeVisible();
   await filter.getByRole("button", { name: "Show only my state" }).click();

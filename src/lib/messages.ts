@@ -203,6 +203,8 @@ export const M = {
   "M-176": "Up to a week",
   "M-177": "Up to a month",
   "M-177a": "Can start before my birthday",
+  // S-103 premium: the button that opens the filters (owner, 2026-11-25).
+  "M-177b": "More filters",
   "M-130": "{feature} is part of Premium",
   "M-131": "Filter by your state and reward length",
   // C-104 as a tag (S-103, decision 0016 prototype).

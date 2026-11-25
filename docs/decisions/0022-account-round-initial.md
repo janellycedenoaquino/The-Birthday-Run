@@ -1,7 +1,7 @@
 # 0022. The account button is a round initial, not the full email
 
-Date: 2026-11-25 · Status: proposed (the owner picked the look; the security trade-off below
-needs her explicit OK before merge)
+Date: 2026-11-25 · Status: accepted (owner, 2026-11-25, after the trade-off was explained), with
+a follow-up: a confirm step on sign-in links before launch
 
 ## Context
 Template D24.9 accepts login CSRF through `/auth/confirm` (T22): someone could get a visitor
@@ -20,6 +20,18 @@ the owner chose that look ("account is fine as a round initial").
 - The open menu shows the full email first and strongest, with any display name under it.
 - On narrow screens the menu links scroll sideways, so the account button is always on screen.
 
+## Why the owner accepted it
+The app holds no addresses or payment details and mails nothing: it shows what a person can pick
+up, and they go to the store themselves. What an attacker could learn from someone tricked into
+their account is the birthday, the programs and, most of all, the planned stops: where and when
+that person will be. That is a real safety risk (someone could wait for them there), so the owner
+chose to fix it where it starts rather than rely on the header:
+
+- **Now:** the round initial, as built here.
+- **Before launch (own PR):** opening a sign-in or confirm link shows "You're signing in as
+  m•••@example.com. Is this you?" before the session is created. That protects every page and
+  screen size, whatever the header shows.
+
 ## Alternatives
 - **Keep the full email in the header:** the strongest version of D24.9, but it doesn't match
   the chosen look and crowds the header on phones.
@@ -32,5 +44,5 @@ the owner chose that look ("account is fine as a round initial").
   shows the same circle.
 - Template SPEC C-1 and BUILD F-3 still say "always showing the signed-in email"; this decision
   overrides them for this app.
-- If login CSRF matters more later, the fix is server-side (a confirm page that names the
-  account before signing in), not the header.
+- The follow-up confirm step is on the launch checklist; T22 is mitigated by it, not by the
+  header, once it ships.

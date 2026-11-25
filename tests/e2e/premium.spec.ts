@@ -69,6 +69,8 @@ test("free → granted → revoked: prompts, filters and Settings follow (FR-35,
     await page.reload();
     await expect(card.getByText("You have Premium.")).toBeVisible();
     await page.goto("/discover");
+    // The filters sit behind "More filters" (owner, 2026-11-25).
+    await page.getByText("More filters").click();
     await expect(page.getByLabel("Length")).toBeVisible();
     await expect(page.getByLabel("Can start before my birthday")).toBeVisible();
     await expect(prompt).toHaveCount(0);

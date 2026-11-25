@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { Search as SearchIcon } from "lucide-react";
+import { Search as SearchIcon, SlidersHorizontal } from "lucide-react";
 import { z } from "zod";
 import {
   RetailerCard,
@@ -235,51 +235,72 @@ export default async function DiscoverPage({
         </ul>
       </nav>
       {premium ? (
-        <>
-          <form
-            method="get"
-            className="mt-4 flex flex-wrap items-center gap-2"
-            aria-label="Premium filters"
-          >
-            {filters.q ? (
-              <input type="hidden" name="q" value={filters.q} />
-            ) : null}
-            {filters.category ? (
-              <input type="hidden" name="category" value={filters.category} />
-            ) : null}
-            <label htmlFor="discover-length" className="sr-only">
-              Length
-            </label>
-            <select
-              id="discover-length"
-              name="length"
-              defaultValue={filters.length ?? ""}
-              className="h-11 rounded-md border border-input bg-background px-3 text-base"
-            >
-              <option value="">{msg("M-174")}</option>
-              <option value="day">{msg("M-175")}</option>
-              <option value="week">{msg("M-176")}</option>
-              <option value="longer">{msg("M-177")}</option>
-            </select>
-            <label className="flex items-center gap-2 text-sm">
-              <input
-                type="checkbox"
-                name="early"
-                value="1"
-                defaultChecked={filters.early === "1"}
-                className="size-4"
-              />
-              {msg("M-177a")}
-            </label>
-            <Button type="submit" size="lg" variant="outline">
-              Apply
-            </Button>
-          </form>
-          <section aria-label="Your state" className="mt-4">
-            <StateFilter lookupZip={lookupZip} rows={stateRows} />
-          </section>
+        // Premium: "Showing" on the left and a "More filters" button on the right that drops down
+        // the length, early-start and state filters (owner, 2026-11-25). The button shows how
+        // many of the URL filters are on.
+        <div className="relative mt-3 flex flex-wrap items-center justify-between gap-2">
           <StateCount rows={stateRows} total={total} />
-        </>
+          <details className="group">
+            <summary className="inline-flex h-9 cursor-pointer list-none items-center gap-1.5 rounded-[10px] bg-white/80 px-3.5 text-sm font-bold text-[var(--navy)] shadow-[inset_0_0_0_1.5px_var(--navy)] outline-none group-open:bg-[var(--bubblegum)] focus-visible:ring-3 focus-visible:ring-ring/50 dark:bg-white/10 dark:text-foreground [&::-webkit-details-marker]:hidden">
+              <SlidersHorizontal aria-hidden="true" className="size-4" />
+              {msg("M-177b")}
+              {filters.length || filters.early ? (
+                <span className="rounded-full bg-[var(--navy)] px-1.5 text-xs text-white">
+                  {(filters.length ? 1 : 0) + (filters.early ? 1 : 0)}
+                  <span className="sr-only"> on</span>
+                </span>
+              ) : null}
+            </summary>
+            <div className="absolute inset-x-0 top-full z-20 mt-2 grid gap-4 rounded-[18px] bg-background/95 p-4 shadow-[0_0_0_1.5px_var(--border),0_16px_30px_-14px_rgb(0_0_0/25%)] backdrop-blur-md">
+              <form
+                method="get"
+                className="flex flex-wrap items-center gap-2"
+                aria-label="Premium filters"
+              >
+                {filters.q ? (
+                  <input type="hidden" name="q" value={filters.q} />
+                ) : null}
+                {filters.category ? (
+                  <input
+                    type="hidden"
+                    name="category"
+                    value={filters.category}
+                  />
+                ) : null}
+                <label htmlFor="discover-length" className="sr-only">
+                  Length
+                </label>
+                <select
+                  id="discover-length"
+                  name="length"
+                  defaultValue={filters.length ?? ""}
+                  className="h-11 rounded-xl border-0 bg-white px-3 text-base text-[var(--navy)] shadow-[inset_0_0_0_1.5px_var(--border)]"
+                >
+                  <option value="">{msg("M-174")}</option>
+                  <option value="day">{msg("M-175")}</option>
+                  <option value="week">{msg("M-176")}</option>
+                  <option value="longer">{msg("M-177")}</option>
+                </select>
+                <label className="flex items-center gap-2 text-sm font-semibold">
+                  <input
+                    type="checkbox"
+                    name="early"
+                    value="1"
+                    defaultChecked={filters.early === "1"}
+                    className="size-4"
+                  />
+                  {msg("M-177a")}
+                </label>
+                <Button type="submit" size="lg" className="h-11 px-4">
+                  Apply
+                </Button>
+              </form>
+              <section aria-label="Your state">
+                <StateFilter lookupZip={lookupZip} rows={stateRows} />
+              </section>
+            </div>
+          </details>
+        </div>
       ) : (
         // "Showing" on the left, the Premium tag on the right (decision 0016 prototype).
         <div className="mt-3 flex flex-wrap items-center justify-between gap-2">

@@ -228,6 +228,7 @@ describe("message catalogue", () => {
       "M-176",
       "M-177",
       "M-177a",
+      "M-177b",
     ];
     const expected = [
       ...Array.from({ length: 41 }, (_, i) => `M-${i + 1}`),
