@@ -49,7 +49,12 @@ export type MyRewards = {
   pickedUp: number;
   /** This run's rewards that ended without a pickup: still part of the ring's total. */
   expired: number;
+  /** Open rewards with 3 days or fewer left (decision 0018's big card), whatever the filters. */
+  endingSoon: number;
 };
+
+/** "Ending soon" on S-105's big card: 3 days left or fewer (decision 0018). */
+export const ENDING_SOON_DAYS = 3;
 
 /** S-105's list size per "Show more" step (BUILD F-4: a build constant). */
 export const REWARDS_PAGE_SIZE = 20;
@@ -134,5 +139,6 @@ export function myRewards(input: {
     later: view === "none" ? [] : later,
     pickedUp,
     expired,
+    endingSoon: open.filter((x) => x.daysLeft <= ENDING_SOON_DAYS).length,
   };
 }

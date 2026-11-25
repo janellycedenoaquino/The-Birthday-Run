@@ -69,7 +69,8 @@ test("My Rewards: the list, filters, pages, and the other views (FR-12–FR-16, 
   ).toBeVisible();
   await expect(page.getByText("0/22")).toBeVisible();
   await expect(page.getByText("22 still to get this run")).toBeVisible();
-  await expect(page.getByText(/^Day \d+ of your Birthday Run$/)).toBeVisible();
+  // The big card says how many end soon (the 1-day reward ends today).
+  await expect(page.getByText("1 ends in the next 3 days")).toBeVisible();
   // The old dashboard address goes here too.
   await page.goto("/dashboard");
   await expect(page).toHaveURL(/\/rewards$/);
@@ -215,13 +216,17 @@ test("My Rewards: the list, filters, pages, and the other views (FR-12–FR-16, 
   await expect(page.getByText(/days until your birthday$/)).toBeVisible();
   await expect(page.getByLabel("Search rewards")).toHaveCount(0);
 
-  // No programs: M-211, in the window too (FR-16).
+  // No programs (FR-16, decision 0018): the count stays, plus "No programs yet" with 4 popular
+  // brands to add right here; adding one brings the list back.
   await admin.from("enrollments").delete().eq("user_id", user.id);
   await setBirthday(todayIn(ZONE));
   await page.goto("/rewards");
-  await expect(
-    page.getByText(/^You haven't added any programs yet\./),
-  ).toBeVisible();
+  const none = page.getByRole("region", { name: "No programs yet" });
+  await expect(none).toBeVisible();
+  await expect(none.getByRole("listitem")).toHaveCount(4);
+  await expect(page.getByText("open now")).toBeVisible();
+  await none.getByRole("button", { name: /^Add / }).first().click();
+  await expect(page.getByRole("heading", { name: /^Open now/ })).toBeVisible();
 
   expect(
     await page.evaluate(

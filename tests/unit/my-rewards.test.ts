@@ -112,6 +112,19 @@ describe("Starting later and the progress count (decision 0018)", () => {
     expect(r.items.map((x) => x.id)).toEqual(["week"]);
   });
 
+  it("counts open rewards ending within 3 days, whatever the filters", () => {
+    const r = run(
+      "2026-06-15",
+      [
+        retailer("a", { days_after: 1 }),
+        retailer("b", { days_after: 3 }),
+        retailer("c", { days_after: 4 }),
+      ],
+      { q: "c" },
+    );
+    expect(r.endingSoon).toBe(2);
+  });
+
   it("no programs → nothing later", () => {
     expect(run("2026-06-05", []).later).toEqual([]);
   });

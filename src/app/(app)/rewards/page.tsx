@@ -6,6 +6,7 @@ import { DaysLeftBadge } from "@/components/rewards/days-left-badge";
 import { PickupDialog } from "@/components/rewards/pickup-dialog";
 import { ReportDialog } from "@/components/rewards/report-dialog";
 import { UndoBar } from "@/components/rewards/undo-bar";
+import { RetailerCard } from "@/components/retailers/retailer-card";
 import { RetailerLogo } from "@/components/retailers/retailer-logo";
 import { Button } from "@/components/ui/button";
 import {
@@ -29,6 +30,7 @@ import {
   type LaterItem,
   type RewardItem,
 } from "@/lib/rewards/my-rewards";
+import { enroll, unenroll } from "@/server/actions/enrollments";
 import { createPickup, deletePickup } from "@/server/actions/pickups";
 import { reportReward } from "@/server/actions/reports";
 import { findStops, lookupZip } from "@/server/actions/route";
@@ -142,9 +144,9 @@ export default async function RewardsPage({
   // Every reward of this run, the ones that ended unpicked included, so the ring never grows
   // just because rewards lapsed.
   const total = r.pickedUp + still + r.expired;
-  const runDay = w.inWindow
-    ? compareDates(w.today, w.planning.start) + 1
-    : null;
+  // No programs yet (decision 0018): 4 popular brands to add right here, so the page is never
+  // empty. Only then, so the usual page reads nothing extra.
+  const popular = r.view === "none" ? await popularRetailers(supabase) : [];
   const query = (over: Record<string, string | undefined>) => {
     const p = new URLSearchParams();
     const all = { q: filters.q, within: filters.within, ...over };
@@ -176,8 +178,11 @@ export default async function RewardsPage({
         </p>
       </header>
 
-      {r.view !== "none" ? (
-        <div className="mt-3.5 grid gap-3.5 sm:grid-cols-2">
+      {/* The ring (not without programs) and the big count, which always stays. */}
+      <div
+        className={`mt-3.5 grid gap-3.5 ${r.view === "none" ? "" : "sm:grid-cols-2"}`}
+      >
+        {r.view !== "none" ? (
           <div className="frosted flex items-center gap-5 rounded-[24px] p-5">
             <ProgressRing done={r.pickedUp} total={total} />
             <div>
@@ -187,30 +192,60 @@ export default async function RewardsPage({
               </p>
             </div>
           </div>
-          <div className="frosted flex items-center gap-5 rounded-[24px] p-5">
-            <span className="headline text-[56px] leading-none">
-              {runDay !== null ? r.available : w.daysUntilBirthday}
-            </span>
-            <div>
-              <p className="text-lg font-extrabold">
-                {runDay !== null
-                  ? msg("M-310b")
-                  : w.daysUntilBirthday === 1
-                    ? msg("M-310h")
-                    : msg("M-310g")}
+        ) : null}
+        <div className="frosted flex items-center gap-5 rounded-[24px] p-5">
+          <span className="headline text-[56px] leading-none">
+            {w.inWindow ? r.available : w.daysUntilBirthday}
+          </span>
+          <div>
+            <p className="text-lg font-extrabold">
+              {w.inWindow
+                ? msg("M-310b")
+                : w.daysUntilBirthday === 1
+                  ? msg("M-310h")
+                  : msg("M-310g")}
+            </p>
+            {/* What to pick up first (owner, 2026-11-25; decision 0018). */}
+            {w.inWindow ? (
+              <p className="text-sm text-muted-foreground">
+                {r.endingSoon === 0
+                  ? msg("M-310j")
+                  : r.endingSoon === 1
+                    ? msg("M-310i")
+                    : msg("M-310c").replace("{count}", String(r.endingSoon))}
               </p>
-              {runDay !== null ? (
-                <p className="text-sm text-muted-foreground">
-                  {msg("M-310c").replace("{day}", String(runDay))}
-                </p>
-              ) : null}
-            </div>
+            ) : null}
           </div>
         </div>
-      ) : null}
+      </div>
 
       {r.view === "none" ? (
-        <Notice text={msg("M-211")} />
+        <section
+          aria-labelledby="none-heading"
+          className="frosted mt-6 rounded-[24px] p-6"
+        >
+          <h2
+            id="none-heading"
+            className="text-2xl font-extrabold tracking-[-0.02em]"
+          >
+            {msg("M-310k")}
+          </h2>
+          <p className="mt-1 text-muted-foreground">{msg("M-310l")}</p>
+          {popular.length ? (
+            <ul className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-4">
+              {popular.map((p) => (
+                <RetailerCard
+                  key={p.id}
+                  retailer={p}
+                  toggle={{ enrolled: false, enroll, unenroll }}
+                />
+              ))}
+            </ul>
+          ) : null}
+          <Button asChild size="lg" className="mt-5">
+            <Link href="/discover">{msg("M-102")}</Link>
+          </Button>
+        </section>
       ) : r.view === "outside" ? (
         <Notice
           start={w.planning.start}
@@ -470,6 +505,26 @@ function ProgressRing({ done, total }: { done: number; total: number }) {
       </span>
     </span>
   );
+}
+
+/** Decision 0018's empty state: 4 popular, live brands (RLS returns only live ones too). */
+async function popularRetailers(
+  supabase: Awaited<ReturnType<typeof requireOnboarded>>["supabase"],
+) {
+  const { data, error } = await supabase
+    .from("retailers")
+    .select(
+      "id, name, category, reward_description, reward_type, logo_file, requires_purchase",
+    )
+    .eq("is_popular", true)
+    .is("retired_at", null)
+    .order("name")
+    .limit(4);
+  if (error)
+    throw new Error("S-105: could not read popular retailers", {
+      cause: error,
+    });
+  return data;
 }
 
 const latest = (a: LocalDate, b: LocalDate) =>
