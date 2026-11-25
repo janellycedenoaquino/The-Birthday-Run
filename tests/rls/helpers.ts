@@ -1,3 +1,5 @@
+import { readdirSync } from "node:fs";
+import { resolve } from "node:path";
 import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 import postgres from "postgres";
 import type { Database } from "@/lib/types/database.types";
@@ -194,3 +196,13 @@ export async function groupWith(
     throw new Error(`setup group items failed: ${itemsError.message}`);
   return group.id;
 }
+
+/** src/server/actions, and every action file in it (relative paths), for the refusal tests. */
+export const ACTIONS_DIR = resolve(
+  import.meta.dirname,
+  "../../src/server/actions",
+);
+export const actionFiles = () =>
+  (readdirSync(ACTIONS_DIR, { recursive: true }) as string[]).filter((f) =>
+    /\.tsx?$/.test(f),
+  );
