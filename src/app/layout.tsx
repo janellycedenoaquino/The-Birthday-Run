@@ -9,6 +9,7 @@ import { BrandStyle } from "@/components/layout/brand-style";
 import { SiteFooter } from "@/components/layout/site-footer";
 import { NoticeToast } from "@/components/layout/notice-toast";
 import { SiteHeader } from "@/components/layout/site-header";
+import { StyleNonce } from "@/components/layout/style-nonce";
 import { ThemeProvider } from "@/components/layout/theme-provider";
 import { StartLocationProvider } from "@/components/location/start-location";
 import { Toaster } from "@/components/ui/sonner";
@@ -53,6 +54,7 @@ export default async function RootLayout({ children }: LayoutProps<"/">) {
         {nonce && <BrandStyle nonce={nonce} brand={appConfig.brand} />}
       </head>
       <body className="flex min-h-dvh flex-col">
+        {nonce && <StyleNonce nonce={nonce} />}
         <ThemeProvider
           attribute="class"
           // Light for everyone by default, whatever the device says (decision 0016, SPEC §3.6).

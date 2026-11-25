@@ -46,8 +46,41 @@ test("signed out: every non-retired retailer, the sign-up prompt, and a 404 for 
   await expect(
     page.getByRole("heading", { name: notPopular!.name, level: 1 }),
   ).toBeVisible();
-  await expect(page.getByText("Back to Rewards")).toBeVisible();
-  await expect(page.getByRole("link", { name: "Sign up free" })).toBeVisible();
+  // Decision 0016 (owner, 2026-11-25): a back arrow on wide screens (the breadcrumb is for
+  // phones), no sign-up button beside the website link, blurred sample dates (aria-hidden)
+  // with M-280, the visitor band, and no "What you need" for visitors.
+  await expect(
+    page.getByRole("link", { name: "Back to Rewards" }),
+  ).toBeVisible();
+  await expect(
+    page.getByRole("navigation", { name: "Breadcrumb" }),
+  ).toBeHidden();
+  await expect(page.getByRole("link", { name: /^Sign up free/ })).toHaveCount(
+    1,
+  );
+  await expect(page.getByText("What you need")).toHaveCount(0);
+  await expect(
+    page.getByRole("link", { name: "Sign up to see your dates" }),
+  ).toBeVisible();
+  await expect(page.getByRole("button", { name: /^Add/ })).toHaveCount(0);
+
+  // From Discover, a card opens the same brand as a pop-up with its own URL; Escape goes back.
+  await page.goto("/discover");
+  const card = page.getByRole("link", { name: /Starbucks/ }).first();
+  await card.focus();
+  await page.keyboard.press("Enter");
+  await expect(page).toHaveURL(/\/discover\/starbucks$/);
+  const sheet = page.getByRole("dialog", { name: "Starbucks" });
+  await expect(sheet).toBeVisible();
+  await expect(sheet.getByText("Your birthday gift")).toBeVisible();
+  // The first pop-up on this device hints that it scrolls (owner, 2026-11-25).
+  const hint = sheet.getByText("More below");
+  await expect(hint).toHaveCSS("opacity", "1");
+  await page.keyboard.press("Escape");
+  await expect(page).toHaveURL(/\/discover$/);
+  await expect(sheet).toBeHidden();
+  // Focus goes back to the card that opened it (WCAG 2.4.3).
+  await expect(card).toBeFocused();
 
   // Retired and unknown IDs stay a 404.
   if (retired) {
