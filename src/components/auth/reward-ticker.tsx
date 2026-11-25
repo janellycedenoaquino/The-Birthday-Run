@@ -4,17 +4,13 @@ import Image from "next/image";
 import { useEffect, useState } from "react";
 import { useMotion } from "@/components/motion/motion";
 import { msg } from "@/lib/messages";
+import type { ShowcaseRetailer } from "@/lib/retailers/showcase";
 
 // "What you get" on sign in and sign up (decision 0016, the owner's rule: signing up or in reminds
 // people what's waiting): one reward at a time, changing every 2.6 s, stopping while motion is
 // paused. Decoration (`aria-hidden`), so screen readers aren't interrupted every 2.6 s.
 
-export type TickerRetailer = {
-  id: string;
-  name: string;
-  logoFile: string;
-  reward: string;
-};
+export type TickerRetailer = ShowcaseRetailer;
 const EVERY_MS = 2600;
 
 export function RewardTicker({ retailers }: { retailers: TickerRetailer[] }) {
@@ -30,7 +26,8 @@ export function RewardTicker({ retailers }: { retailers: TickerRetailer[] }) {
     return () => window.clearInterval(timer);
   }, [paused, retailers.length]);
 
-  const r = retailers[index];
+  // Modulo: the list can change length on a refresh while the index stays.
+  const r = retailers.length ? retailers[index % retailers.length] : undefined;
   if (!r) return null;
   return (
     <div

@@ -26,7 +26,11 @@ export function EmailSentPanel({
   const pausedOnShow = useRef(paused);
   useEffect(() => {
     heading.current?.focus();
-    if (celebrate && !pausedOnShow.current) confettiBurst();
+    // Reduced motion is checked on its own too: "Play motion" on such a device isn't a yes to confetti.
+    const reduced = window.matchMedia(
+      "(prefers-reduced-motion: reduce)",
+    ).matches;
+    if (celebrate && !pausedOnShow.current && !reduced) confettiBurst();
   }, [celebrate]);
 
   return (

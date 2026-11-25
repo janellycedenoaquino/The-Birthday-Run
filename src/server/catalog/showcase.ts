@@ -1,25 +1,22 @@
 import "server-only";
 import type { SupabaseClient } from "@supabase/supabase-js";
+import type { ShowcaseRetailer } from "@/lib/retailers/showcase";
 import type { Database } from "@/lib/types/database.types";
+import { logError } from "@/server/errors";
 
 // The live retailers the decorative backgrounds show (decision 0016: the landing tunnel, the
 // sign-in wall, the rotating reward). Public catalogue (decision 0017): RLS returns only live
 // retailers, whoever asks. Retailers without a logo are counted but not shown.
 
-export type ShowcaseRetailer = {
-  id: string;
-  name: string;
-  logoFile: string;
-  reward: string;
-};
-
 export async function getShowcase(
   supabase: SupabaseClient<Database>,
 ): Promise<{ total: number; withLogos: ShowcaseRetailer[] }> {
-  const { data } = await supabase
+  const { data, error } = await supabase
     .from("retailers")
     .select("id, name, logo_file, reward_description")
     .is("retired_at", null);
+  // Decoration only: a failed read leaves the background empty, logged, never an error page.
+  if (error) logError(error, { op: "catalog.showcase" });
   const rows = data ?? [];
   return {
     total: rows.length,

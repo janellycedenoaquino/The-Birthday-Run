@@ -1,16 +1,12 @@
 import Image from "next/image";
+import type { ShowcaseRetailer } from "@/lib/retailers/showcase";
 
 // The tilted wall of retailer cards behind sign in and sign up (decision 0016): 7 rows rotated
 // -8°, sliding in alternating directions (44–58 s a loop), each card with its logo in its own
 // colours and its reward. Hovering a card shows the name and reward with a green border and holds
 // all motion (`.motion-hold`); the paused stage stops it too. Decoration (`aria-hidden`).
 
-export type WallRetailer = {
-  id: string;
-  name: string;
-  logoFile: string;
-  reward: string;
-};
+export type WallRetailer = ShowcaseRetailer;
 
 const ROWS = 7;
 const PER_ROW = 16;
