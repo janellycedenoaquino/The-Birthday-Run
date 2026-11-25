@@ -279,8 +279,9 @@ export const M = {
   "M-238": "Show route",
   // S-1 landing (decision 0016).
   "M-102": "Browse rewards",
-  "M-282": "How many free things can you get",
-  "M-282b": "on your birthday?",
+  // "\n" marks the phone line breaks (S-1 shows them only on small screens; elsewhere a space).
+  "M-282": "How many\nfree things\ncan you get",
+  "M-282b": "on your\nbirthday?",
   "M-282c": "Find my birthday freebies",
   "M-283":
     "Find every brand that treats you, join in time, and plan your stops so nothing expires.",

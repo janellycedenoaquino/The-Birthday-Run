@@ -80,8 +80,8 @@ describe("C-1 site header, signed out", () => {
       "/auth/reauthenticate",
     ]) {
       const html = header(path, { email: "a@example.com", displayName: null });
-      // Signed in, so the logo goes to the dashboard (SPEC §3.2); the guards own the step itself.
-      expect(links(html)).toEqual([["/dashboard", NAME]]);
+      // Signed in, so the name goes to My Rewards (decision 0018); the guards own the step itself.
+      expect(links(html)).toEqual([["/rewards", NAME]]);
       expect(html).not.toContain("a@example.com");
       expect(html).not.toContain("<button");
     }
@@ -89,13 +89,13 @@ describe("C-1 site header, signed out", () => {
 });
 
 describe("C-1 site header, signed in", () => {
-  it("links home to the dashboard and always shows the email (D24.9)", () => {
+  it("links the name to My Rewards and always shows the email (D24.9, decision 0018)", () => {
     const html = header("/settings", {
       email: "someone@example.com",
       displayName: "Sam",
     });
     expect(links(html)).toEqual([
-      ["/dashboard", NAME],
+      ["/rewards", NAME],
       ["/discover", "Discover"],
       ["/rewards", "My Rewards"],
       ["/plan", "Plan"],
