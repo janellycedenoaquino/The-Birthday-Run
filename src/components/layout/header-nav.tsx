@@ -70,69 +70,78 @@ export function HeaderNav({ account }: { account: Account | null }) {
   }
 
   // Signed in, the links sit next to the name and the account's round initial goes far right
-  // (decision 0016 prototype).
+  // (decision 0016 prototype). On narrow screens the links scroll sideways so the account (and
+  // Sign out, and the T22 check in its menu) always stays on screen.
   return (
     <nav
       aria-label="Account"
       className={
         account
-          ? "ml-1 flex min-w-0 flex-1 items-center gap-1"
+          ? "ml-1 flex min-w-0 flex-1 items-center gap-2"
           : "flex shrink-0 items-center gap-2"
       }
     >
-      {/* C-101's first app link (M-101). Signed out it looks like the pills beside it, and it's
+      <div
+        className={
+          account
+            ? "flex min-w-0 flex-1 items-center gap-1 overflow-x-auto"
+            : "contents"
+        }
+      >
+        {/* C-101's first app link (M-101). Signed out it looks like the pills beside it, and it's
           left out on Rewards itself, as in the prototype. */}
-      {path !== "/onboarding" &&
-        (account ? (
-          <Button asChild variant="ghost" size="lg" className={CURRENT}>
+        {path !== "/onboarding" &&
+          (account ? (
+            <Button asChild variant="ghost" size="lg" className={CURRENT}>
+              <Link
+                href="/discover"
+                aria-current={path.startsWith("/discover") ? "page" : undefined}
+              >
+                {msg("M-101")}
+              </Link>
+            </Button>
+          ) : path === "/discover" ? null : (
             <Link
               href="/discover"
               aria-current={path.startsWith("/discover") ? "page" : undefined}
+              className="pill-link"
             >
               {msg("M-101")}
             </Link>
+          ))}
+        {account && path !== "/onboarding" && (
+          <Button asChild variant="ghost" size="lg" className={CURRENT}>
+            <Link
+              href="/rewards"
+              aria-current={path.startsWith("/rewards") ? "page" : undefined}
+            >
+              {msg("M-101b")}
+            </Link>
           </Button>
-        ) : path === "/discover" ? null : (
-          <Link
-            href="/discover"
-            aria-current={path.startsWith("/discover") ? "page" : undefined}
-            className="pill-link"
-          >
-            {msg("M-101")}
-          </Link>
-        ))}
-      {account && path !== "/onboarding" && (
-        <Button asChild variant="ghost" size="lg" className={CURRENT}>
-          <Link
-            href="/rewards"
-            aria-current={path.startsWith("/rewards") ? "page" : undefined}
-          >
-            {msg("M-101b")}
-          </Link>
-        </Button>
-      )}
-      {account && path !== "/onboarding" && (
-        <Button asChild variant="ghost" size="lg" className={CURRENT}>
-          <Link
-            href="/plan"
-            aria-current={path.startsWith("/plan") ? "page" : undefined}
-          >
-            {msg("M-101d")}
-          </Link>
-        </Button>
-      )}
-      {account && path !== "/onboarding" && (
-        <Button asChild variant="ghost" size="lg" className={CURRENT}>
-          <Link
-            href="/history"
-            aria-current={path.startsWith("/history") ? "page" : undefined}
-          >
-            {msg("M-101c")}
-          </Link>
-        </Button>
-      )}
+        )}
+        {account && path !== "/onboarding" && (
+          <Button asChild variant="ghost" size="lg" className={CURRENT}>
+            <Link
+              href="/plan"
+              aria-current={path.startsWith("/plan") ? "page" : undefined}
+            >
+              {msg("M-101d")}
+            </Link>
+          </Button>
+        )}
+        {account && path !== "/onboarding" && (
+          <Button asChild variant="ghost" size="lg" className={CURRENT}>
+            <Link
+              href="/history"
+              aria-current={path.startsWith("/history") ? "page" : undefined}
+            >
+              {msg("M-101c")}
+            </Link>
+          </Button>
+        )}
+      </div>
       {account ? (
-        <div className="ml-auto">
+        <div className="ml-auto shrink-0">
           <AccountMenu {...account} />
         </div>
       ) : (

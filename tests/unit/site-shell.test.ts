@@ -107,9 +107,10 @@ describe("C-1 site header, signed in", () => {
       ["/plan", "Plan"],
       ["/history", "History"],
     ]);
-    // A round initial; the email is its name and tooltip (decision 0022, D24.9).
+    // A round initial of the EMAIL (not the name "Sam"); the name starts with the letter
+    // (WCAG 2.5.3) and carries the email, as does the tooltip (decision 0022, D24.9).
     expect(html).toMatch(
-      /<button[^>]*aria-label="Account: someone@example\.com"[^>]*>.*>S<\/span><\/button>/,
+      /<button[^>]*aria-label="S, account someone@example\.com"[^>]*>.*>S<\/span><\/button>/,
     );
     expect(html).toContain('title="someone@example.com"');
     expect(html).not.toContain(">Sign in<");
@@ -122,6 +123,25 @@ describe("C-1 site header, signed in", () => {
     });
     expect(html).not.toContain("<img src=x>");
     expect(html).toContain("&lt;img src=x&gt;");
+  });
+});
+
+describe("C-1 account initial (decision 0022, T22)", () => {
+  it("comes from the email, so a display name can't copy someone else's letter", () => {
+    const html = header("/settings", {
+      email: "zed@example.com",
+      displayName: "Victim Name",
+    });
+    expect(html).toMatch(/>Z<\/span><\/button>/);
+  });
+
+  it("is one whole character, upper case, or ? when there's none", async () => {
+    const { accountInitial } = await import("@/components/layout/account-menu");
+    expect(accountInitial("ann@example.com")).toBe("A");
+    expect(accountInitial("  bo@example.com")).toBe("B");
+    expect(accountInitial("😀x@example.com")).toBe("😀");
+    expect(accountInitial("ßa@example.com")).toBe("S");
+    expect(accountInitial("")).toBe("?");
   });
 });
 
