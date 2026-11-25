@@ -8,6 +8,22 @@ describe("message catalogue", () => {
   it("has every Template ID (M-1–M-41, API-1–API-7) and the app's IDs built so far", () => {
     // App IDs are added with the screen that shows them (BUILD §0.3).
     const app = [
+      "M-102",
+      "M-282",
+      "M-282b",
+      "M-283",
+      "M-284",
+      "M-285",
+      "M-285b",
+      "M-286",
+      "M-286b",
+      "M-287",
+      "M-287b",
+      "M-288",
+      "M-289",
+      "M-289b",
+      "M-289c",
+      "M-289d",
       "M-105",
       "M-106",
       "M-107",

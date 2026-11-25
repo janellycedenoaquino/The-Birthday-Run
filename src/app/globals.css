@@ -161,9 +161,9 @@
 
 /* The frosted card (decision 0016): cream at 58% with a 14 px blur, a thin navy edge. */
 @utility frosted {
+  /* Tailwind's backdrop classes: a raw backdrop-filter here lost its unprefixed line in the build. */
+  @apply backdrop-blur-[14px] backdrop-saturate-[1.2];
   background: var(--frost);
-  backdrop-filter: blur(14px) saturate(1.2);
-  -webkit-backdrop-filter: blur(14px) saturate(1.2);
   box-shadow:
     0 0 0 1.5px color-mix(in srgb, var(--foreground) 12%, transparent),
     0 20px 60px -30px rgb(0 0 0 / 25%);
@@ -186,4 +186,84 @@
   font-weight: 800;
   letter-spacing: -0.035em;
   line-height: 1.06;
+}
+
+/* Motion (decision 0016, components/motion/motion.tsx): every `.motion` animation stops inside a
+   paused stage, or while a pointer rests on a `.motion-hold` element so it can be read. */
+.motion-stage[data-paused="true"] .motion,
+.motion-stage:has(.motion-hold:hover) .motion {
+  animation-play-state: paused;
+}
+
+.glow-blob {
+  position: absolute;
+  width: 70vw;
+  height: 70vw;
+  border-radius: 50%;
+  filter: blur(40px);
+  opacity: 0.95;
+  animation-duration: 44s;
+  animation-timing-function: ease-in-out;
+  animation-iteration-count: infinite;
+  animation-direction: alternate;
+}
+.glow-blob-pink {
+  left: -25vw;
+  top: -30vw;
+  background: radial-gradient(circle, var(--glow-pink) 0%, transparent 65%);
+  animation-name: glow-drift-1;
+}
+.glow-blob-blue {
+  right: -25vw;
+  top: -25vw;
+  background: radial-gradient(circle, var(--glow-blue) 0%, transparent 65%);
+  animation-name: glow-drift-2;
+  animation-duration: 52s;
+}
+.glow-blob-mint {
+  left: 15vw;
+  bottom: -45vw;
+  background: radial-gradient(circle, var(--glow-mint) 0%, transparent 65%);
+  animation-name: glow-drift-3;
+  animation-duration: 60s;
+}
+@keyframes glow-drift-1 {
+  to {
+    transform: translate(45vw, 35vh) scale(1.2);
+  }
+}
+@keyframes glow-drift-2 {
+  to {
+    transform: translate(-50vw, 40vh) scale(0.9);
+  }
+}
+@keyframes glow-drift-3 {
+  to {
+    transform: translate(-20vw, -45vh) scale(1.15);
+  }
+}
+
+/* The landing tunnel (decision 0016): logo cards fly toward the viewer on a 14 s loop. */
+.tunnel-tile {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  margin: -48px 0 0 -75px;
+  opacity: 0;
+  animation: tunnel-fly 14s linear infinite;
+  animation-delay: var(--delay);
+}
+@keyframes tunnel-fly {
+  0% {
+    transform: translate3d(var(--x), var(--y), -2600px);
+    opacity: 0;
+  }
+  15%,
+  85% {
+    opacity: 1;
+  }
+  100% {
+    transform: translate3d(var(--x), var(--y), 600px);
+    opacity: 0;
+  }
 }

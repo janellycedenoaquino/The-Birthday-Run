@@ -356,7 +356,7 @@ flowchart TD
 "Not allowed" for every app page: BUILD §0.2's level (signed out → Template S-4 with `next`; not onboarded → S-101). Loading on `(app)` pages: Template C-3 skeleton; `/discover` gets the same skeleton.
 
 #### Template S-1 Landing (changed body) · FR-2
-- Hero h1 `appConfig.name`, `appConfig.description`; primary "Get started" → Template S-5; secondary M-102 → S-103. Signed in: Template behaviour. No feature grid.
+- Hero h1 M-282 with M-282b in the tilted block, then M-283 and the live brand count M-284; primary "Get started" → Template S-5; secondary M-102 → S-103. The app's name stays in the header (C-1). Signed in: Template behaviour. No feature grid. Controls: M-285/M-285b (pause), the game tab M-286/M-286b, its button M-287/M-287b, hint M-288, scoreboard M-289–M-289c, canvas label M-289d.
 - **Look:** decision 0016: a 3D tunnel of retailer logos behind a frosted card, a "Pause motion" control, hovering a logo shows its name and reward and freezes the motion, nothing below the hero (one screen), and an optional game in a pink pull-up tab at the bottom that pauses the motion while it's played.
 - **Buttons (decision 0016):** "Get started" → Template S-5 and "Browse rewards" (M-102) → S-103 in the card; "Sign in" top right → Template S-4, as on every public page.
 
@@ -439,6 +439,9 @@ Template M-, API-, E- texts apply unchanged. Placeholders in `{braces}` are fill
 **Navigation and onboarding**
 - M-101 (C-101): "Discover" · "My Rewards" (M-101b) · "Plan" (M-101d) · "History" (M-101c)
 - M-102 (S-1): "Browse rewards"
+- M-282 / M-282b (S-1 h1, decision 0016): "Every birthday freebie," / "one run." (in the tilted block) · M-283: "See which brands treat you on your birthday, sign up in time, and plan the stops so nothing expires." · M-284: "{count} brands waiting"
+- M-285 / M-285b (pause control, S-1 and S-4/S-5): "Pause motion" / "Play motion"
+- M-286 / M-286b (S-1 game tab): "Catch the prizes" / "Close" · M-287 / M-287b: "Play 30 seconds" / "Play again ({score} pts)" · M-288: "Mouse, touch or arrow keys" · M-289 / M-289b / M-289c: "Score" / "Time" / "Best" · M-289d (canvas label): "Catch-the-prizes game. Steer with the arrow keys."
 - M-103 / M-104 (C-102 toggle): "Add" / "Added"
 - M-105 (S-101 h1): "When's your birthday?"
 - M-106: "We only need the month and day, never the year."
