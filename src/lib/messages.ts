@@ -83,7 +83,8 @@ export const M = {
   "M-257": "Birthday saved.",
   "M-278":
     "In years without Feb 29 we count Feb 28. Some brands use Mar 1, so check their app.",
-  "M-101": "Discover",
+  // "Rewards", not "Discover": named for what's there (owner, 2026-11-25).
+  "M-101": "Rewards",
   "M-103": "Add",
   "M-104": "Added",
   "M-109": "Which programs are you in?",
@@ -94,10 +95,10 @@ export const M = {
   "M-111c": "Skip for now",
   "M-118": "Step {step} of 2",
   "M-171": "No programs match that search.",
-  "M-171a": "Discover",
+  "M-171a": "Rewards",
   "M-171b":
     "Free birthday rewards from loyalty programs, each checked on the brand's own page.",
-  "M-171c": "Back to Discover",
+  "M-171c": "Back to Rewards",
   "M-178": "Showing {shown} of {total}",
   "M-179": "Nothing matches these filters.",
   "M-189a": "Purchase: {text}",
@@ -108,6 +109,7 @@ export const M = {
   "M-277b":
     "{brand} needs members to join {days} days before the birthday, so it may not come this year.",
   "M-101b": "My Rewards",
+  "M-101f": "Get started",
   "M-120": "Last day",
   "M-122": "{days} days left",
   "M-123": "Ends soon",
@@ -129,7 +131,7 @@ export const M = {
   "M-207": "Your rewards open on {date}. Add programs or plan your run now.",
   "M-209": "Show more",
   "M-211":
-    "You haven't added any programs yet. Find the ones you belong to in Discover, then plan your run.",
+    "You haven't added any programs yet. Find the ones you belong to in Rewards, then plan your run.",
   "M-212": "Nothing left to pick up right now. Nice work.",
   "M-276": "Brands may end it early by their own clock. Go early in the day.",
   "M-101c": "History",
@@ -176,7 +178,7 @@ export const M = {
   "M-234": "Pickup: {date} at {time}",
   "M-235": "This pickup is outside your birthday window. Change the date.",
   "M-236": "Move {retailer}",
-  "M-239": "Nothing to plan yet. Add programs in Discover.",
+  "M-239": "Nothing to plan yet. Add programs in Rewards.",
   "M-240": "No groups yet. Select rewards above and add them to a group.",
   "M-241": "No rewards in this group yet.",
   "M-242": "Remove line breaks and tabs from the name.",
@@ -201,8 +203,12 @@ export const M = {
   "M-176": "Up to a week",
   "M-177": "Up to a month",
   "M-177a": "Can start before my birthday",
+  // S-103 premium: the button that opens the filters (owner, 2026-11-25).
+  "M-177b": "More filters",
   "M-130": "{feature} is part of Premium",
   "M-131": "Filter by your state and reward length",
+  // C-104 as a tag (S-103, decision 0016 prototype).
+  "M-131a": "Premium: filter by your state and reward length",
   "M-132": "The map and route",
   "M-133": "More than {limit} groups",
   "M-134": "Up to {limit} rewards per group",
@@ -279,11 +285,13 @@ export const M = {
   "M-238": "Show route",
   // S-1 landing (decision 0016).
   "M-102": "Browse rewards",
-  "M-282": "Every birthday freebie,",
-  "M-282b": "one run.",
+  // "\n" marks the phone line breaks (S-1 shows them only on small screens; elsewhere a space).
+  "M-282": "How many\nfree things\ncan you get",
+  "M-282b": "on your\nbirthday?",
+  "M-282c": "Find my birthday freebies",
   "M-283":
-    "See which brands treat you on your birthday, sign up in time, and plan the stops so nothing expires.",
-  "M-284": "{count} brands waiting",
+    "Find every brand that treats you, join in time, and plan your stops so nothing expires.",
+  "M-284": "{count} brands waiting to treat you",
   "M-285": "Pause motion",
   "M-285b": "Play motion",
   "M-286": "Catch the prizes",
@@ -307,15 +315,17 @@ export const M = {
   "M-292c": "Your rewards are right where you left them.",
   "M-293": "Waiting for you",
   // S-103 look (decision 0016).
-  "M-294": "Every birthday treat,",
+  "M-294": "Every birthday reward,",
   "M-294b": "in one place.",
+  // "\n": a line break (owner's wording, 2026-11-25).
   "M-294c":
-    "Each reward is checked on the brand's own page. Sign up free to get your own countdown and plan your run.",
+    "Some last a day, some all month. We check each one on the brand's own site.\nSign up free to get your countdown and plan your run.",
   "M-294d": "{count} brands with a birthday treat",
-  "M-295": "Discover",
-  "M-295b": "rewards",
+  // S-103 signed in: the same h1 as signed out (M-294/M-294b; owner, 2026-11-25).
   "M-295c":
-    "Add the programs you're in. We'll count down each one for your birthday.",
+    "Add the ones you've joined, or join new ones in time. We'll count down each one to your birthday, {date}.",
+  "M-295d": "Add your birthday to start your countdowns.",
+  "M-295e": "Add my birthday",
   "M-296": "Needs a purchase",
   // S-104 look (decision 0016) and the user's dates (M-279, M-280).
   "M-279": "Your dates: {start} – {end} · {status}",

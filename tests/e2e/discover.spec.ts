@@ -23,7 +23,7 @@ test("signed out: every non-retired retailer, the sign-up prompt, and a 404 for 
   await page.goto("/discover");
   await expect(
     page.getByRole("heading", {
-      name: "Every birthday treat, in one place.",
+      name: "Every birthday reward, in one place.",
       level: 1,
     }),
   ).toBeVisible();
@@ -46,11 +46,11 @@ test("signed out: every non-retired retailer, the sign-up prompt, and a 404 for 
   await expect(
     page.getByRole("heading", { name: notPopular!.name, level: 1 }),
   ).toBeVisible();
-  // Decision 0016: breadcrumb back to Discover, sign-up in place of the toggle, blurred sample
+  // Decision 0016: breadcrumb back to Rewards, sign-up in place of the toggle, blurred sample
   // dates (aria-hidden) with M-280, and the visitor band.
   await expect(
     page.getByRole("navigation", { name: "Breadcrumb" }).getByRole("link", {
-      name: "Discover",
+      name: "Rewards",
     }),
   ).toBeVisible();
   await expect(
