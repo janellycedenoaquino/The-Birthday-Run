@@ -84,6 +84,8 @@ export const M = {
   "M-278":
     "In years without Feb 29 we count Feb 28. Some brands use Mar 1, so check their app.",
   "M-101": "Discover",
+  // C-101 signed out: the same Discover link, named for what's there (owner, 2026-11-25).
+  "M-101e": "Rewards",
   "M-103": "Add",
   "M-104": "Added",
   "M-109": "Which programs are you in?",
@@ -297,6 +299,17 @@ export const M = {
   "M-289b": "Time",
   "M-289c": "Best",
   "M-289d": "Catch-the-prizes game. Steer with the arrow keys.",
+  // S-4 / S-5 look (decision 0016).
+  "M-290": "Create account",
+  "M-290b": "Sign in",
+  "M-290c": "Sign in or create an account",
+  "M-291": "Create your",
+  "M-291b": "account",
+  "M-291c": "Free, and it takes a minute.",
+  "M-292": "Welcome",
+  "M-292b": "back",
+  "M-292c": "Your rewards are right where you left them.",
+  "M-293": "Waiting for you",
   "BR-12": "We don't recognise that ZIP code.",
   "BR-13":
     "We couldn't look up stores right now, so these stops have no map pin. Try again later.",

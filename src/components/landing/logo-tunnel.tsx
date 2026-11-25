@@ -1,16 +1,12 @@
 import Image from "next/image";
+import type { ShowcaseRetailer } from "@/lib/retailers/showcase";
 
 // The landing tunnel (decision 0016): live retailers' logo cards, in their own colours, flying
 // toward the viewer. Decoration (`aria-hidden`): every retailer is reachable in Discover. Hovering
 // a card shows its name and reward with a spring-green border and holds all motion (`.motion-hold`);
 // the paused stage stops it too (components/motion/motion.tsx).
 
-export type TunnelRetailer = {
-  id: string;
-  name: string;
-  logoFile: string;
-  reward: string;
-};
+export type TunnelRetailer = ShowcaseRetailer;
 
 export function LogoTunnel({ retailers }: { retailers: TunnelRetailer[] }) {
   return (

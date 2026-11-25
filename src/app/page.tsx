@@ -1,9 +1,6 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import {
-  LogoTunnel,
-  type TunnelRetailer,
-} from "@/components/landing/logo-tunnel";
+import { LogoTunnel } from "@/components/landing/logo-tunnel";
 import { PrizeGame } from "@/components/landing/prize-game";
 import {
   MotionStage,
@@ -12,6 +9,7 @@ import {
 } from "@/components/motion/motion";
 import { Button } from "@/components/ui/button";
 import { msg } from "@/lib/messages";
+import { getShowcase, shuffle } from "@/server/catalog/showcase";
 import { createClient } from "@/server/supabase/server";
 
 // S-1 Landing (SPEC §3.3, FR-2, FR-17, FR-24; look: decision 0016). One screen: the logo tunnel
@@ -26,30 +24,10 @@ export default async function Home() {
     {
       data: { user },
     },
-    { data: rows },
-  ] = await Promise.all([
-    supabase.auth.getUser(),
-    // Public catalogue (decision 0017): RLS returns only live retailers.
-    supabase
-      .from("retailers")
-      .select("id, name, logo_file, reward_description")
-      .is("retired_at", null),
-  ]);
+    { total, withLogos },
+  ] = await Promise.all([supabase.auth.getUser(), getShowcase(supabase)]);
   // Signed in, home is My Rewards (decision 0018): this page is for visitors only.
   if (user) redirect("/rewards");
-  const retailers = rows ?? [];
-  const withLogos: TunnelRetailer[] = retailers.flatMap((r) =>
-    r.logo_file
-      ? [
-          {
-            id: r.id,
-            name: r.name,
-            logoFile: r.logo_file,
-            reward: r.reward_description,
-          },
-        ]
-      : [],
-  );
   const tunnel = shuffle(withLogos).slice(0, TUNNEL_SIZE);
 
   return (
@@ -83,7 +61,7 @@ export default async function Home() {
             </Button>
           </div>
           <p className="mt-4.5 text-[13px] font-bold tracking-[0.12em] text-muted-foreground uppercase">
-            {msg("M-284").replace("{count}", String(retailers.length))}
+            {msg("M-284").replace("{count}", String(total))}
           </p>
         </div>
       </div>
@@ -92,14 +70,4 @@ export default async function Home() {
       />
     </MotionStage>
   );
-}
-
-/** A fresh order per request (Fisher–Yates). */
-function shuffle<T>(items: T[]): T[] {
-  const out = [...items];
-  for (let i = out.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [out[i], out[j]] = [out[j], out[i]];
-  }
-  return out;
 }

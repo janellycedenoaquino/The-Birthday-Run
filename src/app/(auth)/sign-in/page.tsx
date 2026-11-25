@@ -1,12 +1,11 @@
 import type { Metadata } from "next";
 import { headers } from "next/headers";
-import Link from "next/link";
 import { redirect } from "next/navigation";
 import { z } from "zod";
+import { AuthShell } from "@/components/auth/auth-shell";
 import { GoogleButton } from "@/components/auth/google-button";
 import { SignInForms } from "@/components/auth/sign-in-forms";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { appConfig } from "@/config/app";
 import { msg } from "@/lib/messages";
 import { safeRedirectPath } from "@/lib/security/safe-redirect";
 import {
@@ -14,9 +13,11 @@ import {
   signIn,
   signInWithGoogle,
 } from "@/server/actions/auth";
+import { getShowcase, shuffle } from "@/server/catalog/showcase";
 import { createClient } from "@/server/supabase/server";
 
-// S-4 Sign in (SPEC §3.3, BUILD F-7, FR-3..FR-5, FR-18). Public; signed-in users go on.
+// S-4 Sign in (SPEC §3.3, BUILD F-7, FR-3..FR-5, FR-18). Public; signed-in users go on. Look:
+// decision 0016 (AuthShell; its "Create account" tab replaces the "New here?" link).
 export const metadata: Metadata = { title: "Sign in" };
 
 const errorSchema = z.enum(["oauth_cancelled"]).optional().catch(undefined);
@@ -43,12 +44,10 @@ export default async function SignInPage({
     );
 
   const nonce = (await headers()).get("x-nonce") ?? "";
+  const { withLogos } = await getShowcase(supabase);
 
   return (
-    <div className="mx-auto w-full max-w-md px-4 py-12 sm:px-6">
-      <h1 className="mb-6 text-2xl font-semibold">
-        Sign in to {appConfig.name}
-      </h1>
+    <AuthShell mode="in" next={next} retailers={shuffle(withLogos)}>
       {error === "oauth_cancelled" && (
         <Alert className="mb-6">
           <AlertDescription>{msg("M-9")}</AlertDescription>
@@ -69,15 +68,6 @@ export default async function SignInPage({
         next={next}
         nonce={nonce}
       />
-      <p className="mt-8 text-sm">
-        New here?{" "}
-        <Link
-          href={next ? `/sign-up?next=${encodeURIComponent(next)}` : "/sign-up"}
-          className="underline underline-offset-4"
-        >
-          Create an account
-        </Link>
-      </p>
-    </div>
+    </AuthShell>
   );
 }
