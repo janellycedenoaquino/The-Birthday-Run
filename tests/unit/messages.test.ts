@@ -73,6 +73,7 @@ describe("message catalogue", () => {
       "M-298u",
       "M-298v",
       "M-298x",
+      "M-298y",
       "M-105",
       "M-106",
       "M-107",

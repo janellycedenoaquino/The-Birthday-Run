@@ -27,6 +27,11 @@ const FACT =
 const FACT_TITLE =
   "mb-2 text-xs font-extrabold tracking-[0.12em] text-muted-foreground uppercase";
 const BIG = "text-xl leading-tight font-extrabold tracking-[-0.02em]";
+const COLUMNS: Record<number, string> = {
+  1: "",
+  2: "md:grid-cols-2",
+  3: "md:grid-cols-3",
+};
 const LINK =
   "font-bold underline decoration-[var(--bubblegum)] decoration-[3px] underline-offset-[3px]";
 
@@ -52,6 +57,9 @@ export function BrandDetails({
     text ? [{ label: msg(id).split("{text}")[0]!.trim(), text }] : [],
   );
   const page = variant === "page";
+  // When, then Join (visitors: only with a waiting period), then What you need (signed in).
+  const factCount =
+    1 + (r.signup_lead_days || signedIn ? 1 : 0) + (signedIn ? 1 : 0);
 
   return (
     <div>
@@ -94,7 +102,8 @@ export function BrandDetails({
           </div>
           {page ? (
             <h1 className="headline mt-4 text-[30px] leading-[1.08]">
-              {r.name}
+              {/* "{brand} birthday reward": what people search for (owner, 2026-11-25). */}
+              {msg("M-298").replace("{brand}", r.name)}
             </h1>
           ) : (
             // The pop-up's own title, so the dialog is named by it.
@@ -159,7 +168,7 @@ export function BrandDetails({
       </section>
 
       <section
-        className={`mt-[18px] grid gap-3.5 ${page ? (signedIn ? "md:grid-cols-3" : "md:grid-cols-2") : ""}`}
+        className={`mt-[18px] grid gap-3.5 ${page ? COLUMNS[factCount] : ""}`}
       >
         <div className={FACT}>
           <h3 className={FACT_TITLE}>{msg("M-298f")}</h3>
@@ -200,13 +209,15 @@ export function BrandDetails({
                 msg("M-298j").replace("{days}", String(r.signup_lead_days))}
             </p>
           </div>
-        ) : (
+        ) : signedIn ? (
+          // "Any time before" only signed in; visitors see the join-early card only when the
+          // brand has a waiting period (owner, 2026-11-25).
           <div className={FACT}>
             <h3 className={FACT_TITLE}>{msg("M-298k")}</h3>
             <p className={BIG}>{msg("M-298l")}</p>
             <p className="mt-1">{msg("M-298m")}</p>
           </div>
-        )}
+        ) : null}
         {/* Signed in only (owner, 2026-11-25: less to read for visitors). */}
         {signedIn ? (
           <div className={FACT}>

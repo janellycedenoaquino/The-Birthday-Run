@@ -73,6 +73,9 @@ test("signed out: every non-retired retailer, the sign-up prompt, and a 404 for 
   const sheet = page.getByRole("dialog", { name: "Starbucks" });
   await expect(sheet).toBeVisible();
   await expect(sheet.getByText("Your birthday gift")).toBeVisible();
+  // The first pop-up on this device hints that it scrolls (owner, 2026-11-25).
+  const hint = sheet.getByText("More below");
+  await expect(hint).toHaveCSS("opacity", "1");
   await page.keyboard.press("Escape");
   await expect(page).toHaveURL(/\/discover$/);
   await expect(sheet).toBeHidden();

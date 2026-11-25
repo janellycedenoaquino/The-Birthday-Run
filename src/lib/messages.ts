@@ -335,7 +335,7 @@ export const M = {
   "M-279e": "Starts in 1 day",
   "M-279f": "Ended this year",
   "M-280": "Sign up to see your dates",
-  // The full page's title in the tab and in search results only; its h1 is the name (owner).
+  // The full page's h1 and its title in the tab and search (owner, 2026-11-25).
   "M-298": "{brand} birthday reward",
   "M-298a": "Your birthday gift",
   "M-298b": "Add to My Rewards",
@@ -360,6 +360,7 @@ export const M = {
   "M-298t": "See all {count} birthday rewards",
   "M-298u": "Checked on the brand's own page on {date}",
   "M-298v": "source",
+  "M-298y": "More below",
   "M-298x": "Jan 3 – Feb 2 · 12 days left",
   "BR-12": "We don't recognise that ZIP code.",
   "BR-13":

@@ -292,3 +292,19 @@
     transform: translateX(-50%);
   }
 }
+
+/* The brand pop-up's one-time "more below" hint (owner, 2026-11-25): two small hops, then still.
+   Reduced motion: no hop, the hint just shows. */
+.scroll-hint {
+  animation: scroll-hint-hop 0.9s ease-in-out 0.4s 2;
+}
+@keyframes scroll-hint-hop {
+  50% {
+    transform: translateY(5px);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .scroll-hint {
+    animation: none;
+  }
+}
