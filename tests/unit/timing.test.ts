@@ -12,6 +12,7 @@ import {
   formatDate,
   headerState,
   isValidMonthDay,
+  isWithinMinutes,
   joinByDate,
   localTime,
   pickupDateRange,
@@ -576,5 +577,24 @@ describe("formatDate (decision 0007)", () => {
     expect(formatDate(d("2026-06-15"), "long")).toBe("Monday, June 15");
     expect(formatDate(d("2027-01-01"), "short")).toBe("Jan 1");
     expect(formatDate(d("2028-02-29"), "long")).toBe("Tuesday, February 29");
+  });
+});
+
+describe("isWithinMinutes (S-101's finish card)", () => {
+  const now = new Date("2026-11-25T12:00:00Z");
+  it("is true up to the limit, false after it or in the future", () => {
+    expect(isWithinMinutes("2026-11-25T11:50:00Z", 15, now)).toBe(true);
+    expect(isWithinMinutes("2026-11-25T11:45:00Z", 15, now)).toBe(true);
+    expect(isWithinMinutes("2026-11-25T11:44:59Z", 15, now)).toBe(false);
+    expect(isWithinMinutes("2026-11-25T12:00:01Z", 15, now)).toBe(false);
+  });
+});
+
+describe("the next birthday right after a birthday (S-101 finish, S-103 line)", () => {
+  it("is next year's, even while the planning cycle is still this year's", () => {
+    // Jun 15 birthday, today Jun 20: the window is still open, the next birthday isn't Jun 15.
+    const w = windowFor({ month: 6, day: 15 }, [], d("2026-06-20"));
+    expect(w.planning.birthday).toBe("2026-06-15");
+    expect(w.nextBirthday).toBe("2027-06-15");
   });
 });

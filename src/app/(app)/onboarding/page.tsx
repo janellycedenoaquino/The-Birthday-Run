@@ -5,14 +5,19 @@ import { z } from "zod";
 import { OnboardingDone } from "@/components/profile/onboarding-done";
 import { OnboardingForm } from "@/components/profile/onboarding-form";
 import { ProgramsForm } from "@/components/profile/programs-form";
-import { formatDate, today, windowFor } from "@/lib/birthday/timing";
+import {
+  formatDate,
+  isWithinMinutes,
+  today,
+  windowFor,
+} from "@/lib/birthday/timing";
 import { msg } from "@/lib/messages";
 import { saveOnboarding } from "@/server/actions/profile";
 import { requireUser } from "@/server/auth/guards";
 
 // S-101 Onboarding (SPEC §3.3, BUILD F-2: FR-6, FR-7, FR-10). `user` level: it's where
 // requireOnboarded sends people. No birthday or zone → step 1; both saved → step 2, whose
-// "← Change birthday" (`?step=1`) brings step 1 back with them filled in. Saving step 2 lands on
+// "← Change birthday" (`?step=1`) brings step 1 back with them (and the saved zone) filled in. Saving step 2 lands on
 // the "You're all set!" card (`?done=1`); done otherwise → dashboard.
 export const metadata: Metadata = {
   title: "Get started",
@@ -43,7 +48,13 @@ export default async function OnboardingPage({
     });
 
   if (profile.onboarded_at) {
-    if (!params.done || profile.birth_month === null || !profile.birth_day)
+    // The finish card shows right after step 2 only, not from a bookmark days later.
+    if (
+      !params.done ||
+      profile.birth_month === null ||
+      !profile.birth_day ||
+      !isWithinMinutes(profile.onboarded_at, 15, new Date())
+    )
       redirect("/dashboard");
     const { count, error: cError } = await supabase
       .from("enrollments")
@@ -54,7 +65,7 @@ export default async function OnboardingPage({
       { month: profile.birth_month, day: profile.birth_day },
       [],
       today(profile.time_zone ?? "UTC", new Date()),
-    ).planning.birthday;
+    ).nextBirthday;
     return (
       <Shell width="narrow" step={null}>
         <OnboardingDone
@@ -78,6 +89,7 @@ export default async function OnboardingPage({
           zones={zones}
           month={profile.birth_month}
           day={profile.birth_day}
+          timeZone={profile.time_zone}
         />
       </Shell>
     );

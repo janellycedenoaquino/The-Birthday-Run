@@ -69,8 +69,9 @@ async function saveOnboardingBirthday(
 
   const result = await runAction("saveOnboarding", async () => {
     // Once onboarding is done it's a no-op, so it can't become a second birthday endpoint
-    // (Settings is the place, FR-9). Before that, each save goes through the same per-user
-    // rate limit as Settings' (updateOwnProfile, 30 an hour).
+    // (Settings is the place, FR-9). Before that, each save counts against Settings' own
+    // birthday limit (the same counter, not step 2's), and the write itself only lands while
+    // onboarding isn't done, so a save racing step 2's finish can't change it afterwards.
     const { supabase, user } = await requireUser();
     const { data: saved, error } = await supabase
       .from("profiles")
@@ -83,12 +84,21 @@ async function saveOnboardingBirthday(
       });
     if (saved.onboarded_at) return { ok: true };
 
-    const refused = await updateOwnProfile("saveOnboarding", {
-      birth_month: input.data.month,
-      birth_day: input.data.day,
-      time_zone: input.data.timeZone,
-    });
-    if (refused) return refused;
+    const limit = await rateLimit("updateBirthday", { userId: user.id });
+    if (!limit.ok) return limit;
+    const { error: writeError } = await supabase
+      .from("profiles")
+      .update({
+        birth_month: input.data.month,
+        birth_day: input.data.day,
+        time_zone: input.data.timeZone,
+      })
+      .eq("id", user.id)
+      .is("onboarded_at", null);
+    if (writeError)
+      throw new Error("saveOnboarding: could not save the birthday", {
+        cause: writeError,
+      });
     revalidatePath("/dashboard");
     return { ok: true };
   });

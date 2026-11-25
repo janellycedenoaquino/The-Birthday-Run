@@ -23,11 +23,14 @@ export function OnboardingForm({
   zones,
   month,
   day,
+  timeZone,
 }: {
   saveOnboarding: Action;
   zones: string[];
   month?: number | null;
   day?: number | null;
+  /** The saved zone ("← Change birthday"): kept, not replaced by the browser's. */
+  timeZone?: string | null;
 }) {
   const [state, action, pending] = useActionState(saveOnboarding, null);
   const form = useRef<HTMLFormElement>(null);
@@ -40,7 +43,7 @@ export function OnboardingForm({
     () => null,
   );
   // Sent as is: the server normalizes aliases, or refuses with BR-19 and the select shows.
-  const detected = browserZone || null;
+  const detected = timeZone || browserZone || null;
 
   const fieldErrors = state && !state.ok ? state.fieldErrors : undefined;
   const tzError = fieldErrors?.timeZone;

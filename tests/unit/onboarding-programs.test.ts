@@ -167,7 +167,10 @@ const birthday = (month: number, day: number) => {
 describe("saveOnboarding step 1: '← Change birthday' (owner, 2026-11-25)", () => {
   it("overwrites a saved birthday while onboarding isn't done", async () => {
     expect(await outcome(birthday(3, 1))).toEqual({ redirect: "/onboarding" });
-    expect(state.writes).toEqual(["profiles birth_month,birth_day,time_zone"]);
+    // Only while onboarding isn't done (no race with step 2's finish).
+    expect(state.writes).toEqual([
+      "profiles birth_month,birth_day,time_zone where onboarded_at is null",
+    ]);
   });
 
   it("is a no-op after onboarding (Settings is the place, FR-9)", async () => {
