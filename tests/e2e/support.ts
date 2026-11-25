@@ -123,7 +123,18 @@ export async function completeOnboarding(page: Page) {
     page.getByRole("heading", { name: "Which programs are you in?" }),
   ).toBeVisible();
   await page.getByRole("button", { name: "Skip for now" }).click();
-  await expect(page).toHaveURL(/\/dashboard$/);
+  // The finish card (owner, 2026-11-25), then on to My Rewards. Callers carry on from the
+  // dashboard, which decision 0018 folds into My Rewards later.
+  await expect(page).toHaveURL(/\/onboarding\?done=1$/);
+  await expect(
+    page.getByRole("heading", { name: "You're all set!" }),
+  ).toBeVisible();
+  await expect(
+    page.getByText("No programs yet. Add them any time from Rewards."),
+  ).toBeVisible();
+  await page.getByRole("link", { name: "Go to My Rewards" }).click();
+  await expect(page).toHaveURL(/\/rewards$/);
+  await page.goto("/dashboard");
 }
 
 /**

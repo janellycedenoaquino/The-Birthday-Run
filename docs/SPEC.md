@@ -369,8 +369,9 @@ flowchart TD
 - **Who:** signed in, no birthday (onboarded users go to S-105).
 - **Shows:** M-118 step label; h1 M-105.
   1. **Birthday:** text M-106; "Month" select and "Day" select (days follow the month; Feb 29 listed; picking it shows M-278, FR-49); no year field. Detected time zone shown as M-107 (changed in S-108); if detection fails, S-108's time-zone picker shows inline here and is required. Button "Continue" (M-108).
-  2. **Programs:** h1 M-109; search "Search programs"; category tabs (M-170); list of C-102 as checkboxes (not toggles; saved together). Primary M-110 (`{count}` selected) or, with none selected, M-111b; secondary "Skip for now" (M-111c).
-- **Main action:** F-2 `saveOnboarding` ("Saving…") → S-105.
+  2. **Programs:** h1 M-109; search "Search programs"; category tabs (M-170); list of C-102 as checkboxes (not toggles; saved together). Primary M-110 (`{count}` selected) or, with none selected, M-111b; secondary "Skip for now" (M-111c). Look (decision 0016 prototype; owner, 2026-11-25): a wide card with the search right of the heading, a logo grid (logo and name, popular first), "Skip for now" left and the save right (sticky on phones), and "← Change birthday" (M-301j) at the top back to step 1 filled in (`?step=1`; until onboarding is done step 1 may overwrite the birthday, same rate limit as Settings).
+  3. **Finish (owner, 2026-11-25):** "You're **all set!**" (M-301d/M-301e) with M-301f, M-301g or M-301h (count and next birthday, `formatDate` short), one confetti burst (not with reduced motion), and M-301i → S-105.
+- **Main action:** F-2 `saveOnboarding` ("Saving…") → the finish card → S-105.
 - **States:** loading: skeleton list · empty search: M-171 · error: BR-18 (date), BR-19, M-5, M-7 above the button; going back keeps the birthday.
 
 #### S-102 Dashboard (removed, decision 0018)
@@ -438,7 +439,9 @@ flowchart TD
 Template M-, API-, E- texts apply unchanged. Placeholders in `{braces}` are filled as text. Plurals: one message per form where shown (`{days}` = 1 uses the singular ID). Dates: "Oct 6" style in the user's time zone; times "10:00 AM".
 
 **Navigation and onboarding**
-- M-101 (C-101; owner, 2026-11-25: no "Discover" anywhere): "Rewards" · "My Rewards" (M-101b) · "Plan" (M-101d) · "History" (M-101c) · M-101f (C-101 signed out): "Get started"
+- M-101 (C-101; owner, 2026-11-25: no "Discover" anywhere): "Rewards" · "My Rewards" (M-101b) · "Plan" (M-101d) · "History" (M-101c) · M-101f (C-101 signed out): "Get started" · M-299 (the phone tab bar's label): "Main"
+- M-301d / M-301e (S-101 finish h1): "You're" / "all set!" · M-301f: "{count} programs saved. We'll count each one down for your birthday, {date}." · M-301g: "1 program saved. We'll count it down for your birthday, {date}." · M-301h: "No programs yet. Add them any time from Rewards." · M-301i: "Go to My Rewards" · M-301j: "← Change birthday"
+- M-300 / M-300b (S-101 step 1 h1, decision 0016): "When's your" / "birthday?" (M-105 stays the same words in one string) · M-301 / M-301b (step 2 h1): "Which programs" / "are you in?" · M-301c: "Pick the ones you've joined. You can add more later in Rewards."
 - M-102 (S-1): "Browse rewards"
 - M-294 / M-294b (S-103 h1 signed out, decision 0016): "Every birthday reward," / "in one place." · M-294c (owner, 2026-11-25; a line break before "Sign up"): "Some last a day, some all month. We check each one on the brand's own site. / Sign up free to get your countdown and plan your run." · M-294d: "{count} brands with a birthday treat" · M-295c (S-103 signed in; owner, 2026-11-25): "Add the ones you've joined, or join new ones in time. We'll count down each one to your birthday, {date}." · M-295d (no birthday saved yet): "Add your birthday to start your countdowns." · M-295e: "Add my birthday" · M-296 (C-102 card): "Needs a purchase"
 - M-282 / M-282b (S-1 h1, decision 0016; owner's wording 2026-11-25): "How many free things can you get" / "on your birthday?" (in the tilted block); phones break it as "How many / free things / can you get / on your / birthday?" · M-282c (S-1 main button): "Find my birthday freebies" · M-283: "Find every brand that treats you, join in time, and plan your stops so nothing expires." · M-284: "{count} brands waiting to treat you"

@@ -8,6 +8,7 @@ import { appConfig } from "@/config/app";
 import { BrandStyle } from "@/components/layout/brand-style";
 import { SiteFooter } from "@/components/layout/site-footer";
 import { NoticeToast } from "@/components/layout/notice-toast";
+import { PhoneTabBar } from "@/components/layout/phone-tab-bar";
 import { SiteHeader } from "@/components/layout/site-header";
 import { StyleNonce } from "@/components/layout/style-nonce";
 import { ThemeProvider } from "@/components/layout/theme-provider";
@@ -77,6 +78,7 @@ export default async function RootLayout({ children }: LayoutProps<"/">) {
             </StartLocationProvider>
           </main>
           <SiteFooter />
+          {account && <PhoneTabBar />}
           <Toaster position="top-center" />
           <Suspense>
             <NoticeToast />

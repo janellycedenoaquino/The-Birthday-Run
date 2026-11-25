@@ -293,6 +293,18 @@
   }
 }
 
+/* Onboarding's card turning to its next step (decision 0016; used under motion-safe only). */
+@keyframes card-turn-in {
+  from {
+    transform: rotateY(-90deg);
+    opacity: 0.4;
+  }
+  to {
+    transform: rotateY(0);
+    opacity: 1;
+  }
+}
+
 /* The brand pop-up's one-time "more below" hint (owner, 2026-11-25): two small hops, then still.
    Reduced motion: no hop, the hint just shows. */
 .scroll-hint {

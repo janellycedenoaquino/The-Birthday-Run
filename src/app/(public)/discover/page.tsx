@@ -109,15 +109,18 @@ export default async function DiscoverPage({
     throw new Error("S-103: could not read the profile", {
       cause: profileError,
     });
-  const birthday: LocalDate | undefined =
+  const window =
     profile?.birth_month && profile.birth_day && profile.time_zone
       ? windowFor(
           { month: profile.birth_month, day: profile.birth_day },
           [],
           today(profile.time_zone, new Date()),
-        ).planning.birthday
+        )
       : undefined;
-  const occurrence = premium ? birthday : undefined;
+  // The line names the NEXT birthday (never one that has passed); the premium filters measure
+  // from the planning cycle, as before (FR-45).
+  const birthday: LocalDate | undefined = window?.nextBirthday;
+  const occurrence = premium ? window?.planning.birthday : undefined;
   const { shown, total } = filterRetailers(
     rows as Row[],
     premium

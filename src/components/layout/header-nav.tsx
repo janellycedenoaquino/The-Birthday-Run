@@ -84,7 +84,8 @@ export function HeaderNav({ account }: { account: Account | null }) {
       <div
         className={
           account
-            ? "flex min-w-0 flex-1 items-center gap-1 overflow-x-auto"
+            ? // Phones use the bottom tab bar instead (C-101, decision 0016).
+              "flex min-w-0 flex-1 items-center gap-1 overflow-x-auto max-sm:hidden"
             : "contents"
         }
       >

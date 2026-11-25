@@ -361,6 +361,22 @@ export const M = {
   "M-298v": "source",
   "M-298y": "More below",
   "M-298x": "Jan 3 – Feb 2 · 12 days left",
+  "M-299": "Main",
+  // S-101 look (decision 0016).
+  "M-300": "When's your",
+  "M-300b": "birthday?",
+  "M-301": "Which programs",
+  "M-301b": "are you in?",
+  "M-301c": "Pick the ones you've joined. You can add more later in Rewards.",
+  // S-101's finish card and step 2's way back (decision 0016 prototype; owner, 2026-11-25).
+  "M-301d": "You're",
+  "M-301e": "all set!",
+  "M-301f":
+    "{count} programs saved. We'll count each one down for your birthday, {date}.",
+  "M-301g": "1 program saved. We'll count it down for your birthday, {date}.",
+  "M-301h": "No programs yet. Add them any time from Rewards.",
+  "M-301i": "Go to My Rewards",
+  "M-301j": "← Change birthday",
   "BR-12": "We don't recognise that ZIP code.",
   "BR-13":
     "We couldn't look up stores right now, so these stops have no map pin. Try again later.",
