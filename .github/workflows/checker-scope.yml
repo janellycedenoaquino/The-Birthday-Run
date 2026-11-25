@@ -1,0 +1,35 @@
+# Checker PR scope (DESIGN D16, BUILD F-13 "Checker contract", NFR-11). The overnight checker's
+# branches (`checker/<retailer-id>-<yyyy-mm-dd>`) may change only that retailer's row of
+# data/retailers.csv (scripts/check-checker-scope.sh). Its own workflow, with no
+# paths-ignore, so a docs-only push from a checker branch is checked too. The checker's token
+# has no Workflows permission, so it can't edit this file to switch the check off.
+name: Checker scope
+
+on:
+  push:
+    branches: ["checker/**"]
+
+concurrency:
+  group: checker-scope-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  scope:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Only this retailer's row of data/retailers.csv changed
+        env:
+          BRANCH: ${{ github.ref_name }}
+        # main's copy of the script, never the branch's: the checker can edit non-workflow files.
+        run: |
+          git show origin/main:scripts/check-checker-scope.sh > "$RUNNER_TEMP/scope.sh"
+          bash "$RUNNER_TEMP/scope.sh" "$BRANCH" origin/main
+          echo "checker scope: OK" >> "$GITHUB_STEP_SUMMARY"

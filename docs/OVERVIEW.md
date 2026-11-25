@@ -79,6 +79,7 @@ Fields and RLS rules: DESIGN §3.
 | `pickups` | Rewards picked up, one per retailer per cycle |
 | `premium_grants`, `subscriptions` | The two sources of premium |
 | `stripe_events` | Claimed webhook event IDs (not user data) |
+| `job_heartbeats` | When the reminder cron last ran (not user data, D16) |
 | `reward_reports` | Reason-only reports, batched for GitHub |
 | `reminder_log` | Which reminder went out when (claim before send) |
 

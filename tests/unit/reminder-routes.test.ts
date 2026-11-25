@@ -22,6 +22,8 @@ vi.mock("@/server/site-url", () => ({
   getSiteUrl: () => "https://example.test",
 }));
 vi.mock("@/server/email/send", () => ({ sendEmail: vi.fn() }));
+const recordHeartbeat = vi.fn(async () => {});
+vi.mock("@/server/heartbeat", () => ({ recordHeartbeat }));
 const updates: unknown[] = [];
 const updateError = { value: null as { code: string } | null };
 vi.mock("@/server/supabase/admin", () => ({
@@ -65,6 +67,7 @@ beforeEach(() => {
   limited.value = false;
   updateError.value = null;
   run.mockClear();
+  recordHeartbeat.mockClear();
 });
 
 describe("GET /api/cron/reminders (D14)", () => {
@@ -93,6 +96,23 @@ describe("GET /api/cron/reminders (D14)", () => {
       failed: 0,
       deferred: 1,
     });
+    // D16: the heartbeat is recorded once, for this run.
+    expect(recordHeartbeat).toHaveBeenCalledOnce();
+    expect(recordHeartbeat).toHaveBeenCalledWith(
+      expect.anything(),
+      "reminders",
+      expect.any(Date),
+    );
+  });
+  it("a failing heartbeat write is logged; the run's counts still go back", async () => {
+    recordHeartbeat.mockRejectedValueOnce(new Error("heartbeat down"));
+    const res = await cron.GET(
+      new Request("https://example.test/api/cron/reminders", {
+        headers: { authorization: `Bearer ${SECRET}` },
+      }),
+    );
+    expect(res.status).toBe(200);
+    expect((await res.json()).sent).toBe(1);
   });
   it("a failing run → 500 with zero counts, no details", async () => {
     run.mockRejectedValueOnce(new Error("db down"));
@@ -103,6 +123,7 @@ describe("GET /api/cron/reminders (D14)", () => {
     );
     expect(res.status).toBe(500);
     expect(await res.text()).not.toContain("db down");
+    expect(recordHeartbeat).not.toHaveBeenCalled();
   });
 });
 

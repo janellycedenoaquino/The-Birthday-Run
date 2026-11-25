@@ -43,6 +43,20 @@ isOneToOne: false
       referencedColumns: ["id"]
     }
                   ]
+                },"job_heartbeats": {
+                  Row: {
+                    "job": string,"last_run_at": string
+                  }
+                  ComputedFields: never
+                  Insert: {
+                    "job": string,"last_run_at": string
+                  }
+                  Update: {
+                    "job"?: string,"last_run_at"?: string
+                  }
+                  Relationships: [
+                    
+                  ]
                 },"pickups": {
                   Row: {
                     "created_at": string,"id": string,"location_label": string | null,"note": string | null,"picked_up_on": string,"retailer_id": string,"updated_at": string,"user_id": string

@@ -14,6 +14,9 @@ const rpc = vi.fn();
 vi.mock("@/server/supabase/admin", () => ({
   getAdminClient: () => ({ rpc }),
 }));
+const BEAT = "2026-11-25T14:00:03.000Z";
+const lastHeartbeat = vi.fn(async (): Promise<string | null> => BEAT);
+vi.mock("@/server/heartbeat", () => ({ lastHeartbeat }));
 
 const pending = await import("@/app/api/reports/pending/route");
 const ack = await import("@/app/api/reports/ack/route");
@@ -58,7 +61,13 @@ describe("GET /api/reports/pending (D16)", () => {
     expect(res.status).toBe(200);
     expect(res.headers.get("cache-control")).toBe("private, no-store");
     const body = await res.json();
-    expect(Object.keys(body).sort()).toEqual(["batchId", "items"]);
+    expect(Object.keys(body).sort()).toEqual([
+      "batchId",
+      "items",
+      "lastReminderRunAt",
+    ]);
+    // D16 heartbeat: a time only, never user data.
+    expect(body.lastReminderRunAt).toBe(BEAT);
     expect(body.batchId).toMatch(/^[0-9a-f-]{36}$/);
     expect(rpc).toHaveBeenCalledWith("claim_report_batch", {
       p_batch: body.batchId,
@@ -78,10 +87,25 @@ describe("GET /api/reports/pending (D16)", () => {
 
   it("nothing pending → batchId null", async () => {
     rpc.mockResolvedValue({ data: [], error: null });
+    lastHeartbeat.mockResolvedValueOnce(null);
     expect(await (await get(`Bearer ${SECRET}`)).json()).toEqual({
       batchId: null,
       items: [],
+      lastReminderRunAt: null,
     });
+  });
+
+  it("a failed heartbeat read → null; the reports still go out", async () => {
+    lastHeartbeat.mockRejectedValueOnce(new Error("heartbeat down"));
+    rpc.mockResolvedValue({
+      data: [{ retailer_id: "starbucks", reason: "expired", report_count: 1 }],
+      error: null,
+    });
+    const res = await get(`Bearer ${SECRET}`);
+    expect(res.status).toBe(200);
+    const body = await res.json();
+    expect(body.lastReminderRunAt).toBeNull();
+    expect(body.items).toHaveLength(1);
   });
 
   it("a database error → 500 with no details", async () => {

@@ -1,7 +1,11 @@
-import { readdirSync } from "node:fs";
 import { resolve } from "node:path";
 import { describe, expect, it, vi } from "vitest";
-import { CAPTCHA_TOKEN, PASSWORD } from "./helpers";
+import {
+  ACTIONS_DIR as dir,
+  actionFiles,
+  CAPTCHA_TOKEN,
+  PASSWORD,
+} from "./helpers";
 
 // The signed-out refusal test (BUILD F-2 "Tests", CLAUDE.md rules 3-4, NFR-3): every export of
 // src/server/actions/* is a public endpoint, so calling it with no session must be refused. The
@@ -17,10 +21,7 @@ vi.mock("next/cache", () => ({
   revalidateTag: () => {},
 }));
 
-const dir = resolve(import.meta.dirname, "../../src/server/actions");
-const files = (readdirSync(dir, { recursive: true }) as string[]).filter((f) =>
-  /\.tsx?$/.test(f),
-);
+const files = actionFiles();
 
 // Actions at the `signed-out` level (§0.2: signUp, signIn, requestMagicLink, …, added by F-6..F-8)
 // have no guard by design; each gets its own tests (rate limit, identical responses). Every other

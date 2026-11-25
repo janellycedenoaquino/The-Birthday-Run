@@ -4,7 +4,11 @@ import {
   staleBody,
   staleRetailers,
 } from "../../scripts/check-stale-retailers.ts";
-import { forwardReports, issueBody } from "../../scripts/forward-reports.ts";
+import {
+  forwardReports,
+  heartbeatProblem,
+  issueBody,
+} from "../../scripts/forward-reports.ts";
 import type { LocalDate } from "@/lib/birthday/timing";
 import { csv, line } from "./csv-fixture";
 import { memoryIssues } from "./memory-issues";
@@ -14,10 +18,18 @@ import { memoryIssues } from "./memory-issues";
 // rather than a second issue, and an invalid summary fails before any issue call or ack.
 // check-stale-retailers (FR-47): a fixed "today", month-end clamp, oldest first, none → no call.
 const BATCH = "00000000-0000-4000-8000-000000000007";
+const NOW = new Date("2026-11-25T15:41:00Z");
+const FRESH = "2026-11-25T14:00:03.000Z"; // today's 14:00 UTC cron (vercel.json)
 const CSV = csv(
   line({ id: "cafe-one", name: "Cafe One" }),
   line({ id: "tea-two", name: "Tea Two", website_url: "https://tea.example" }),
 );
+
+/** Adds today's heartbeat to a summary object that has none (the route always sends one). */
+const withBeat = (summary: unknown) =>
+  summary && typeof summary === "object" && !("lastReminderRunAt" in summary)
+    ? { ...summary, lastReminderRunAt: FRESH }
+    : summary;
 
 function api(summary: unknown, ackStatus = 200) {
   const calls: string[] = [];
@@ -28,7 +40,8 @@ function api(summary: unknown, ackStatus = 200) {
       expect(new Headers(init?.headers).get("authorization")).toBe(
         "Bearer s3cret",
       );
-      if (u.endsWith("/api/reports/pending")) return Response.json(summary);
+      if (u.endsWith("/api/reports/pending"))
+        return Response.json(withBeat(summary));
       return Response.json({ acked: 3 }, { status: ackStatus });
     },
   );
@@ -45,6 +58,7 @@ const run = (summary: unknown, sink = memoryIssues(), ackStatus = 200) => {
       sink: sink.sink,
       csvText: CSV,
       fetch: a.fetch,
+      now: NOW,
     }),
   };
 };
@@ -177,6 +191,7 @@ describe("forward-reports (NFR-11, D16)", () => {
         sink: sink.sink,
         csvText: CSV,
         fetch: a.fetch,
+        now: NOW,
       }),
     ).rejects.toThrow(/acked nothing/);
   });
@@ -184,6 +199,47 @@ describe("forward-reports (NFR-11, D16)", () => {
   it("a failed ack fails the run", async () => {
     const { result } = run(summary, memoryIssues(), 500);
     await expect(result).rejects.toThrow(/ack: HTTP 500/);
+  });
+});
+
+describe("forward-reports heartbeat (D16)", () => {
+  it("a run within 2 days is fine; older or never fails", () => {
+    expect(heartbeatProblem(FRESH, NOW)).toBeNull();
+    expect(heartbeatProblem("2026-11-23T15:41:00+00:00", NOW)).toBeNull();
+    expect(heartbeatProblem("2026-11-23T15:40:59.000Z", NOW)).toMatch(
+      /more than 2 days ago/,
+    );
+    expect(heartbeatProblem(null, NOW)).toMatch(/never run/);
+  });
+
+  it("a stale heartbeat still forwards and acks, then fails the run", async () => {
+    const { sink, a, result } = run({
+      batchId: BATCH,
+      items: [{ retailerId: "cafe-one", reason: "expired", count: 1 }],
+      lastReminderRunAt: "2026-11-21T14:00:00.000Z",
+    });
+    await expect(result).rejects.toThrow(/D16 heartbeat/);
+    expect(sink.calls).toHaveLength(2); // findOpen + create
+    expect(a.calls.at(-1)).toBe("POST https://site.example/api/reports/ack");
+  });
+
+  it("nothing pending and the cron never ran → the run fails", async () => {
+    const { result } = run({
+      batchId: null,
+      items: [],
+      lastReminderRunAt: null,
+    });
+    await expect(result).rejects.toThrow(/never run/);
+  });
+
+  it("a heartbeat that isn't an ISO time fails before any issue call", async () => {
+    const { sink, result } = run({
+      batchId: BATCH,
+      items: [],
+      lastReminderRunAt: "yesterday",
+    });
+    await expect(result).rejects.toThrow();
+    expect(sink.calls).toEqual([]);
   });
 });
 

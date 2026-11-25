@@ -341,6 +341,10 @@ Index `(user_id, retailer_id, picked_up_on)`. **RLS:** the owner selects and del
 `id` text PK (Stripe event ID) · `type` text · `received_at` timestamptz. No customer or user fields. Deleted after A-20's period by the webhook's own clean-up (A-20).
 **RLS:** on, no policies; `service_role` only.
 
+### `public.job_heartbeats` (not user data)
+`job` text PK (check: `reminders`) · `last_run_at` timestamptz not null. The reminder cron upserts its row after each finished run; `/api/reports/pending` returns it (D16 heartbeat).
+**RLS:** on, no policies; `service_role` only.
+
 ### `public.reward_reports` (user data)
 `id` uuid PK · `user_id` uuid (FK cascade) · `retailer_id` text (FK restrict) · `reason` enum (`expired`, `different_reward`, `wrong_timing`, `store_closed`; FR-48) · `cycle_start` date not null (from the timing module) · `created_at` · `batch_id` uuid null (claimed by `/api/reports/pending`) · `forwarded_at` timestamptz null. Unique `(user_id, retailer_id, cycle_start)` (FR-48; a birthday change can shift `cycle_start`, accepted, A-21).
 **RLS:** the owner inserts and selects their own rows (`forwarded_at` excluded from the insert grant); only `service_role` updates `batch_id` and `forwarded_at`. No user update or delete (a report is a record for the owner). Meets Template table rules.
@@ -351,7 +355,7 @@ Index `(user_id, retailer_id, picked_up_on)`. **RLS:** the owner selects and del
 
 ### Registry additions
 - `USER_DATA_TABLES`: `enrollments`, `reward_groups`, `reward_group_items`, `pickups`, `premium_grants`, `subscriptions`, `reward_reports`, `reminder_log` (owner column `user_id` each).
-- `NON_USER_DATA_TABLES`: `retailers` (CSV catalogue), `retailer_stores` (public store locations), `zip_centroids` (Census data), `stripe_events` (event IDs only, 30-day retention).
+- `NON_USER_DATA_TABLES`: `retailers` (CSV catalogue), `retailer_stores` (public store locations), `zip_centroids` (Census data), `stripe_events` (event IDs only, 30-day retention), `job_heartbeats` (last cron run time).
 
 ### Assumptions (continuing SPEC)
 - **A-11** Start coordinates are rounded to 3 decimal places (about 110 m) before leaving the browser.
@@ -440,7 +444,7 @@ Template DESIGN §4.3 rows stand. App additions (all in `USER_DATA_TABLES`, so e
 | Map tile requests (OpenFreeMap) | Map (FR-32) | OpenFreeMap: area viewed; IPs not in logs by default, logs deleted after 7 days, up to 30 in incidents; may use Cloudflare as CDN (openfreemap.org/privacy, 2026-10-06) | Per OpenFreeMap | No | Provider listed |
 | User ID in unsubscribe links | Token (D15) | Vercel request logs | Per Vercel (not researched) | No | – |
 
-Not personal: `retailers`, `retailer_stores`, `zip_centroids`, `stripe_events` (DESIGN §3 registry).
+Not personal: `retailers`, `retailer_stores`, `zip_centroids`, `stripe_events`, `job_heartbeats` (DESIGN §3 registry).
 
 ### 4.4 Legal needs
 Items for LAUNCH_CHECKLIST, pointing here:

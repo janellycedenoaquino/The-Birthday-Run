@@ -44,7 +44,7 @@ src/
     security/cron-auth.ts
 scripts/import-retailers.ts, import-stores.ts, import-zips.ts, grant-premium.ts,
         check-stale-retailers.ts, forward-reports.ts, copy-maplibre-worker.mjs
-.github/workflows/retailers-import.yml, stale-retailers.yml, forward-reports.yml
+.github/workflows/retailers-import.yml, stale-retailers.yml, forward-reports.yml, checker-scope.yml
 vercel.json                        # adds the reminders cron (D14)
 ```
 
@@ -1584,7 +1584,7 @@ Registry: `reward_reports` in `USER_DATA_TABLES` (`user_id`). A newer claim re-s
 #### `.github/workflows/forward-reports.yml`
 - `on: schedule: cron '41 15 * * *'` + `workflow_dispatch` · `permissions: { contents: read, issues: write }` · `timeout-minutes: 5` · SHA-pinned actions, Node from `.nvmrc`, `npm ci --ignore-scripts`.
 - Step runs `scripts/forward-reports.ts` with `REPORTS_EXPORT_SECRET` (secret), the site URL (repo variable `SITE_URL`, §0.6) and `GH_TOKEN: ${{ github.token }}`.
-- Script: `GET /api/reports/pending` → Zod-validate (`retailerId` slug, `reason` enum, positive int count; anything else fails the run) → `batchId` null → exit 0 → per retailer: find the open issue labelled `reward-report` whose title is exactly `Reward report: <retailerId>`; none → create it, else comment. Text comes **only** from a fixed template filled with the ID, the CSV row's `name`, `source_url`, `website_url`, `last_checked_on` (from `data/retailers.csv` in the checkout) and `<reason> × <count>` lines (NFR-11, §0.7) → `POST /api/reports/ack` → exit 0. Any failure before the ack fails the run (GitHub's failure email); the batch is offered again tomorrow, so a retailer may get a repeated comment (accepted).
+- Script: `GET /api/reports/pending` → Zod-validate (`retailerId` slug, `reason` enum, positive int count; anything else fails the run) → `batchId` null → exit 0 → per retailer: find the open issue labelled `reward-report` whose title is exactly `Reward report: <retailerId>`; none → create it, else comment. Text comes **only** from a fixed template filled with the ID, the CSV row's `name`, `source_url`, `website_url`, `last_checked_on` (from `data/retailers.csv` in the checkout) and `<reason> × <count>` lines (NFR-11, §0.7) → `POST /api/reports/ack` → exit 0. Any failure before the ack fails the run (GitHub's failure email); the batch is offered again tomorrow, so a retailer may get a repeated comment (accepted). **Heartbeat (D16):** the summary also carries `lastReminderRunAt` (ISO time or null, from `public.job_heartbeats`, which the cron route upserts after each finished run); after forwarding and acking, the run fails when it's null or more than 2 days old, so a stopped cron sends the failure email without holding reports back.
 - Issue access through an `IssueSink` interface (`findOpen`, `create`, `comment`, `editBody`): `gh` CLI in the Action, in-memory in tests (§0.8 swappable layer). Label created once with `gh label create reward-report … || true`.
 
 #### `.github/workflows/stale-retailers.yml` + `scripts/check-stale-retailers.ts` (`npm run check:stale-retailers`)
@@ -1668,7 +1668,7 @@ The Template's pipeline, deployment, migrations workflow and rollback runbook ap
 ### CI (`ci.yml`)
 - **`checks`:** unit tests now include the real `data/retailers.csv` and `data/store-sources.csv` parse (F-14, F-9), so a bad CSV PR fails before merge. `prebuild` (`copy-maplibre-worker.mjs`) runs inside `next build`.
 - **`integration`:** after `supabase db reset`: `npm run import:retailers` (local) and the geo fixtures (`tests/fixtures/geo.sql`: a few ZIPs and stores, loaded by the `rls` global setup and e2e setup; the real Census/ATP/Overture files are never fetched in CI). `test:rls` includes `tests/rls/stripe-sync.test.ts` with `STRIPE_TEST_SECRET_KEY: ${{ secrets.STRIPE_TEST_SECRET_KEY }}` (CI sandbox, F-8); when it's empty the step appends "metric 3: SKIPPED" to `$GITHUB_STEP_SUMMARY` (Dependabot runs get no secrets, so they always skip). `CRON_SECRET`, `REMINDER_UNSUBSCRIBE_SECRET`, `REPORTS_EXPORT_SECRET` are generated per job like `RATE_LIMIT_HMAC_SECRET`; `PAYMENTS_ENABLED=false` in the workflow `env`, with the flag-on tests setting it per test.
-- **New workflows:** `retailers-import.yml` (D2), `stale-retailers.yml` and `forward-reports.yml` (F-13). Their runtime adds to the shared Actions minutes (DESIGN §5.1).
+- **New workflows:** `retailers-import.yml` (D2), `stale-retailers.yml`, `forward-reports.yml` and `checker-scope.yml` (F-13). `checker-scope.yml` runs on every push to `checker/**` (no `paths-ignore`, so docs-only pushes are checked too) and runs **`main`'s copy** of `scripts/check-checker-scope.sh` (the checker can edit non-workflow files on its branch). It fails unless the branch is `checker/<retailer-id>-<yyyy-mm-dd>` and, since its merge-base with `main`, changes only that retailer's row of `data/retailers.csv` (D16, checker contract). Limit: the checker's token acts as the owner, so a PR from a branch with another name gets no scope check; the owner's review of every PR before merging stays the backstop. Their runtime adds to the shared Actions minutes (DESIGN §5.1).
 - **Backup** (`backup.yml`, Template F-12): `-x public.retailer_stores` on the data dump (DESIGN §5.4); the restore check adds one count line per app registry table.
 
 ### `vercel.json`
@@ -1683,7 +1683,7 @@ The Template's pipeline, deployment, migrations workflow and rollback runbook ap
 ### Migrations (order on any database)
 1. Template migrations (Template F-1).
 2. `<ts>_postgis.sql` (`create extension … with schema extensions`, F-9): before any `geography` column. PostGIS objects live in `extensions`; app SQL calls them schema-qualified because functions use `search_path = ''`.
-3. App migrations in feature order (F-1–F-7 writer's, then F-8 `stripe_events`, F-9 stores/ZIPs, F-12 `reminder_log`, F-13 `reward_reports`). Each is forward-only (rule 22); `npm run db:types` after each.
+3. App migrations in feature order (F-1–F-7 writer's, then F-8 `stripe_events`, F-9 stores/ZIPs, F-12 `reminder_log`, F-13 `reward_reports` and `job_heartbeats`). Each is forward-only (rule 22); `npm run db:types` after each.
 
 ### Fresh production project (the wiped `thebirthdayrun` project)
 1. Backup first (Template F-12 script) of what's there, kept offline until launch, then wipe: `npx supabase link --project-ref <ref>` and `npx supabase db reset --linked` (re-applies this repo's migrations; **unverified** that it clears everything the old app left, so the Builder checks `public` and `auth.users` are empty afterwards and uses the dashboard if not). Ask the owner before running it (CLAUDE.md "ask before").

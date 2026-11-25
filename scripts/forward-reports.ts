@@ -5,6 +5,8 @@
 // the batch. Issue text comes only from the fixed template below, filled with the retailer's own
 // CSV row and `<reason> × <count>` lines. Any failure before the ack fails the run; the batch is
 // offered again tomorrow (a retailer may then get a repeated comment, accepted in BUILD F-13).
+// D16 heartbeat: after forwarding, the run also fails when the reminder cron's last run is more
+// than 2 days old (or it never ran), so GitHub's failed-run email tells the owner it stopped.
 import { readFileSync } from "node:fs";
 import { z } from "zod";
 import {
@@ -18,12 +20,16 @@ import {
 import { ghIssues, type IssueSink } from "./lib/issues.ts";
 
 export const REPORT_LABEL = "reward-report";
+/** D16: older than this, the reminder cron counts as stopped. */
+export const HEARTBEAT_MAX_AGE_MS = 2 * 86_400_000;
+
 export const issueTitle = (retailerId: string) =>
   `Reward report: ${retailerId}`;
 
 const summarySchema = z
   .object({
     batchId: z.uuid().nullable(),
+    lastReminderRunAt: z.iso.datetime({ offset: true }).nullable(),
     items: z.array(
       z
         .object({
@@ -85,20 +91,46 @@ type Deps = {
   sink: IssueSink;
   csvText: string;
   fetch?: typeof fetch;
+  now?: Date;
 };
 
-export async function forwardReports({
-  siteUrl,
-  secret,
-  sink,
-  csvText,
-  fetch: doFetch = fetch,
-}: Deps): Promise<{ retailers: number; acked: number }> {
-  const base = siteUrl.replace(/\/+$/, "");
-  const auth = { Authorization: `Bearer ${secret}` };
+/** D16: null when the reminder cron ran within HEARTBEAT_MAX_AGE_MS, else why it's stale. */
+export function heartbeatProblem(
+  lastRunAt: string | null,
+  now: Date,
+): string | null {
+  if (!lastRunAt) return "the reminder cron has never run (D16 heartbeat)";
+  if (now.getTime() - Date.parse(lastRunAt) <= HEARTBEAT_MAX_AGE_MS)
+    return null;
+  return `the reminder cron last ran at ${lastRunAt}, more than 2 days ago (D16 heartbeat)`;
+}
+
+export async function forwardReports(
+  deps: Deps,
+): Promise<{ retailers: number; acked: number }> {
+  const base = deps.siteUrl.replace(/\/+$/, "");
+  const auth = { Authorization: `Bearer ${deps.secret}` };
+  const doFetch = deps.fetch ?? fetch;
   const res = await doFetch(`${base}/api/reports/pending`, { headers: auth });
   if (!res.ok) throw new Error(`GET /api/reports/pending: HTTP ${res.status}`);
   const summary = summarySchema.parse(await res.json());
+  // Reports are forwarded first, so a stopped cron never holds them back.
+  const result = await forward(summary, base, auth, doFetch, deps);
+  const problem = heartbeatProblem(
+    summary.lastReminderRunAt,
+    deps.now ?? new Date(),
+  );
+  if (problem) throw new Error(problem);
+  return result;
+}
+
+async function forward(
+  summary: z.infer<typeof summarySchema>,
+  base: string,
+  auth: Record<string, string>,
+  doFetch: typeof fetch,
+  { sink, csvText }: Deps,
+): Promise<{ retailers: number; acked: number }> {
   if (!summary.batchId) return { retailers: 0, acked: 0 };
 
   const csv = parseRetailerCsv(csvText);
