@@ -84,6 +84,8 @@ export const M = {
   "M-278":
     "In years without Feb 29 we count Feb 28. Some brands use Mar 1, so check their app.",
   "M-101": "Discover",
+  // C-101 signed out: the same Discover link, named for what's there (owner, 2026-11-25).
+  "M-101e": "Rewards",
   "M-103": "Add",
   "M-104": "Added",
   "M-109": "Which programs are you in?",
@@ -279,11 +281,13 @@ export const M = {
   "M-238": "Show route",
   // S-1 landing (decision 0016).
   "M-102": "Browse rewards",
-  "M-282": "Every birthday freebie,",
-  "M-282b": "one run.",
+  // "\n" marks the phone line breaks (S-1 shows them only on small screens; elsewhere a space).
+  "M-282": "How many\nfree things\ncan you get",
+  "M-282b": "on your\nbirthday?",
+  "M-282c": "Find my birthday freebies",
   "M-283":
-    "See which brands treat you on your birthday, sign up in time, and plan the stops so nothing expires.",
-  "M-284": "{count} brands waiting",
+    "Find every brand that treats you, join in time, and plan your stops so nothing expires.",
+  "M-284": "{count} brands waiting to treat you",
   "M-285": "Pause motion",
   "M-285b": "Play motion",
   "M-286": "Catch the prizes",

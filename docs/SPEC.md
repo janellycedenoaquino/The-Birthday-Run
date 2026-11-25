@@ -307,7 +307,8 @@ flowchart TD
 **C-101 App navigation** (all pages; extends Template C-1)
 - Signed in: links Discover · My Rewards · Plan · History in a row under the header on wider screens (no Dashboard, decision 0018); current page `aria-current="page"`. Settings stays in the Template account menu.
 - **Phones (decision 0016):** the links move to a bottom tab bar fixed to the bottom of the screen: four tabs (Discover, My Rewards, Plan, History) with an icon and a label, the current one on the pink block. The account menu stays on the round initial top right (Settings, Birthday & reminders, Premium, Sign out). Page content keeps room above the bar.
-- Signed out: "Discover" next to Template C-1's Sign in / Sign up.
+- Signed out: the Discover link reads "Rewards" (M-101e; owner, 2026-11-25), next to Template C-1's Sign in / Sign up.
+- **Header look (decision 0016 prototypes; owner, 2026-11-25):** no bar and no logo image: the app name on a cream pill (signed out → S-1, signed in → S-105, decision 0018), links on the page's own background; it scrolls with the page. The current link and "Sign in" sit on a white pill with the navy ring. On S-1 the header floats over the logo tunnel with "Rewards" and "Sign in" signed out, left of the page's pause button; on Template S-4/S-5 it floats over the card wall with "Rewards" only (the card's tabs switch between them).
 - Hidden on S-101 (onboarding has one job) and on Template S-9–S-11.
 - Labels: M-101.
 
@@ -356,9 +357,9 @@ flowchart TD
 "Not allowed" for every app page: BUILD §0.2's level (signed out → Template S-4 with `next`; not onboarded → S-101). Loading on `(app)` pages: Template C-3 skeleton; `/discover` gets the same skeleton.
 
 #### Template S-1 Landing (changed body) · FR-2
-- Hero h1 M-282 with M-282b in the tilted block, then M-283 and the live brand count M-284; primary "Get started" → Template S-5; secondary M-102 → S-103. The app's name stays in the header (C-1). Signed in: Template behaviour. No feature grid. Controls: M-285/M-285b (pause), the game tab M-286/M-286b, its button M-287/M-287b, hint M-288, scoreboard M-289–M-289c, canvas label M-289d.
+- Hero h1 M-282 with M-282b in the tilted block, then M-283 and the live brand count M-284; primary M-282c → Template S-5; secondary M-102 → S-103. The app's name stays in the header (C-1). Signed in: redirects to S-105 (decision 0018; owner, 2026-11-25). No feature grid. Controls: M-285/M-285b (pause), the game tab M-286/M-286b, its button M-287/M-287b, hint M-288, scoreboard M-289–M-289c, canvas label M-289d.
 - **Look:** decision 0016: a 3D tunnel of retailer logos behind a frosted card, a "Pause motion" control, hovering a logo shows its name and reward and freezes the motion, nothing below the hero (one screen), and an optional game in a pink pull-up tab at the bottom that pauses the motion while it's played.
-- **Buttons (decision 0016):** "Get started" → Template S-5 and "Browse rewards" (M-102) → S-103 in the card; "Sign in" top right → Template S-4, as on every public page.
+- **Buttons (decision 0016):** M-282c → Template S-5 and "Browse rewards" (M-102) → S-103 in the card; "Sign in" top right → Template S-4, as on every public page.
 
 #### Template S-4 Sign in and S-5 Sign up (changed look)
 - **Look:** decision 0016: the tilted wall of retailer cards behind one frosted card with "Create account" / "Sign in" tabs (M-290/M-290b: links between the two routes, keeping `next`; they replace the Template's "New here?" / "Already have an account?" links), a rotating "waiting for you" reward under the tabs (M-293), the h1 M-292/M-292b (S-4) or M-291/M-291b (S-5) with the lead M-292c/M-291c, and a confetti burst with S-5's "Check your email" panel (skipped when motion is paused or reduced). Everything else as Template S-4 and S-5.
@@ -437,10 +438,10 @@ flowchart TD
 Template M-, API-, E- texts apply unchanged. Placeholders in `{braces}` are filled as text. Plurals: one message per form where shown (`{days}` = 1 uses the singular ID). Dates: "Oct 6" style in the user's time zone; times "10:00 AM".
 
 **Navigation and onboarding**
-- M-101 (C-101): "Discover" · "My Rewards" (M-101b) · "Plan" (M-101d) · "History" (M-101c)
+- M-101 (C-101): "Discover" · "My Rewards" (M-101b) · "Plan" (M-101d) · "History" (M-101c) · M-101e (C-101's Discover link, signed out): "Rewards"
 - M-102 (S-1): "Browse rewards"
 - M-294 / M-294b (S-103 h1 signed out, decision 0016): "Every birthday treat," / "in one place." · M-294c: "Each reward is checked on the brand's own page. Sign up free to get your own countdown and plan your run." · M-294d: "{count} brands with a birthday treat" · M-295 / M-295b (S-103 h1 signed in): "Discover" / "rewards" · M-295c: "Add the programs you're in. We'll count down each one for your birthday." · M-296 (C-102 card): "Needs a purchase"
-- M-282 / M-282b (S-1 h1, decision 0016): "Every birthday freebie," / "one run." (in the tilted block) · M-283: "See which brands treat you on your birthday, sign up in time, and plan the stops so nothing expires." · M-284: "{count} brands waiting"
+- M-282 / M-282b (S-1 h1, decision 0016; owner's wording 2026-11-25): "How many free things can you get" / "on your birthday?" (in the tilted block); phones break it as "How many / free things / can you get / on your / birthday?" · M-282c (S-1 main button): "Find my birthday freebies" · M-283: "Find every brand that treats you, join in time, and plan your stops so nothing expires." · M-284: "{count} brands waiting to treat you"
 - M-285 / M-285b (pause control, S-1 and S-4/S-5): "Pause motion" / "Play motion"
 - M-290 / M-290b (S-4/S-5 tabs, decision 0016): "Create account" / "Sign in" · M-290c (the tabs' label): "Sign in or create an account" · M-291 / M-291b (S-5 h1): "Create your" / "account" (in the tilted block) · M-291c: "Free, and it takes a minute." · M-292 / M-292b (S-4 h1): "Welcome" / "back" · M-292c: "Your rewards are right where you left them." · M-293 (the rotating reward's label): "Waiting for you"
 - M-286 / M-286b (S-1 game tab): "Catch the prizes" / "Close" · M-287 / M-287b: "Play 30 seconds" / "Play again ({score} pts)" · M-288: "Mouse, touch or arrow keys" · M-289 / M-289b / M-289c: "Score" / "Time" / "Best" · M-289d (canvas label): "Catch-the-prizes game. Steer with the arrow keys."

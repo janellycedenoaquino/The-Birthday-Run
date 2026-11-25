@@ -35,6 +35,9 @@ export const REMINDER_RUN_BUDGET = 40;
 export const RUN_TIME_BUDGET_MS = 40_000;
 /** Pickups older than this can't be in any cycle the run looks at (cycles are ≤ 1 year + lead). */
 const PICKUP_LOOKBACK_DAYS = 400;
+/** User IDs per reminder_log read. That read is a GET with every ID in the URL, so with a few
+ *  hundred candidates one request was over the URL limit and the whole run failed. */
+export const LOG_READ_BATCH = 100;
 
 export type RunCounts = {
   candidates: number;
@@ -79,11 +82,7 @@ export async function runReminders(deps: RunDeps): Promise<RunCounts> {
   const [rewards, pickups, logs] = await Promise.all([
     admin.rpc("reminder_rewards", { p_user_ids: ids }),
     admin.rpc("reminder_pickups", { p_user_ids: ids, p_since: since }),
-    admin
-      .from("reminder_log")
-      .select("user_id, kind, cycle_start, sent_on")
-      .in("user_id", ids)
-      .gte("sent_on", since),
+    readLogs(admin, ids, since),
   ]);
   for (const r of [rewards, pickups, logs])
     if (r.error) throw new Error("reminders: read", { cause: r.error });
@@ -285,4 +284,28 @@ function line(item: ReminderItem, style: "left" | "date"): ReminderLine {
         ? msg("M-120")
         : msg("M-122").replace("{days}", String(item.daysLeft));
   return { name: item.name, description: item.description, when };
+}
+
+/** reminder_log rows for these users since `since`, read LOG_READ_BATCH IDs at a time. */
+async function readLogs(
+  admin: SupabaseClient<Database>,
+  ids: string[],
+  since: LocalDate,
+) {
+  const data: {
+    user_id: string;
+    kind: Database["public"]["Enums"]["reminder_kind"];
+    cycle_start: string;
+    sent_on: string;
+  }[] = [];
+  for (let i = 0; i < ids.length; i += LOG_READ_BATCH) {
+    const batch = await admin
+      .from("reminder_log")
+      .select("user_id, kind, cycle_start, sent_on")
+      .in("user_id", ids.slice(i, i + LOG_READ_BATCH))
+      .gte("sent_on", since);
+    if (batch.error) return { data: null, error: batch.error };
+    data.push(...batch.data);
+  }
+  return { data, error: null };
 }

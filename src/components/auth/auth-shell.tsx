@@ -37,11 +37,13 @@ export function AuthShell({
       : (["M-292", "M-292b", "M-292c"] as const);
 
   return (
-    <MotionStage className="flex min-h-[calc(100dvh-4rem)] items-center justify-center overflow-hidden px-4 pt-20 pb-10 sm:px-6">
+    <MotionStage className="flex min-h-dvh items-center justify-center overflow-hidden px-4 pt-20 pb-10 sm:px-6">
       <MovingGlow />
       <CardWall retailers={retailers} />
-      <PauseMotionButton className="absolute top-4 right-4 z-10 sm:top-5 sm:right-5" />
-      <div className="frosted relative z-[5] w-full max-w-[430px] rounded-[28px] px-6 py-8 sm:px-8">
+      {/* C-1 floats over the wall here and leaves this corner free (HeaderShell). */}
+      <PauseMotionButton className="absolute top-3 right-4 z-[45] sm:right-6" />
+      {/* Bold labels and white 48 px fields, as in the prototype. */}
+      <div className="frosted relative z-[5] w-full max-w-[430px] rounded-[28px] px-6 py-8 sm:px-8 [&_input:not([type=checkbox]):not([type=hidden])]:h-12 [&_input:not([type=checkbox]):not([type=hidden])]:rounded-xl [&_input:not([type=checkbox]):not([type=hidden])]:bg-white [&_input:not([type=checkbox]):not([type=hidden])]:text-base [&_label]:font-bold dark:[&_input:not([type=checkbox]):not([type=hidden])]:bg-white/10">
         <nav
           aria-label={msg("M-290c")}
           className="mb-5 flex gap-1 rounded-xl bg-white/60 p-1 shadow-[inset_0_0_0_1.5px_var(--border)] dark:bg-white/10"

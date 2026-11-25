@@ -71,6 +71,13 @@ test("My Rewards: the list, filters, pages, and the other views (FR-12–FR-16, 
     .click();
   await expect(page).toHaveURL(/\/rewards$/);
 
+  // Signed in, the landing page sends you to My Rewards, and so does the name (decision 0018).
+  await page.goto("/");
+  await expect(page).toHaveURL(/\/rewards$/);
+  await expect(
+    page.getByRole("banner").getByRole("link", { name: "The Birthday Run" }),
+  ).toHaveAttribute("href", "/rewards");
+
   // Birthday today: the header, the counts, 20 per page, the 1-day reward first (FR-12, FR-14).
   await expect(
     page.getByRole("heading", { name: "Happy birthday", level: 1 }),
