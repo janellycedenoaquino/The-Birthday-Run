@@ -11,12 +11,15 @@ export function RetailerLogo({
   logoFile,
   size = 48,
   wide = false,
+  large = false,
 }: {
   name: string;
   logoFile: string | null;
   size?: number;
   /** Discover's logo card (decision 0016): up to 150 × 56, no tile behind it. */
   wide?: boolean;
+  /** With `wide`: the brand page's bigger logo, up to 170 × 80 (decision 0016 prototype). */
+  large?: boolean;
 }) {
   const [failed, setFailed] = useState(false);
   const box = { width: size, height: size };
@@ -35,10 +38,14 @@ export function RetailerLogo({
       <Image
         src={`/retailers/${logoFile}`}
         alt={name}
-        width={150}
-        height={56}
+        width={large ? 170 : 150}
+        height={large ? 80 : 56}
         onError={() => setFailed(true)}
-        className="h-14 w-auto max-w-[150px] object-contain"
+        className={
+          large
+            ? "h-20 w-auto max-w-[170px] object-contain"
+            : "h-14 w-auto max-w-[150px] object-contain"
+        }
       />
     );
   return (

@@ -7,7 +7,7 @@ vi.mock("@/server/errors", async (io) =>
   (await import("./mock-helpers")).quietErrors(io),
 );
 
-const { runReminders, REMINDER_RUN_BUDGET } =
+const { runReminders, REMINDER_RUN_BUDGET, LOG_READ_BATCH } =
   await import("@/server/reminders/run");
 const { createUnsubscribeToken, verifyUnsubscribeToken } =
   await import("@/server/reminders/unsubscribe-token");
@@ -29,9 +29,11 @@ function fakeAdmin(
   users: { id: string; month: number; day: number; zone?: string }[],
 ) {
   const logs: Log[] = [];
+  const logReads: number[] = []; // IDs per reminder_log read
   let next = 0;
   const admin = {
     logs,
+    logReads,
     rpc: async (fn: string) => {
       if (fn === "reminder_candidates")
         return {
@@ -62,7 +64,15 @@ function fakeAdmin(
     },
     from: () => ({
       select: () => ({
-        in: () => ({ gte: async () => ({ data: [...logs], error: null }) }),
+        in: (_: string, ids: string[]) => {
+          logReads.push(ids.length);
+          return {
+            gte: async () => ({
+              data: logs.filter((l) => ids.includes(l.user_id)),
+              error: null,
+            }),
+          };
+        },
       }),
       insert: (row: Omit<Log, "id">) => ({
         select: () => ({
@@ -279,5 +289,24 @@ describe("checkCronAuth (D14)", () => {
     expect(checkCronAuth(req(SECRET), SECRET)).toBe(false);
     expect(checkCronAuth(req(), SECRET)).toBe(false);
     expect(checkCronAuth(req("Bearer "), "")).toBe(false);
+  });
+});
+
+describe("reminder_log reads in batches (a few hundred candidates)", () => {
+  it("250 candidates: reads at most LOG_READ_BATCH IDs at a time, and the run still works", async () => {
+    const many = Array.from({ length: 250 }, (_, i) => ({
+      id: uid(1000 + i),
+      month: 6,
+      day: 15,
+    }));
+    const admin = fakeAdmin(many);
+    const counts = await runReminders(deps(admin));
+    expect(admin.logReads).toEqual([
+      LOG_READ_BATCH,
+      LOG_READ_BATCH,
+      250 - 2 * LOG_READ_BATCH,
+    ]);
+    expect(counts.candidates).toBe(250);
+    expect(counts.sent).toBe(REMINDER_RUN_BUDGET);
   });
 });

@@ -1,5 +1,6 @@
 import Link from "next/link";
-import { ExternalLink } from "lucide-react";
+import { ArrowLeft, ArrowUpRight } from "lucide-react";
+import { cn } from "cn";
 import { EnrollToggle } from "@/components/retailers/enroll-toggle";
 import { RetailerLogo } from "@/components/retailers/retailer-logo";
 import { ReportDialog } from "@/components/rewards/report-dialog";
@@ -26,6 +27,11 @@ const FACT =
 const FACT_TITLE =
   "mb-2 text-xs font-extrabold tracking-[0.12em] text-muted-foreground uppercase";
 const BIG = "text-xl leading-tight font-extrabold tracking-[-0.02em]";
+const COLUMNS: Record<number, string> = {
+  1: "",
+  2: "md:grid-cols-2",
+  3: "md:grid-cols-3",
+};
 const LINK =
   "font-bold underline decoration-[var(--bubblegum)] decoration-[3px] underline-offset-[3px]";
 
@@ -40,27 +46,44 @@ export function BrandDetails({
   const category = CATEGORY_LABELS[r.category] ?? r.category;
   const type = REWARD_TYPE_LABELS[r.reward_type];
   const signUpHref = `/sign-up?next=${encodeURIComponent(`/discover/${r.id}`)}`;
-  const needs = [
-    r.purchase_requirement &&
-      msg("M-189a").replace("{text}", r.purchase_requirement),
-    r.membership_requirement &&
-      msg("M-189b").replace("{text}", r.membership_requirement),
-    r.other_requirement && msg("M-189c").replace("{text}", r.other_requirement),
-  ].filter(Boolean) as string[];
+  // Each requirement as its bold label ("Membership:") and the text (decision 0016 prototype).
+  const needs = (
+    [
+      ["M-189a", r.purchase_requirement],
+      ["M-189b", r.membership_requirement],
+      ["M-189c", r.other_requirement],
+    ] as const
+  ).flatMap(([id, text]) =>
+    text ? [{ label: msg(id).split("{text}")[0]!.trim(), text }] : [],
+  );
   const page = variant === "page";
+  // When, then Join (visitors: only with a waiting period), then What you need (signed in).
+  const factCount =
+    1 + (r.signup_lead_days || signedIn ? 1 : 0) + (signedIn ? 1 : 0);
 
   return (
     <div>
+      {/* The full page's way back (owner, 2026-11-25): the breadcrumb on phones, a back arrow on
+          wider screens. The pop-up has neither: it closes with its X or a click outside. */}
       {page ? (
-        <nav
-          aria-label="Breadcrumb"
-          className="mt-1.5 mb-3.5 text-sm text-muted-foreground"
-        >
-          <Link href="/discover" className={LINK}>
-            {msg("M-171a")}
-          </Link>{" "}
-          / {category} / {r.name}
-        </nav>
+        <>
+          <nav
+            aria-label="Breadcrumb"
+            className="mt-1.5 mb-3.5 text-sm text-muted-foreground sm:hidden"
+          >
+            <Link href="/discover" className={LINK}>
+              {msg("M-171a")}
+            </Link>{" "}
+            / {category} / {r.name}
+          </nav>
+          <Link
+            href="/discover"
+            className="mt-1.5 mb-3.5 hidden items-center gap-1.5 rounded-[10px] text-sm font-bold text-[var(--navy)] outline-none hover:underline focus-visible:ring-3 focus-visible:ring-ring/50 sm:inline-flex dark:text-foreground"
+          >
+            <ArrowLeft aria-hidden="true" className="size-4" />
+            {msg("M-171c")}
+          </Link>
+        </>
       ) : null}
 
       <section
@@ -75,10 +98,11 @@ export function BrandDetails({
           className={`flex flex-col items-center justify-center bg-[var(--cc)] text-center text-[var(--navy)] ${page ? "border-b-[1.5px] border-border p-7 md:border-r-[1.5px] md:border-b-0" : "rounded-[22px] p-5"}`}
         >
           <div className="grid h-[130px] w-[200px] place-items-center rounded-[22px] bg-white shadow-[0_0_0_1.5px_var(--border)]">
-            <RetailerLogo name={r.name} logoFile={r.logo_file} wide />
+            <RetailerLogo name={r.name} logoFile={r.logo_file} wide large />
           </div>
           {page ? (
             <h1 className="headline mt-4 text-[30px] leading-[1.08]">
+              {/* "{brand} birthday reward": what people search for (owner, 2026-11-25). */}
               {msg("M-298").replace("{brand}", r.name)}
             </h1>
           ) : (
@@ -90,10 +114,8 @@ export function BrandDetails({
               <h2>{r.name}</h2>
             </DialogTitle>
           )}
-          <p className="mt-2 text-[#4c557d]">{r.description}</p>
-          <span className="mt-2.5 inline-block rounded-[9px] bg-white/60 px-2.5 py-1 text-xs font-extrabold shadow-[inset_0_0_0_1.5px_var(--border)]">
-            {category}
-          </span>
+          {/* No description line or category tag: both repeated what's around them, the same on
+              every brand page (owner, 2026-11-25). */}
         </div>
         <div className={page ? "px-7 py-7 sm:px-8" : "pt-5"}>
           <small className="text-xs font-extrabold tracking-[0.12em] text-muted-foreground uppercase">
@@ -102,13 +124,15 @@ export function BrandDetails({
           <strong className="mt-1.5 block text-[26px] leading-tight font-extrabold tracking-[-0.025em] sm:text-[30px]">
             {r.reward_description}
           </strong>
+          {/* The type as a short tag; "no purchase needed" helps people decide (owner). */}
           {type ? (
-            <p className="mt-2 text-sm text-muted-foreground">
-              <b className="text-foreground">{type.label}:</b>{" "}
-              {type.explanation}
-            </p>
+            <span className="mt-2.5 inline-block rounded-[9px] bg-white/70 px-2.5 py-1 text-xs font-extrabold text-[var(--navy)] shadow-[inset_0_0_0_1.5px_var(--border)] dark:bg-white/10 dark:text-foreground">
+              {type.note ? `${type.label} · ${type.note}` : type.label}
+            </span>
           ) : null}
           <div className="mt-[18px] flex flex-wrap items-start gap-2.5">
+            {/* Signed out, no sign-up button here: the dates card and the band below have one
+                each, and three on a page is too many (owner, 2026-11-25). */}
             {signedIn ? (
               <EnrollToggle
                 retailerId={r.id}
@@ -118,17 +142,13 @@ export function BrandDetails({
                 unenroll={unenroll}
                 wide
               />
-            ) : (
-              <Button asChild size="lg" className="h-11 px-4">
-                <Link href={signUpHref}>{msg("M-298d")}</Link>
-              </Button>
-            )}
+            ) : null}
             {r.website_url ? (
               <Button
                 asChild
                 size="lg"
                 variant="outline"
-                className="h-11 bg-transparent px-4 font-bold"
+                className="h-11 border-transparent bg-white px-4 font-bold text-[var(--navy)] shadow-[0_0_0_1.5px_var(--navy)] hover:bg-white hover:shadow-[3px_3px_0_var(--navy),0_0_0_1.5px_var(--navy)] dark:bg-white/10 dark:text-foreground"
               >
                 <a
                   href={r.website_url}
@@ -136,7 +156,7 @@ export function BrandDetails({
                   rel="noopener noreferrer"
                 >
                   {msg("M-298e")}
-                  <ExternalLink aria-hidden="true" />
+                  <ArrowUpRight aria-hidden="true" />
                   <span className="sr-only"> (opens in a new tab)</span>
                 </a>
               </Button>
@@ -146,7 +166,7 @@ export function BrandDetails({
       </section>
 
       <section
-        className={`mt-[18px] grid gap-3.5 ${page ? "md:grid-cols-3" : ""}`}
+        className={`mt-[18px] grid gap-3.5 ${page ? COLUMNS[factCount] : ""}`}
       >
         <div className={FACT}>
           <h3 className={FACT_TITLE}>{msg("M-298f")}</h3>
@@ -173,7 +193,10 @@ export function BrandDetails({
         </div>
         {r.signup_lead_days ? (
           <div
-            className={`${FACT} bg-[#fff0e6] shadow-[inset_0_0_0_1.5px_#ffb996] dark:bg-[#4a3438]`}
+            className={cn(
+              FACT,
+              "bg-[#fff0e6] shadow-[inset_0_0_0_1.5px_#ffb996] dark:bg-[#4a3438]",
+            )}
           >
             <h3 className={FACT_TITLE}>{msg("M-298h")}</h3>
             <p className={BIG}>
@@ -184,21 +207,30 @@ export function BrandDetails({
                 msg("M-298j").replace("{days}", String(r.signup_lead_days))}
             </p>
           </div>
-        ) : (
+        ) : signedIn ? (
+          // "Any time before" only signed in; visitors see the join-early card only when the
+          // brand has a waiting period (owner, 2026-11-25).
           <div className={FACT}>
             <h3 className={FACT_TITLE}>{msg("M-298k")}</h3>
             <p className={BIG}>{msg("M-298l")}</p>
             <p className="mt-1">{msg("M-298m")}</p>
           </div>
-        )}
-        <div className={FACT}>
-          <h3 className={FACT_TITLE}>{msg("M-298n")}</h3>
-          {needs.length ? (
-            needs.map((text) => <p key={text}>{text}</p>)
-          ) : (
-            <p>{msg("M-298o")}</p>
-          )}
-        </div>
+        ) : null}
+        {/* Signed in only (owner, 2026-11-25: less to read for visitors). */}
+        {signedIn ? (
+          <div className={FACT}>
+            <h3 className={FACT_TITLE}>{msg("M-298n")}</h3>
+            {needs.length ? (
+              needs.map(({ label, text }) => (
+                <p key={label}>
+                  <b>{label}</b> {text}
+                </p>
+              ))
+            ) : (
+              <p>{msg("M-298o")}</p>
+            )}
+          </div>
+        ) : null}
       </section>
 
       {page && !signedIn ? (
@@ -220,7 +252,6 @@ export function BrandDetails({
           <h2 className="text-2xl font-extrabold tracking-[-0.02em]">
             {msg("M-298r").replace("{category}", category.toLowerCase())}
           </h2>
-          <p className="mt-1 text-muted-foreground">{msg("M-298s")}</p>
           <ul className="mt-3.5 grid grid-cols-2 gap-3.5 md:grid-cols-4">
             {brand.more.map((m) => (
               <li key={m.id}>

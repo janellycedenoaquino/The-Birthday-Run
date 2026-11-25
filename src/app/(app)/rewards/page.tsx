@@ -318,7 +318,7 @@ function Notice({ text, start }: { text: string; start?: LocalDate }) {
         <p>{text}</p>
         <div>
           <Button asChild size="lg">
-            <Link href="/discover">Browse Discover</Link>
+            <Link href="/discover">{msg("M-102")}</Link>
           </Button>
           <Button asChild size="lg" variant="outline" className="ml-2">
             <Link href="/plan">Start planning</Link>
