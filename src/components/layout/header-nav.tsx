@@ -10,26 +10,30 @@ import { AccountMenu, type Account } from "./account-menu";
 // C-1's right side (SPEC §3.2). A client component because it depends on the current path, and
 // the root layout isn't re-rendered on client-side navigation: a path read on the server would
 // stay at the first page loaded. The step pages show no nav, so the step can't be skipped from
-// here (the guards still enforce it); S-4/S-5 hide their own button.
+// here (the guards still enforce it). S-4/S-5 show no nav: their card's tabs switch between them.
 const STEP_PAGES = ["/auth/set-password", "/auth/mfa", "/auth/reauthenticate"];
+// Pages whose own motion fills the screen (decision 0016): C-1 floats over it, and the page puts
+// "Pause motion" in the top-right corner. Sign in and sign up switch with tabs in their card.
+const FLOATING = ["/", "/sign-in", "/sign-up"];
+const CARD_TABS = ["/sign-in", "/sign-up"];
 
 /**
- * C-1's frame. On the landing page (S-1) it floats over the logo tunnel, full width, and leaves
- * the top-right corner to the page's "Pause motion" (decision 0016 prototype). Only its links
- * take clicks there, so the gaps reach the tunnel and the pause button below.
+ * C-1's frame. On the FLOATING pages it floats over the page's motion, full width, and leaves the
+ * top-right corner to the page's "Pause motion" (decision 0016 prototypes). Only its links take
+ * clicks there, so the gaps reach the motion and the pause button below.
  */
 export function HeaderShell({ children }: { children: ReactNode }) {
-  const landing = usePathname() === "/";
+  const floating = FLOATING.includes(usePathname());
   return (
     <header
       className={
-        landing
+        floating
           ? "pointer-events-none absolute inset-x-0 top-0 z-40"
           : "relative z-40"
       }
     >
       <div
-        className={`mx-auto flex h-16 w-full items-center justify-between gap-4 px-4 sm:px-6 ${landing ? "pr-16 sm:pr-[184px] [&>*]:pointer-events-auto" : "max-w-5xl"}`}
+        className={`mx-auto flex h-16 w-full items-center justify-between gap-4 px-4 sm:px-6 ${floating ? "pr-16 sm:pr-[184px] [&>*]:pointer-events-auto" : "max-w-5xl"}`}
       >
         {children}
       </div>
@@ -44,6 +48,7 @@ const CURRENT =
 export function HeaderNav({ account }: { account: Account | null }) {
   const path = usePathname();
   if (STEP_PAGES.includes(path)) return null;
+  if (CARD_TABS.includes(path) && !account) return null;
   // The landing card has "Browse rewards" and the sign-up button, so signed out only "Sign in"
   // stays up here (decision 0016).
   if (path === "/" && !account) {
@@ -103,16 +108,12 @@ export function HeaderNav({ account }: { account: Account | null }) {
         <AccountMenu {...account} />
       ) : (
         <>
-          {path !== "/sign-in" && (
-            <Link href="/sign-in" className="pill-link">
-              Sign in
-            </Link>
-          )}
-          {path !== "/sign-up" && (
-            <Button asChild size="lg">
-              <Link href="/sign-up">Sign up</Link>
-            </Button>
-          )}
+          <Link href="/sign-in" className="pill-link">
+            Sign in
+          </Link>
+          <Button asChild size="lg">
+            <Link href="/sign-up">Sign up</Link>
+          </Button>
         </>
       )}
     </nav>

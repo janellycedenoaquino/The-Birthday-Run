@@ -308,7 +308,7 @@ flowchart TD
 - Signed in: links Discover · My Rewards · Plan · History in a row under the header on wider screens (no Dashboard, decision 0018); current page `aria-current="page"`. Settings stays in the Template account menu.
 - **Phones (decision 0016):** the links move to a bottom tab bar fixed to the bottom of the screen: four tabs (Discover, My Rewards, Plan, History) with an icon and a label, the current one on the pink block. The account menu stays on the round initial top right (Settings, Birthday & reminders, Premium, Sign out). Page content keeps room above the bar.
 - Signed out: "Discover" next to Template C-1's Sign in / Sign up.
-- **Header look (decision 0016 prototypes; owner, 2026-11-25):** no bar and no logo image: the app name on a cream pill (signed out → S-1, signed in → S-105, decision 0018), links on the page's own background; it scrolls with the page. The current link and "Sign in" sit on a white pill with the navy ring. On S-1 the header floats over the logo tunnel with only "Sign in" signed out, left of the page's pause button.
+- **Header look (decision 0016 prototypes; owner, 2026-11-25):** no bar and no logo image: the app name on a cream pill (signed out → S-1, signed in → S-105, decision 0018), links on the page's own background; it scrolls with the page. The current link and "Sign in" sit on a white pill with the navy ring. On S-1 the header floats over the logo tunnel with only "Sign in" signed out, left of the page's pause button; on Template S-4/S-5 it floats over the card wall with the name only (the card's tabs switch between them).
 - Hidden on S-101 (onboarding has one job) and on Template S-9–S-11.
 - Labels: M-101.
 
