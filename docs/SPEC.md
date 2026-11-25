@@ -307,7 +307,7 @@ flowchart TD
 **C-101 App navigation** (all pages; extends Template C-1)
 - Signed in: links Discover · My Rewards · Plan · History in a row under the header on wider screens (no Dashboard, decision 0018); current page `aria-current="page"`. Settings stays in the Template account menu.
 - **Phones (decision 0016):** the links move to a bottom tab bar fixed to the bottom of the screen: four tabs (Discover, My Rewards, Plan, History) with an icon and a label, the current one on the pink block. The account menu stays on the round initial top right (Settings, Birthday & reminders, Premium, Sign out). Page content keeps room above the bar.
-- Signed out: the Discover link reads "Rewards" (M-101e; owner, 2026-11-25), next to Template C-1's Sign in / Sign up.
+- Signed out: "Rewards" (M-101, left out on S-103 itself) and one "Get started" (M-101f) → Template S-5, in place of Template C-1's Sign in / Sign up (S-5's card has a "Sign in" tab; owner, 2026-11-25). The floating pages keep their own (C-1 header look below).
 - **Header look (decision 0016 prototypes; owner, 2026-11-25):** no bar and no logo image: the app name on a cream pill (signed out → S-1, signed in → S-105, decision 0018), links on the page's own background; it scrolls with the page. The current link and "Sign in" sit on a white pill with the navy ring. On S-1 the header floats over the logo tunnel with "Rewards" and "Sign in" signed out, left of the page's pause button; on Template S-4/S-5 it floats over the card wall with "Rewards" only (the card's tabs switch between them).
 - Hidden on S-101 (onboarding has one job) and on Template S-9–S-11.
 - Labels: M-101.
@@ -395,7 +395,7 @@ flowchart TD
 - **Home (decision 0018):** where signed-in users land. **Look (decision 0016):** the birthday header as a frosted card with the pickups line (M-126/M-127 or M-128); under it a row with a progress ring (picked up of this run's rewards) and a big countdown (rewards open now, or days to the birthday outside the window); then "Open now" (C-103 badges, "Picked up") and "Starting later" (start dates); picked-up rewards never show. No enrollments: the header and countdown stay, plus a "No programs yet" card linking to Discover with 4 popular retailers to add with "+".
 - **Shows, in order:**
   1. **Birthday header:** h1 for the FR-14 state (M-201–M-204, `{name}` variants when a display name is set) and the countdown M-205/M-206 (hidden on the birthday).
-  2. **Outside the window** (FR-15): M-207 (`{date}`) with links "Browse Discover" and "Start planning" → S-103, S-106. Nothing below shows.
+  2. **Outside the window** (FR-15): M-207 (`{date}`) with links M-102 and "Start planning" → S-103, S-106. Nothing below shows.
   3. **Filters:** search "Search rewards"; "Ends within" (M-208a–d) as a row of chips, one pressed at a time (`aria-pressed`; decision 0016); M-178 count.
   4. **Reward list:** per card: logo, name, reward description, timing label, C-103, buttons M-115 (opens C-109), and a "More" menu with C-107. Loads in pages: "Show more" (M-209).
   5. **Route** (h2 M-210): premium: checklist of available rewards (defaults: FR-32) + C-106. Free: C-104 (M-132).
@@ -438,9 +438,9 @@ flowchart TD
 Template M-, API-, E- texts apply unchanged. Placeholders in `{braces}` are filled as text. Plurals: one message per form where shown (`{days}` = 1 uses the singular ID). Dates: "Oct 6" style in the user's time zone; times "10:00 AM".
 
 **Navigation and onboarding**
-- M-101 (C-101): "Discover" · "My Rewards" (M-101b) · "Plan" (M-101d) · "History" (M-101c) · M-101e (C-101's Discover link, signed out): "Rewards"
+- M-101 (C-101; owner, 2026-11-25: no "Discover" anywhere): "Rewards" · "My Rewards" (M-101b) · "Plan" (M-101d) · "History" (M-101c) · M-101f (C-101 signed out): "Get started"
 - M-102 (S-1): "Browse rewards"
-- M-294 / M-294b (S-103 h1 signed out, decision 0016): "Every birthday treat," / "in one place." · M-294c: "Each reward is checked on the brand's own page. Sign up free to get your own countdown and plan your run." · M-294d: "{count} brands with a birthday treat" · M-295 / M-295b (S-103 h1 signed in): "Discover" / "rewards" · M-295c: "Add the programs you're in. We'll count down each one for your birthday." · M-296 (C-102 card): "Needs a purchase"
+- M-294 / M-294b (S-103 h1 signed out, decision 0016): "Every birthday reward," / "in one place." · M-294c (owner, 2026-11-25; a line break before "Sign up"): "Some last a day, some all month. We check each one on the brand's own site. / Sign up free to get your countdown and plan your run." · M-294d: "{count} brands with a birthday treat" · M-295 / M-295b (S-103 h1 signed in): "Birthday" / "rewards" · M-295c: "Add the programs you're in. We'll count down each one for your birthday." · M-296 (C-102 card): "Needs a purchase"
 - M-282 / M-282b (S-1 h1, decision 0016; owner's wording 2026-11-25): "How many free things can you get" / "on your birthday?" (in the tilted block); phones break it as "How many / free things / can you get / on your / birthday?" · M-282c (S-1 main button): "Find my birthday freebies" · M-283: "Find every brand that treats you, join in time, and plan your stops so nothing expires." · M-284: "{count} brands waiting to treat you"
 - M-285 / M-285b (pause control, S-1 and S-4/S-5): "Pause motion" / "Play motion"
 - M-290 / M-290b (S-4/S-5 tabs, decision 0016): "Create account" / "Sign in" · M-290c (the tabs' label): "Sign in or create an account" · M-291 / M-291b (S-5 h1): "Create your" / "account" (in the tilted block) · M-291c: "Free, and it takes a minute." · M-292 / M-292b (S-4 h1): "Welcome" / "back" · M-292c: "Your rewards are right where you left them." · M-293 (the rotating reward's label): "Waiting for you"
@@ -476,13 +476,13 @@ Template M-, API-, E- texts apply unchanged. Placeholders in `{braces}` are fill
 - M-208a–d: "Any time" · "Within 1 day" · "Within 7 days" · "Within 14 days"
 - M-209: "Show more"
 - M-210: "Route"
-- M-211 (no enrollments): "You haven't added any programs yet. Find the ones you belong to in Discover, then plan your run."
+- M-211 (no enrollments): "You haven't added any programs yet. Find the ones you belong to in Rewards, then plan your run."
 - M-212: "Nothing left to pick up right now. Nice work."
 - M-215 (default Smart Grouping name): "Run {n}"
 
 **Discover and retailer details**
 - M-170 (categories): "All" · "Food and drink" · "Entertainment" · "Retail" · "Beauty"
-- M-171: "No programs match that search." · M-171a: "Discover" · M-171b: "Free birthday rewards from loyalty programs, each checked on the brand's own page." · M-171c: "Back to Discover"
+- M-171: "No programs match that search." · M-171a: "Rewards" · M-171b: "Free birthday rewards from loyalty programs, each checked on the brand's own page." · M-171c: "Back to Rewards"
 - M-172: "Showing rewards available in {state}. {hidden} hidden." · M-172b (a start is already set; applies the filter): "Show only my state" · M-173: "Show all"
 - M-174–M-177 (duration select): "Any length" · "Birthday only" · "Up to a week" · "Up to a month" · M-177a (checkbox beside it): "Can start before my birthday"
 - M-178: "Showing {shown} of {total}"
@@ -535,7 +535,7 @@ Template M-, API-, E- texts apply unchanged. Placeholders in `{braces}` are fill
 - M-235 (FR-9): "This pickup is outside your birthday window. Change the date."
 - M-236: "Move {retailer}" (accessible name) · M-237 (announcements): "Picked up {retailer}. Position {pos} of {total}." · "{retailer} moved to position {pos} of {total}." · "{retailer} dropped at position {pos} of {total}." · "Move cancelled."
 - M-238: "Show route"
-- M-239: "Nothing to plan yet. Add programs in Discover." · M-240: "No groups yet. Select rewards above and add them to a group." · M-241: "No rewards in this group yet."
+- M-239: "Nothing to plan yet. Add programs in Rewards." · M-240: "No groups yet. Select rewards above and add them to a group." · M-241: "No rewards in this group yet."
 - M-242 (group name with control characters): "Remove line breaks and tabs from the name." (blank and too long reuse Template M-35 / M-36)
 
 **History and settings**

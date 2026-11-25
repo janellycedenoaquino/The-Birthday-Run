@@ -10,7 +10,7 @@ import { AccountMenu, type Account } from "./account-menu";
 // C-1's right side (SPEC §3.2). A client component because it depends on the current path, and
 // the root layout isn't re-rendered on client-side navigation: a path read on the server would
 // stay at the first page loaded. The step pages show no nav, so the step can't be skipped from
-// here (the guards still enforce it). Signed out, the Discover link reads "Rewards" (M-101e).
+// here (the guards still enforce it). The Discover page's link reads "Rewards" (M-101).
 const STEP_PAGES = ["/auth/set-password", "/auth/mfa", "/auth/reauthenticate"];
 // Pages whose own motion fills the screen (decision 0016): C-1 floats over it, and the page puts
 // "Pause motion" in the top-right corner. Sign in and sign up switch with tabs in their card.
@@ -58,7 +58,7 @@ export function HeaderNav({ account }: { account: Account | null }) {
         className="flex shrink-0 items-center gap-1.5 sm:gap-2"
       >
         <Link href="/discover" className="pill-link">
-          {msg("M-101e")}
+          {msg("M-101")}
         </Link>
         {CARD_TABS.includes(path) ? null : (
           <Link href="/sign-in" className="pill-link">
@@ -71,8 +71,8 @@ export function HeaderNav({ account }: { account: Account | null }) {
 
   return (
     <nav aria-label="Account" className="flex shrink-0 items-center gap-2">
-      {/* C-101's first app link (M-101). Signed out it reads "Rewards" (M-101e) and looks like
-          "Sign in" next to it (owner, 2026-11-25). */}
+      {/* C-101's first app link (M-101). Signed out it looks like the pills beside it, and it's
+          left out on Rewards itself, as in the prototype. */}
       {path !== "/onboarding" &&
         (account ? (
           <Button asChild variant="ghost" size="lg" className={CURRENT}>
@@ -84,13 +84,12 @@ export function HeaderNav({ account }: { account: Account | null }) {
             </Link>
           </Button>
         ) : path === "/discover" ? null : (
-          // Not on Rewards itself, as in the prototype (it would only point at this page).
           <Link
             href="/discover"
             aria-current={path.startsWith("/discover") ? "page" : undefined}
             className="pill-link"
           >
-            {msg("M-101e")}
+            {msg("M-101")}
           </Link>
         ))}
       {account && path !== "/onboarding" && (
@@ -126,14 +125,10 @@ export function HeaderNav({ account }: { account: Account | null }) {
       {account ? (
         <AccountMenu {...account} />
       ) : (
-        <>
-          <Link href="/sign-in" className="pill-link">
-            Sign in
-          </Link>
-          <Button asChild size="lg">
-            <Link href="/sign-up">Sign up</Link>
-          </Button>
-        </>
+        // Signed out: one "Get started" → sign up; the card there has a "Sign in" tab (owner).
+        <Button asChild size="lg">
+          <Link href="/sign-up">{msg("M-101f")}</Link>
+        </Button>
       )}
     </nav>
   );

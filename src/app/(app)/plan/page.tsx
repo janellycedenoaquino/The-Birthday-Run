@@ -189,7 +189,7 @@ export default async function PlanPage({ searchParams }: PageProps<"/plan">) {
           <p>{msg("M-239")}</p>
           <div>
             <Button asChild size="lg">
-              <Link href="/discover">Browse Discover</Link>
+              <Link href="/discover">{msg("M-102")}</Link>
             </Button>
           </div>
         </div>

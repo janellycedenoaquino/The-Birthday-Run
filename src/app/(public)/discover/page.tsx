@@ -24,7 +24,7 @@ import { createClient } from "@/server/supabase/server";
 // S-103 Discover (SPEC §3.3, BUILD F-3: FR-2, FR-3). Public. RLS decides the data (D3, decision
 // 0017): signed out, every non-retired retailer comes back; the role here only picks what to render.
 export const metadata: Metadata = {
-  title: "Discover",
+  title: msg("M-171a"),
   description: msg("M-171b"),
 };
 
@@ -301,7 +301,7 @@ function Shell({
         <h1 className="headline text-[40px] sm:text-[clamp(40px,5.5vw,60px)]">
           {title} <span className="headline-block">{block}</span>
         </h1>
-        <p className="mx-auto mt-4 max-w-2xl text-base leading-relaxed text-muted-foreground sm:text-lg">
+        <p className="mx-auto mt-4 max-w-2xl text-base leading-relaxed whitespace-pre-line text-muted-foreground sm:text-lg">
           {lead}
         </p>
         {count ? (
