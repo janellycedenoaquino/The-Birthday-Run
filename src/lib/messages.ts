@@ -279,11 +279,12 @@ export const M = {
   "M-238": "Show route",
   // S-1 landing (decision 0016).
   "M-102": "Browse rewards",
-  "M-282": "Every birthday freebie,",
-  "M-282b": "one run.",
+  "M-282": "How many free things can you get",
+  "M-282b": "on your birthday?",
+  "M-282c": "Find my birthday freebies",
   "M-283":
-    "See which brands treat you on your birthday, sign up in time, and plan the stops so nothing expires.",
-  "M-284": "{count} brands waiting",
+    "Find every brand that treats you, join in time, and plan your stops so nothing expires.",
+  "M-284": "{count} brands waiting to treat you",
   "M-285": "Pause motion",
   "M-285b": "Play motion",
   "M-286": "Catch the prizes",

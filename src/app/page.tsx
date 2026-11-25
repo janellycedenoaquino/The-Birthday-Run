@@ -14,8 +14,9 @@ import { msg } from "@/lib/messages";
 import { createClient } from "@/server/supabase/server";
 
 // S-1 Landing (SPEC §3.3, FR-2, FR-17, FR-24; look: decision 0016). One screen: the logo tunnel
-// and the flowing glow behind a frosted card, "Pause motion", and the game's pull-up tab. Nothing
-// below the hero. `?notice=account_deleted` is toasted by the root layout (C-3).
+// and the flowing glow behind a frosted card, and the game's pull-up tab. Nothing below the hero.
+// C-1 floats over the tunnel here (HeaderShell), with only "Sign in" signed out, as in the
+// prototype. `?notice=account_deleted` is toasted by the root layout (C-3).
 const TUNNEL_SIZE = 48;
 
 export default async function Home() {
@@ -49,10 +50,11 @@ export default async function Home() {
   const tunnel = shuffle(withLogos).slice(0, TUNNEL_SIZE);
 
   return (
-    <MotionStage className="flex min-h-[calc(100dvh-4rem)] flex-col overflow-hidden">
+    <MotionStage className="flex min-h-dvh flex-col overflow-hidden">
       <MovingGlow />
       <LogoTunnel retailers={tunnel} />
-      <PauseMotionButton className="absolute top-4 right-4 z-10 sm:top-5 sm:right-5" />
+      {/* C-1 floats over the tunnel here and leaves this corner free (HeaderShell). */}
+      <PauseMotionButton className="absolute top-3 right-4 z-[45] sm:right-6" />
       <div className="pointer-events-none relative z-[5] flex flex-1 items-center justify-center px-4 pt-16 pb-8 sm:px-6">
         <div className="frosted pointer-events-auto max-w-[640px] rounded-[28px] px-6 py-8 text-center sm:px-10 sm:py-9">
           <h1 className="headline text-[40px] sm:text-[clamp(38px,6vw,64px)]">
@@ -70,7 +72,7 @@ export default async function Home() {
             ) : (
               <>
                 <Button asChild size="lg" className="h-12 px-6 text-base">
-                  <Link href="/sign-up">Get started</Link>
+                  <Link href="/sign-up">{msg("M-282c")}</Link>
                 </Button>
                 <Button
                   asChild

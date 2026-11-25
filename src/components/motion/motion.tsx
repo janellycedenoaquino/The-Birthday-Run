@@ -74,7 +74,8 @@ export function PauseMotionButton({ className }: { className?: string }) {
       )}
     >
       <Icon className="size-4" aria-hidden="true" fill="currentColor" />
-      {msg(paused ? "M-285b" : "M-285")}
+      {/* Phones show the icon only (prototype); the name stays for screen readers. */}
+      <span className="max-sm:sr-only">{msg(paused ? "M-285b" : "M-285")}</span>
     </button>
   );
 }

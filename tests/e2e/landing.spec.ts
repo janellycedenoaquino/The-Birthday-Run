@@ -63,15 +63,16 @@ test("the card: headline, both buttons and the brand count", async ({
   await expect(
     page.getByRole("heading", {
       level: 1,
-      name: "Every birthday freebie, one run.",
+      name: "How many free things can you get on your birthday?",
     }),
   ).toBeVisible();
-  await expect(page.getByRole("link", { name: "Get started" })).toHaveAttribute(
-    "href",
-    "/sign-up",
-  );
+  await expect(
+    page.getByRole("link", { name: "Find my birthday freebies" }),
+  ).toHaveAttribute("href", "/sign-up");
   await expect(
     page.getByRole("link", { name: "Browse rewards" }),
   ).toHaveAttribute("href", "/discover");
-  await expect(page.getByText(/^\d+ brands waiting$/)).toBeVisible();
+  await expect(
+    page.getByText(/^\d+ brands waiting to treat you$/),
+  ).toBeVisible();
 });
