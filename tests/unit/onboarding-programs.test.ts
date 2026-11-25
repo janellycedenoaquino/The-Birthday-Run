@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-// BUILD F-2 `saveOnboarding`, step 2 (FR-7): runs once, all-or-nothing on BR-3, sets onboarded_at
+// BUILD F-2 `saveOnboarding`, step 2 (FR-7) and step 1's "Change birthday" rule: runs once, all-or-nothing on BR-3, sets onboarded_at
 // only where empty. Supabase, the guard and the limiter are the faked boundaries.
 const state = {
   profile: {
@@ -24,6 +24,11 @@ const fakeClient = {
         }),
         update: (values: Record<string, unknown>) => ({
           eq: () => ({
+            // Step 1's write (updateOwnProfile): exactly one row back.
+            select: async () => {
+              state.writes.push(`profiles ${Object.keys(values).join()}`);
+              return { data: [{ id: "user-1" }], error: null };
+            },
             is: async (col: string) => {
               state.writes.push(
                 `profiles ${Object.keys(values).join()} where ${col} is null`,
@@ -99,7 +104,7 @@ describe("saveOnboarding step 2 (FR-7)", () => {
     expect(
       await outcome(programs("starbucks", "sephora", "starbucks")),
     ).toEqual({
-      redirect: "/dashboard",
+      redirect: "/onboarding?done=1",
     });
     expect(state.writes).toEqual([
       "enrollments starbucks,sephora",
@@ -108,7 +113,9 @@ describe("saveOnboarding step 2 (FR-7)", () => {
   });
 
   it("Skip (no programs) still marks onboarding done", async () => {
-    expect(await outcome(programs())).toEqual({ redirect: "/dashboard" });
+    expect(await outcome(programs())).toEqual({
+      redirect: "/onboarding?done=1",
+    });
     expect(state.writes).toEqual([
       "profiles onboarded_at where onboarded_at is null",
     ]);
@@ -134,7 +141,7 @@ describe("saveOnboarding step 2 (FR-7)", () => {
   it("after onboarding it's a no-op, not a bulk enroll endpoint", async () => {
     state.profile.onboarded_at = "2026-11-23T00:00:00Z";
     expect(await outcome(programs("starbucks", "sephora"))).toEqual({
-      redirect: "/dashboard",
+      redirect: "/onboarding?done=1",
     });
     expect(state.writes).toEqual([]);
   });
@@ -144,6 +151,28 @@ describe("saveOnboarding step 2 (FR-7)", () => {
       ok: false,
       error: "API-4",
     });
+    expect(state.writes).toEqual([]);
+  });
+});
+
+const birthday = (month: number, day: number) => {
+  const fd = new FormData();
+  fd.set("step", "birthday");
+  fd.set("month", String(month));
+  fd.set("day", String(day));
+  fd.set("timeZone", "UTC");
+  return fd;
+};
+
+describe("saveOnboarding step 1: '← Change birthday' (owner, 2026-11-25)", () => {
+  it("overwrites a saved birthday while onboarding isn't done", async () => {
+    expect(await outcome(birthday(3, 1))).toEqual({ redirect: "/onboarding" });
+    expect(state.writes).toEqual(["profiles birth_month,birth_day,time_zone"]);
+  });
+
+  it("is a no-op after onboarding (Settings is the place, FR-9)", async () => {
+    state.profile.onboarded_at = "2026-11-25T00:00:00Z";
+    expect(await outcome(birthday(3, 1))).toEqual({ redirect: "/onboarding" });
     expect(state.writes).toEqual([]);
   });
 });

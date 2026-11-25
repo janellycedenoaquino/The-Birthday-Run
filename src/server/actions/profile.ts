@@ -56,7 +56,10 @@ export async function saveOnboarding(
     : saveOnboardingBirthday(prev, formData);
 }
 
-/** Step 1: birthday and time zone, then step 2. Runs once (a no-op when both are saved). */
+/**
+ * Step 1: birthday and time zone, then step 2. "← Change birthday" on step 2 comes back here, so
+ * it may overwrite them until onboarding is done; after that it's a no-op (Settings, FR-9).
+ */
 async function saveOnboardingBirthday(
   _prev: ActionResult | null,
   formData: FormData,
@@ -65,19 +68,20 @@ async function saveOnboardingBirthday(
   if (!input.ok) return input.result;
 
   const result = await runAction("saveOnboarding", async () => {
-    // With both saved it's a no-op, so it can't become a second birthday endpoint with its own
-    // rate limit (Settings is the place to change them, FR-9).
+    // Once onboarding is done it's a no-op, so it can't become a second birthday endpoint
+    // (Settings is the place, FR-9). Before that, each save goes through the same per-user
+    // rate limit as Settings' (updateOwnProfile, 30 an hour).
     const { supabase, user } = await requireUser();
     const { data: saved, error } = await supabase
       .from("profiles")
-      .select("birth_month, time_zone")
+      .select("onboarded_at")
       .eq("id", user.id)
       .maybeSingle();
     if (error || !saved)
       throw new Error("saveOnboarding: could not read the profile", {
         cause: error ?? "profile row missing",
       });
-    if (saved.birth_month !== null && saved.time_zone) return { ok: true };
+    if (saved.onboarded_at) return { ok: true };
 
     const refused = await updateOwnProfile("saveOnboarding", {
       birth_month: input.data.month,
@@ -163,7 +167,8 @@ async function saveOnboardingPrograms(
       revalidatePath(path);
     return { ok: true };
   });
-  if (result.ok) redirect("/dashboard");
+  // The "You're all set!" card (owner, 2026-11-25); it links on to My Rewards.
+  if (result.ok) redirect("/onboarding?done=1");
   return result;
 }
 

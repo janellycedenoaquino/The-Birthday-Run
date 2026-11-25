@@ -45,6 +45,13 @@ test("a new user: onboarding, Discover, then Settings (FR-3, FR-6, FR-7, FR-8, F
 
   await page.getByRole("button", { name: "Continue" }).click();
 
+  // "← Change birthday" brings step 1 back, filled in; Continue returns to step 2 (owner).
+  await page.getByRole("link", { name: "← Change birthday" }).click();
+  await expect(page).toHaveURL(/\/onboarding\?step=1$/);
+  await expect(page.getByLabel("Month")).toHaveValue("2");
+  await expect(page.getByLabel("Day")).toHaveValue("29");
+  await page.getByRole("button", { name: "Continue" }).click();
+
   // Step 2: pick two programs (search filters the list; hidden ticks still count) (FR-7).
   await expect(page.getByText("Step 2 of 2")).toBeVisible();
   await expect(
@@ -56,7 +63,18 @@ test("a new user: onboarding, Discover, then Settings (FR-3, FR-6, FR-7, FR-8, F
   await page.getByRole("checkbox", { name: /Sephora/ }).check();
   await page.getByLabel("Search programs").fill("");
   await page.getByRole("button", { name: "Save 2 programs" }).click();
-  await expect(page).toHaveURL(/\/dashboard$/);
+  // The finish card: the count and the next birthday (Feb 29 counts as Feb 28 or 29).
+  await expect(page).toHaveURL(/\/onboarding\?done=1$/);
+  await expect(
+    page.getByRole("heading", { name: "You're all set!" }),
+  ).toBeVisible();
+  await expect(
+    page.getByText(
+      /^2 programs saved\. We'll count each one down for your birthday, Feb 2[89]\.$/,
+    ),
+  ).toBeVisible();
+  await page.getByRole("link", { name: "Go to My Rewards" }).click();
+  await expect(page).toHaveURL(/\/rewards$/);
 
   // Done: onboarding sends you back to the dashboard, and Discover shows both as added.
   await page.goto("/onboarding");
