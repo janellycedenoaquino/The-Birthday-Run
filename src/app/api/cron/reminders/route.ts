@@ -1,4 +1,5 @@
 import { logError } from "@/server/errors";
+import { recordHeartbeat } from "@/server/heartbeat";
 import { createUnsubscribeToken } from "@/server/reminders/unsubscribe-token";
 import { runReminders, type RunCounts } from "@/server/reminders/run";
 import { checkCronAuth } from "@/server/security/cron-auth";
@@ -21,13 +22,19 @@ export async function GET(request: Request) {
     );
   const empty: RunCounts = { candidates: 0, sent: 0, failed: 0, deferred: 0 };
   try {
+    const admin = getAdminClient();
+    const now = new Date();
     const counts = await runReminders({
-      admin: getAdminClient(),
+      admin,
       send: sendEmail,
-      now: new Date(),
+      now,
       siteUrl: getSiteUrl(),
       tokenFor: (userId) => createUnsubscribeToken(userId),
     });
+    // D16 heartbeat, after a finished run. Its own failure is logged, never the run's result.
+    await recordHeartbeat(admin, "reminders", now).catch((error: unknown) =>
+      logError(error, { op: "cron.heartbeat" }),
+    );
     return Response.json(counts, { headers: NO_STORE });
   } catch (error) {
     logError(error, { op: "cron.reminders" });

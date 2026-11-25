@@ -42,4 +42,9 @@ export const NON_USER_DATA_TABLES = [
     table: "stripe_events",
     reason: "webhook event IDs, 30 days (D8, A-20)",
   },
+  {
+    schema: "public",
+    table: "job_heartbeats",
+    reason: "last cron run time per job (D16)",
+  },
 ] as const satisfies readonly NonUserDataTable[];

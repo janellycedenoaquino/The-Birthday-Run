@@ -1,0 +1,38 @@
+# Checker PR scope (DESIGN D16, BUILD F-13 "Checker contract", NFR-11). The overnight checker's
+# branches (`checker/…`) may change only data/retailers.csv. Its own workflow, with no
+# paths-ignore, so a docs-only push from a checker branch is checked too. The checker's token
+# has no Workflows permission, so it can't edit this file to switch the check off.
+name: Checker scope
+
+on:
+  push:
+    branches: ["checker/**"]
+
+concurrency:
+  group: checker-scope-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  scope:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      # Every file the branch changes since it left main (added, edited, renamed, deleted).
+      - name: Only data/retailers.csv changed
+        run: |
+          base=$(git merge-base origin/main HEAD)
+          changed=$(git diff --name-only --no-renames "$base" HEAD)
+          others=$(printf '%s\n' "$changed" | grep -vx 'data/retailers.csv' | grep -v '^$' || true)
+          if [ -n "$others" ]; then
+            echo "::error::A checker branch may change only data/retailers.csv (D16). Also changed:"
+            printf '%s\n' "$others"
+            exit 1
+          fi
+          echo "checker scope: only data/retailers.csv changed" >> "$GITHUB_STEP_SUMMARY"
