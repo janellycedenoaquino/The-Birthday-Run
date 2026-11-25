@@ -37,16 +37,23 @@ const NAME = escaped(appConfig.name);
 const SUPPORT = `mailto:${appConfig.supportEmail}`;
 
 describe("C-1 site header, signed out", () => {
-  it("links the name home, with Sign in and Sign up", () => {
-    const html = header("/discover");
+  it("links the name home, with Rewards and Get started", () => {
+    const html = header("/privacy");
     // The name only, on a cream pill: no logo image (decision 0016 prototypes).
     expect(html).not.toContain("<img");
-    // C-101's Discover link is public, so it shows signed out too, as "Rewards" (M-101e).
+    // C-101's Rewards link (M-101) is public, so it shows signed out too; one "Get started"
+    // goes to sign up, whose card has a "Sign in" tab (owner, 2026-11-25).
     expect(links(html)).toEqual([
       ["/", NAME],
       ["/discover", "Rewards"],
-      ["/sign-in", "Sign in"],
-      ["/sign-up", "Sign up"],
+      ["/sign-up", "Get started"],
+    ]);
+  });
+
+  it("leaves Rewards out on Rewards itself (decision 0016 prototype)", () => {
+    expect(links(header("/discover"))).toEqual([
+      ["/", NAME],
+      ["/sign-up", "Get started"],
     ]);
   });
 
@@ -95,12 +102,17 @@ describe("C-1 site header, signed in", () => {
     });
     expect(links(html)).toEqual([
       ["/rewards", NAME],
-      ["/discover", "Discover"],
+      ["/discover", "Rewards"],
       ["/rewards", "My Rewards"],
       ["/plan", "Plan"],
       ["/history", "History"],
     ]);
-    expect(html).toMatch(/<button[^>]*>.*someone@example\.com.*<\/button>/);
+    // A round initial of the EMAIL (not the name "Sam"); the name starts with the letter
+    // (WCAG 2.5.3) and carries the email, as does the tooltip (decision 0022, D24.9).
+    expect(html).toMatch(
+      /<button[^>]*aria-label="S, account someone@example\.com"[^>]*>.*>S<\/span><\/button>/,
+    );
+    expect(html).toContain('title="someone@example.com"');
     expect(html).not.toContain(">Sign in<");
   });
 
@@ -111,6 +123,25 @@ describe("C-1 site header, signed in", () => {
     });
     expect(html).not.toContain("<img src=x>");
     expect(html).toContain("&lt;img src=x&gt;");
+  });
+});
+
+describe("C-1 account initial (decision 0022, T22)", () => {
+  it("comes from the email, so a display name can't copy someone else's letter", () => {
+    const html = header("/settings", {
+      email: "zed@example.com",
+      displayName: "Victim Name",
+    });
+    expect(html).toMatch(/>Z<\/span><\/button>/);
+  });
+
+  it("is one whole character, upper case, or ? when there's none", async () => {
+    const { accountInitial } = await import("@/components/layout/account-menu");
+    expect(accountInitial("ann@example.com")).toBe("A");
+    expect(accountInitial("  bo@example.com")).toBe("B");
+    expect(accountInitial("😀x@example.com")).toBe("😀");
+    expect(accountInitial("ßa@example.com")).toBe("S");
+    expect(accountInitial("")).toBe("?");
   });
 });
 

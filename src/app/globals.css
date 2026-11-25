@@ -63,6 +63,11 @@
   --glow-blue: #d6ebff;
   --glow-mint: #d3f5e1;
   --frost: rgb(255 252 247 / 58%);
+  /* Category colours (decision 0016): chips and the brand page's logo panel; navy text on them. */
+  --cat-food_drink: #ffd6e5;
+  --cat-entertainment: #e6deff;
+  --cat-retail: #d6ebff;
+  --cat-beauty: #d3f5e1;
   --background: var(--cream);
   --foreground: var(--navy);
   --card: #ffffff;

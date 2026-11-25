@@ -10,7 +10,7 @@ import { AccountMenu, type Account } from "./account-menu";
 // C-1's right side (SPEC §3.2). A client component because it depends on the current path, and
 // the root layout isn't re-rendered on client-side navigation: a path read on the server would
 // stay at the first page loaded. The step pages show no nav, so the step can't be skipped from
-// here (the guards still enforce it). Signed out, the Discover link reads "Rewards" (M-101e).
+// here (the guards still enforce it). The Discover page's link reads "Rewards" (M-101).
 const STEP_PAGES = ["/auth/set-password", "/auth/mfa", "/auth/reauthenticate"];
 // Pages whose own motion fills the screen (decision 0016): C-1 floats over it, and the page puts
 // "Pause motion" in the top-right corner. Sign in and sign up switch with tabs in their card.
@@ -18,9 +18,10 @@ const FLOATING = ["/", "/sign-in", "/sign-up"];
 const CARD_TABS = ["/sign-in", "/sign-up"];
 
 /**
- * C-1's frame. On the FLOATING pages it floats over the page's motion, full width, and leaves the
- * top-right corner to the page's "Pause motion" (decision 0016 prototypes). Only its links take
- * clicks there, so the gaps reach the motion and the pause button below.
+ * C-1's frame, full width as in the prototypes. On the FLOATING pages it floats over the page's
+ * motion and leaves the top-right corner to the page's "Pause motion" (decision 0016
+ * prototypes). Only its links take clicks there, so the gaps reach the motion and the pause
+ * button below.
  */
 export function HeaderShell({ children }: { children: ReactNode }) {
   const floating = FLOATING.includes(usePathname());
@@ -33,7 +34,7 @@ export function HeaderShell({ children }: { children: ReactNode }) {
       }
     >
       <div
-        className={`mx-auto flex h-16 w-full items-center justify-between ${floating ? "gap-2 pr-[60px] pl-3 sm:gap-4 sm:pr-[184px] sm:pl-6 [&>*]:pointer-events-auto" : "max-w-5xl gap-4 px-4 sm:px-6"}`}
+        className={`mx-auto flex h-16 w-full items-center justify-between ${floating ? "gap-2 pr-[60px] pl-3 sm:gap-4 sm:pr-[184px] sm:pl-6 [&>*]:pointer-events-auto" : "gap-4 px-4 sm:px-6"}`}
       >
         {children}
       </div>
@@ -57,7 +58,7 @@ export function HeaderNav({ account }: { account: Account | null }) {
         className="flex shrink-0 items-center gap-1.5 sm:gap-2"
       >
         <Link href="/discover" className="pill-link">
-          {msg("M-101e")}
+          {msg("M-101")}
         </Link>
         {CARD_TABS.includes(path) ? null : (
           <Link href="/sign-in" className="pill-link">
@@ -68,70 +69,86 @@ export function HeaderNav({ account }: { account: Account | null }) {
     );
   }
 
+  // Signed in, the links sit next to the name and the account's round initial goes far right
+  // (decision 0016 prototype). On narrow screens the links scroll sideways so the account (and
+  // Sign out, and the T22 check in its menu) always stays on screen.
   return (
-    <nav aria-label="Account" className="flex shrink-0 items-center gap-2">
-      {/* C-101's first app link (M-101). Signed out it reads "Rewards" (M-101e) and looks like
-          "Sign in" next to it (owner, 2026-11-25). */}
-      {path !== "/onboarding" &&
-        (account ? (
-          <Button asChild variant="ghost" size="lg" className={CURRENT}>
+    <nav
+      aria-label="Account"
+      className={
+        account
+          ? "ml-1 flex min-w-0 flex-1 items-center gap-2"
+          : "flex shrink-0 items-center gap-2"
+      }
+    >
+      <div
+        className={
+          account
+            ? "flex min-w-0 flex-1 items-center gap-1 overflow-x-auto"
+            : "contents"
+        }
+      >
+        {/* C-101's first app link (M-101). Signed out it looks like the pills beside it, and it's
+          left out on Rewards itself, as in the prototype. */}
+        {path !== "/onboarding" &&
+          (account ? (
+            <Button asChild variant="ghost" size="lg" className={CURRENT}>
+              <Link
+                href="/discover"
+                aria-current={path.startsWith("/discover") ? "page" : undefined}
+              >
+                {msg("M-101")}
+              </Link>
+            </Button>
+          ) : path === "/discover" ? null : (
             <Link
               href="/discover"
               aria-current={path.startsWith("/discover") ? "page" : undefined}
+              className="pill-link"
             >
               {msg("M-101")}
             </Link>
+          ))}
+        {account && path !== "/onboarding" && (
+          <Button asChild variant="ghost" size="lg" className={CURRENT}>
+            <Link
+              href="/rewards"
+              aria-current={path.startsWith("/rewards") ? "page" : undefined}
+            >
+              {msg("M-101b")}
+            </Link>
           </Button>
-        ) : (
-          <Link
-            href="/discover"
-            aria-current={path.startsWith("/discover") ? "page" : undefined}
-            className="pill-link"
-          >
-            {msg("M-101e")}
-          </Link>
-        ))}
-      {account && path !== "/onboarding" && (
-        <Button asChild variant="ghost" size="lg" className={CURRENT}>
-          <Link
-            href="/rewards"
-            aria-current={path.startsWith("/rewards") ? "page" : undefined}
-          >
-            {msg("M-101b")}
-          </Link>
-        </Button>
-      )}
-      {account && path !== "/onboarding" && (
-        <Button asChild variant="ghost" size="lg" className={CURRENT}>
-          <Link
-            href="/plan"
-            aria-current={path.startsWith("/plan") ? "page" : undefined}
-          >
-            {msg("M-101d")}
-          </Link>
-        </Button>
-      )}
-      {account && path !== "/onboarding" && (
-        <Button asChild variant="ghost" size="lg" className={CURRENT}>
-          <Link
-            href="/history"
-            aria-current={path.startsWith("/history") ? "page" : undefined}
-          >
-            {msg("M-101c")}
-          </Link>
-        </Button>
-      )}
+        )}
+        {account && path !== "/onboarding" && (
+          <Button asChild variant="ghost" size="lg" className={CURRENT}>
+            <Link
+              href="/plan"
+              aria-current={path.startsWith("/plan") ? "page" : undefined}
+            >
+              {msg("M-101d")}
+            </Link>
+          </Button>
+        )}
+        {account && path !== "/onboarding" && (
+          <Button asChild variant="ghost" size="lg" className={CURRENT}>
+            <Link
+              href="/history"
+              aria-current={path.startsWith("/history") ? "page" : undefined}
+            >
+              {msg("M-101c")}
+            </Link>
+          </Button>
+        )}
+      </div>
       {account ? (
-        <AccountMenu {...account} />
+        <div className="ml-auto shrink-0">
+          <AccountMenu {...account} />
+        </div>
       ) : (
-        <>
-          <Link href="/sign-in" className="pill-link">
-            Sign in
-          </Link>
-          <Button asChild size="lg">
-            <Link href="/sign-up">Sign up</Link>
-          </Button>
-        </>
+        // Signed out: one "Get started" → sign up; the card there has a "Sign in" tab (owner).
+        <Button asChild size="lg">
+          <Link href="/sign-up">{msg("M-101f")}</Link>
+        </Button>
       )}
     </nav>
   );

@@ -22,7 +22,13 @@ test("signed out: every non-retired retailer, the sign-up prompt, and a 404 for 
 
   await page.goto("/discover");
   await expect(
-    page.getByRole("heading", { name: "Discover", level: 1 }),
+    page.getByRole("heading", {
+      name: "Every birthday reward, in one place.",
+      level: 1,
+    }),
+  ).toBeVisible();
+  await expect(
+    page.getByText(`${total} brands with a birthday treat`),
   ).toBeVisible();
   await expect(page.getByRole("heading", { level: 3 })).toHaveCount(total);
   await expect(page.getByRole("heading", { name: "Starbucks" })).toBeVisible();
@@ -40,7 +46,7 @@ test("signed out: every non-retired retailer, the sign-up prompt, and a 404 for 
   await expect(
     page.getByRole("heading", { name: notPopular!.name, level: 1 }),
   ).toBeVisible();
-  await expect(page.getByText("Back to Discover")).toBeVisible();
+  await expect(page.getByText("Back to Rewards")).toBeVisible();
   await expect(page.getByRole("link", { name: "Sign up free" })).toBeVisible();
 
   // Retired and unknown IDs stay a 404.

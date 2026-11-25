@@ -10,11 +10,12 @@ import {
 import { msg } from "@/lib/messages";
 
 /** M-170 (without "All", which is the tab for no category). */
+// Order from the Rewards prototype (decision 0016); names picked by the owner, 2026-11-25.
 export const CATEGORY_LABELS: Record<string, string> = {
-  food_drink: "Food and drink",
-  entertainment: "Entertainment",
+  food_drink: "Food & drink",
   retail: "Retail",
   beauty: "Beauty",
+  entertainment: "Entertainment",
 };
 export const CATEGORIES = Object.keys(CATEGORY_LABELS);
 
