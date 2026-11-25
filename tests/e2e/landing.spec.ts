@@ -75,3 +75,32 @@ test("the card: headline, both buttons and the brand count", async ({
   ).toHaveAttribute("href", "/discover");
   await expect(page.getByText(/^\d+ brands waiting$/)).toBeVisible();
 });
+
+test("S-4/S-5 look: tabs keep `next`, the current tab is marked, the reward is decoration", async ({
+  page,
+}) => {
+  await page.goto("/sign-in?next=%2Fplan");
+  const tabs = page.getByRole("navigation", {
+    name: "Sign in or create an account",
+  });
+  await expect(tabs.getByRole("link", { name: "Sign in" })).toHaveAttribute(
+    "aria-current",
+    "page",
+  );
+  await expect(
+    tabs.getByRole("link", { name: "Create account" }),
+  ).toHaveAttribute("href", "/sign-up?next=%2Fplan");
+  await expect(
+    page.getByRole("heading", { level: 1, name: "Welcome back" }),
+  ).toBeVisible();
+  // The rotating reward sits inside an aria-hidden box (not read every 2.6 s).
+  const hidden = await page
+    .getByText("Waiting for you")
+    .evaluate((el) => el.closest("[aria-hidden='true']") !== null);
+  expect(hidden).toBe(true);
+  await tabs.getByRole("link", { name: "Create account" }).click();
+  await expect(page).toHaveURL(/\/sign-up\?next=%2Fplan$/);
+  await expect(
+    page.getByRole("heading", { level: 1, name: "Create your account" }),
+  ).toBeVisible();
+});

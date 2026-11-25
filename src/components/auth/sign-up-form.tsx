@@ -41,6 +41,7 @@ export function SignUpForm({
         message="M-1"
         email={email}
         onTryAgain={() => setDismissed(state)}
+        celebrate
       />
     );
 

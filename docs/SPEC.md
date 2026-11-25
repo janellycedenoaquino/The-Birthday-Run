@@ -361,7 +361,7 @@ flowchart TD
 - **Buttons (decision 0016):** "Get started" → Template S-5 and "Browse rewards" (M-102) → S-103 in the card; "Sign in" top right → Template S-4, as on every public page.
 
 #### Template S-4 Sign in and S-5 Sign up (changed look)
-- **Look:** decision 0016: the tilted wall of retailer cards behind one frosted card with "Create account" / "Sign in" tabs (links between the two routes, keeping `next`), a rotating "waiting for you" reward under the tabs, and a confetti burst with the "Check your email" panel. Everything else as Template S-4 and S-5.
+- **Look:** decision 0016: the tilted wall of retailer cards behind one frosted card with "Create account" / "Sign in" tabs (M-290/M-290b: links between the two routes, keeping `next`; they replace the Template's "New here?" / "Already have an account?" links), a rotating "waiting for you" reward under the tabs (M-293), the h1 M-292/M-292b (S-4) or M-291/M-291b (S-5) with the lead M-292c/M-291c, and a confetti burst with S-5's "Check your email" panel (skipped when motion is paused or reduced). Everything else as Template S-4 and S-5.
 
 #### S-101 Onboarding (`/onboarding`) · FR-6, FR-7, FR-10
 - **Look (decision 0016):** one frosted card on a still glow (nothing moves on its own, so no pause control), step text M-118. Continue turns the card around (a 3D flip) and its back is step 2; "Change birthday" turns it back. Step 2 is a logo grid with checkboxes; the Save button's count is the only pick feedback. No flip when motion is paused or reduced.
@@ -441,6 +441,7 @@ Template M-, API-, E- texts apply unchanged. Placeholders in `{braces}` are fill
 - M-102 (S-1): "Browse rewards"
 - M-282 / M-282b (S-1 h1, decision 0016): "Every birthday freebie," / "one run." (in the tilted block) · M-283: "See which brands treat you on your birthday, sign up in time, and plan the stops so nothing expires." · M-284: "{count} brands waiting"
 - M-285 / M-285b (pause control, S-1 and S-4/S-5): "Pause motion" / "Play motion"
+- M-290 / M-290b (S-4/S-5 tabs, decision 0016): "Create account" / "Sign in" · M-290c (the tabs' label): "Sign in or create an account" · M-291 / M-291b (S-5 h1): "Create your" / "account" (in the tilted block) · M-291c: "Free, and it takes a minute." · M-292 / M-292b (S-4 h1): "Welcome" / "back" · M-292c: "Your rewards are right where you left them." · M-293 (the rotating reward's label): "Waiting for you"
 - M-286 / M-286b (S-1 game tab): "Catch the prizes" / "Close" · M-287 / M-287b: "Play 30 seconds" / "Play again ({score} pts)" · M-288: "Mouse, touch or arrow keys" · M-289 / M-289b / M-289c: "Score" / "Time" / "Best" · M-289d (canvas label): "Catch-the-prizes game. Steer with the arrow keys."
 - M-103 / M-104 (C-102 toggle): "Add" / "Added"
 - M-105 (S-101 h1): "When's your birthday?"

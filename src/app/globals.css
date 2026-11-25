@@ -267,3 +267,13 @@
     opacity: 0;
   }
 }
+
+/* The sign-in wall's rows (decision 0016): each slides by half its width (it holds two copies). */
+.wall-row {
+  animation: wall-slide var(--duration) linear infinite;
+}
+@keyframes wall-slide {
+  to {
+    transform: translateX(-50%);
+  }
+}
