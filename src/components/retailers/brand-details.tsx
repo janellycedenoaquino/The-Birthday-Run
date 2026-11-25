@@ -1,5 +1,6 @@
 import Link from "next/link";
-import { ExternalLink } from "lucide-react";
+import { ArrowUpRight } from "lucide-react";
+import { cn } from "cn";
 import { EnrollToggle } from "@/components/retailers/enroll-toggle";
 import { RetailerLogo } from "@/components/retailers/retailer-logo";
 import { ReportDialog } from "@/components/rewards/report-dialog";
@@ -40,13 +41,16 @@ export function BrandDetails({
   const category = CATEGORY_LABELS[r.category] ?? r.category;
   const type = REWARD_TYPE_LABELS[r.reward_type];
   const signUpHref = `/sign-up?next=${encodeURIComponent(`/discover/${r.id}`)}`;
-  const needs = [
-    r.purchase_requirement &&
-      msg("M-189a").replace("{text}", r.purchase_requirement),
-    r.membership_requirement &&
-      msg("M-189b").replace("{text}", r.membership_requirement),
-    r.other_requirement && msg("M-189c").replace("{text}", r.other_requirement),
-  ].filter(Boolean) as string[];
+  // Each requirement as its bold label ("Membership:") and the text (decision 0016 prototype).
+  const needs = (
+    [
+      ["M-189a", r.purchase_requirement],
+      ["M-189b", r.membership_requirement],
+      ["M-189c", r.other_requirement],
+    ] as const
+  ).flatMap(([id, text]) =>
+    text ? [{ label: msg(id).split("{text}")[0]!.trim(), text }] : [],
+  );
   const page = variant === "page";
 
   return (
@@ -75,7 +79,7 @@ export function BrandDetails({
           className={`flex flex-col items-center justify-center bg-[var(--cc)] text-center text-[var(--navy)] ${page ? "border-b-[1.5px] border-border p-7 md:border-r-[1.5px] md:border-b-0" : "rounded-[22px] p-5"}`}
         >
           <div className="grid h-[130px] w-[200px] place-items-center rounded-[22px] bg-white shadow-[0_0_0_1.5px_var(--border)]">
-            <RetailerLogo name={r.name} logoFile={r.logo_file} wide />
+            <RetailerLogo name={r.name} logoFile={r.logo_file} wide large />
           </div>
           {page ? (
             <h1 className="headline mt-4 text-[30px] leading-[1.08]">
@@ -128,7 +132,7 @@ export function BrandDetails({
                 asChild
                 size="lg"
                 variant="outline"
-                className="h-11 bg-transparent px-4 font-bold"
+                className="h-11 border-transparent bg-white px-4 font-bold text-[var(--navy)] shadow-[0_0_0_1.5px_var(--navy)] hover:bg-white hover:shadow-[3px_3px_0_var(--navy),0_0_0_1.5px_var(--navy)] dark:bg-white/10 dark:text-foreground"
               >
                 <a
                   href={r.website_url}
@@ -136,7 +140,7 @@ export function BrandDetails({
                   rel="noopener noreferrer"
                 >
                   {msg("M-298e")}
-                  <ExternalLink aria-hidden="true" />
+                  <ArrowUpRight aria-hidden="true" />
                   <span className="sr-only"> (opens in a new tab)</span>
                 </a>
               </Button>
@@ -173,7 +177,10 @@ export function BrandDetails({
         </div>
         {r.signup_lead_days ? (
           <div
-            className={`${FACT} bg-[#fff0e6] shadow-[inset_0_0_0_1.5px_#ffb996] dark:bg-[#4a3438]`}
+            className={cn(
+              FACT,
+              "bg-[#fff0e6] shadow-[inset_0_0_0_1.5px_#ffb996] dark:bg-[#4a3438]",
+            )}
           >
             <h3 className={FACT_TITLE}>{msg("M-298h")}</h3>
             <p className={BIG}>
@@ -194,7 +201,11 @@ export function BrandDetails({
         <div className={FACT}>
           <h3 className={FACT_TITLE}>{msg("M-298n")}</h3>
           {needs.length ? (
-            needs.map((text) => <p key={text}>{text}</p>)
+            needs.map(({ label, text }) => (
+              <p key={label}>
+                <b>{label}</b> {text}
+              </p>
+            ))
           ) : (
             <p>{msg("M-298o")}</p>
           )}
