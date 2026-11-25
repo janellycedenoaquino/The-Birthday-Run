@@ -32,6 +32,17 @@ export async function PremiumStatus({
     throw new Error("S-110: could not read the subscription", { cause: error });
   if (!sub?.status || !PAID.has(sub.status) || !sub.current_period_end)
     return <p>{msg("M-261")}</p>;
+  // past_due: Stripe is retrying a failed renewal, so the period's end has passed and neither
+  // "renews on" nor "ends on" is true. Premium stays on (D5); say so, with the portal to fix it.
+  if (sub.status === "past_due")
+    return (
+      <div className="grid gap-3">
+        <p>{msg("M-261")}</p>
+        {paymentsEnabled() ? (
+          <PortalButton createPortalSession={createPortalSession} />
+        ) : null}
+      </div>
+    );
 
   const date = formatDate(
     localDateOf(sub.current_period_end, timeZone ?? "UTC"),

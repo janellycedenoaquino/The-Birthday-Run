@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { msg } from "@/lib/messages";
-import { requireUser } from "@/server/auth/guards";
+import { requireOnboarded } from "@/server/auth/app-guards";
 import { paymentsEnabled } from "@/server/billing/flag";
 import { getEntitlement } from "@/server/premium/entitlement";
 
@@ -16,7 +16,7 @@ export const metadata: Metadata = {
 export const dynamic = "force-dynamic";
 
 export default async function BillingReturnPage() {
-  const { supabase } = await requireUser();
+  const { supabase } = await requireOnboarded();
   const premium = paymentsEnabled()
     ? (await getEntitlement(supabase)).premium
     : false;

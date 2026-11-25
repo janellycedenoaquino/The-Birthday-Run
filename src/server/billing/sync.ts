@@ -4,15 +4,17 @@ import type Stripe from "stripe";
 import { isoDaysBefore, isoFromUnix } from "@/lib/birthday/timing";
 import type { Database } from "@/lib/types/database.types";
 import { logError } from "@/server/errors";
+import { getAdminClient } from "@/server/supabase/admin";
 import type { StripeApi } from "./stripe";
 
 // The billing module (BUILD F-8, §0.8, D8, FR-37, NFR-8). Every write to `subscriptions` and
-// `stripe_events` happens here, with the admin client. A webhook event is only a nudge: its
+// `stripe_events` happens here, with the admin client (the only billing file that gets it; tests
+// pass a fake). A webhook event is only a nudge: its
 // payload is never trusted, the current state is always read back from Stripe (D8). The user ↔
 // customer mapping comes only from the `subscriptions` row that ensureCustomer inserts (T-102).
 
 type Admin = SupabaseClient<Database>;
-type Deps = { stripe: StripeApi; admin: Admin };
+type Deps = { stripe: StripeApi; admin?: Admin };
 export type Snapshot = Database["public"]["Tables"]["subscriptions"]["Row"];
 
 /** The events the webhook endpoint subscribes to (BUILD F-8 Flow, webhook step 2). */
@@ -61,7 +63,11 @@ function currentSubscription(
  */
 export async function ensureCustomer(
   user: { id: string; email: string },
-  { stripe, admin, supabase }: Deps & { supabase: SupabaseClient<Database> },
+  {
+    stripe,
+    admin = getAdminClient(),
+    supabase,
+  }: Deps & { supabase: SupabaseClient<Database> },
 ): Promise<{ customerId: string; status: string | null }> {
   const own = await supabase
     .from("subscriptions")
@@ -108,7 +114,7 @@ export async function ensureCustomer(
 /** Reads the customer's subscriptions from Stripe and stores the current one. Never inserts. */
 export async function syncCustomer(
   customerId: string,
-  { stripe, admin, now = new Date() }: Deps & { now?: Date },
+  { stripe, admin = getAdminClient(), now }: Deps & { now?: Date },
 ): Promise<Snapshot | null> {
   const row = await admin
     .from("subscriptions")
@@ -125,22 +131,43 @@ export async function syncCustomer(
     status: "all",
     limit: 10,
   });
+  // Stamped after the read: two syncs at once (checkout sends several events) each write only
+  // if nothing read later has been stored, so an older read never overwrites a newer one.
+  const readAt = (now ?? new Date()).toISOString();
   const sub = currentSubscription(list.data);
   const periodEnd = sub?.items.data[0]?.current_period_end;
+  // A scheduled cancel (`cancel_at`, set in the dashboard or API) also "ends" the subscription,
+  // on that date if it comes before the period's end.
+  const endsAt =
+    sub?.cancel_at && (!periodEnd || sub.cancel_at < periodEnd)
+      ? sub.cancel_at
+      : periodEnd;
   const { data, error } = await admin
     .from("subscriptions")
     .update({
       stripe_subscription_id: sub?.id ?? null,
       status: sub?.status ?? null,
-      current_period_end: periodEnd ? isoFromUnix(periodEnd) : null,
-      cancel_at_period_end: sub?.cancel_at_period_end ?? false,
-      synced_at: now.toISOString(),
+      current_period_end: endsAt ? isoFromUnix(endsAt) : null,
+      cancel_at_period_end: Boolean(
+        sub?.cancel_at_period_end || sub?.cancel_at,
+      ),
+      synced_at: readAt,
     })
     .eq("stripe_customer_id", customerId)
+    .lt("synced_at", readAt)
     .select()
-    .single();
+    .maybeSingle();
   if (error) throw new Error("syncCustomer: update failed", { cause: error });
-  return data;
+  if (data) return data;
+  // A newer read was stored first: keep it.
+  const stored = await admin
+    .from("subscriptions")
+    .select()
+    .eq("stripe_customer_id", customerId)
+    .single();
+  if (stored.error)
+    throw new Error("syncCustomer: re-read failed", { cause: stored.error });
+  return stored.data;
 }
 
 /** The customer ID an event is about, from its object (a string or an expanded object). */
@@ -168,37 +195,35 @@ export async function handleStripeEvent(
     return { status: "ignored" };
   }
 
-  const { admin } = deps;
-  const claim = await admin
+  const admin = deps.admin ?? getAdminClient();
+  // Decision 0021: an event ID is recorded only after its sync succeeded, so it only skips work
+  // already done. A run killed mid-sync leaves nothing behind and Stripe's retry syncs again;
+  // two deliveries at once both sync, which is harmless (sync is idempotent, D8).
+  const seen = await admin
+    .from("stripe_events")
+    .select("id")
+    .eq("id", event.id)
+    .maybeSingle();
+  if (seen.error)
+    throw new Error("handleStripeEvent: read failed", { cause: seen.error });
+  if (seen.data) return { status: "duplicate" };
+
+  const snapshot = await syncCustomer(customerId, { ...deps, admin });
+  if (!snapshot)
+    logError(
+      new Error(`stripe webhook: ${event.type} for an unknown customer`),
+      { op: "stripe.webhook" },
+    );
+  const record = await admin
     .from("stripe_events")
     .upsert(
       { id: event.id, type: event.type },
       { onConflict: "id", ignoreDuplicates: true },
-    )
-    .select("id");
-  if (claim.error)
-    throw new Error("handleStripeEvent: claim failed", { cause: claim.error });
-  if (!claim.data.length) return { status: "duplicate" };
-
-  try {
-    const snapshot = await syncCustomer(customerId, deps);
-    if (!snapshot)
-      logError(
-        new Error(`stripe webhook: ${event.type} for an unknown customer`),
-        {
-          op: "stripe.webhook",
-        },
-      );
-  } catch (error) {
-    // Release the claim so Stripe's retry syncs again (D8: sync is idempotent).
-    const release = await admin
-      .from("stripe_events")
-      .delete()
-      .eq("id", event.id);
-    if (release.error)
-      logError(release.error, { op: "stripe.webhook.releaseClaim" });
-    throw error;
-  }
+    );
+  if (record.error)
+    throw new Error("handleStripeEvent: record failed", {
+      cause: record.error,
+    });
 
   // A-20: prune old event IDs; a failure here only gets logged.
   const cutoff = isoDaysBefore(deps.now ?? new Date(), EVENT_RETENTION_DAYS);
@@ -211,14 +236,18 @@ export async function handleStripeEvent(
 }
 
 /**
- * Before an account is deleted (FR-37, T-117): cancel every live subscription now, then delete
- * the Customer. Reads Stripe, not the row, so a retry after a half-done run still finishes.
- * Any Stripe error → { ok: false } and the caller deletes nothing.
+ * Before an account is deleted (FR-37, T-117): cancel every live subscription now. Reads Stripe,
+ * not the row, so a retry after a half-done run still finishes. Any Stripe error → { ok: false }
+ * and the caller deletes nothing. Returns the Customer ID for deleteCustomer, which runs only
+ * once the account is gone (so a failed account deletion never leaves a user with a dead one).
  */
 export async function cancelForDeletion(
   userId: string,
-  { stripe, admin }: { stripe: StripeApi | null; admin: Admin },
-): Promise<{ ok: boolean }> {
+  {
+    stripe,
+    admin = getAdminClient(),
+  }: { stripe: StripeApi | null; admin?: Admin },
+): Promise<{ ok: boolean; customerId?: string }> {
   const row = await admin
     .from("subscriptions")
     .select("stripe_customer_id")
@@ -233,22 +262,30 @@ export async function cancelForDeletion(
     });
     return { ok: false };
   }
-  const customer = row.data.stripe_customer_id;
+  const customerId = row.data.stripe_customer_id;
   try {
     const list = await stripe.subscriptions.list({
-      customer,
+      customer: customerId,
       status: "all",
       limit: 10,
     });
     for (const sub of list.data)
       if (!ENDED.has(sub.status)) await stripe.subscriptions.cancel(sub.id);
-    await stripe.customers.del(customer).catch((error: unknown) => {
-      // Already gone (an earlier half-done run) is fine; anything else stops the deletion.
-      if ((error as { code?: string }).code !== "resource_missing") throw error;
-    });
-    return { ok: true };
+    return { ok: true, customerId };
   } catch (error) {
     logError(error, { op: "cancelForDeletion" });
     return { ok: false };
   }
+}
+
+/** After the account is deleted (D8): delete its Stripe Customer. Best effort, logged. */
+export async function deleteCustomer(
+  customerId: string,
+  { stripe }: { stripe: StripeApi | null },
+): Promise<void> {
+  if (!stripe) return;
+  await stripe.customers.del(customerId).catch((error: unknown) => {
+    if ((error as { code?: string }).code !== "resource_missing")
+      logError(error, { op: "deleteCustomer" });
+  });
 }

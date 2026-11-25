@@ -121,15 +121,16 @@ jobs:
         run: |
           npm run db:types
           git diff --exit-code src/lib/types/database.types.ts
-      - run: npm run test:rls
+      - name: RLS and integration tests (metric 3 when the Stripe sandbox key is set)
         env:
-          # Metric 3 (BUILD F-8): a Stripe sandbox key kept for CI only; absent → skipped, said so.
+          # Metric 3 (BUILD F-8): a CI-only Stripe sandbox key, scoped to this step. Absent → the
+          # test is skipped and the summary says so, never a pass.
           STRIPE_TEST_SECRET_KEY: ${{ secrets.STRIPE_TEST_SECRET_KEY }}
-      - name: Report metric 3 when it didn't run
-        if: env.STRIPE_TEST_SECRET_KEY == ''
-        env:
-          STRIPE_TEST_SECRET_KEY: ${{ secrets.STRIPE_TEST_SECRET_KEY }}
-        run: echo "metric 3: SKIPPED (no STRIPE_TEST_SECRET_KEY)" | tee -a "$GITHUB_STEP_SUMMARY"
+        run: |
+          npm run test:rls
+          if [ -z "$STRIPE_TEST_SECRET_KEY" ]; then
+            echo "metric 3: SKIPPED (no STRIPE_TEST_SECRET_KEY)" | tee -a "$GITHUB_STEP_SUMMARY"
+          fi
       - run: npm run build
       - run: npm run check:bundle
       # E2E (D18, FR-39): Playwright starts `next start` itself (webServer) against this build

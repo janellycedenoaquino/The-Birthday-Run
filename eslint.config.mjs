@@ -138,9 +138,9 @@ const eslintConfig = defineConfig([
       // F-13 (D16): the report summary and its ack (bearer-checked, counts only).
       "src/app/api/reports/pending/route.ts",
       "src/app/api/reports/ack/route.ts",
-      // F-8 (D8): the signed Stripe webhook and the billing actions' customer set-up.
+      // F-8 (D8, BUILD F-8 Data): the signed Stripe webhook and the billing module.
       "src/app/api/stripe/webhook/route.ts",
-      "src/server/actions/billing.ts",
+      "src/server/billing/sync.ts",
     ],
     rules: { "no-restricted-imports": "off" },
   },

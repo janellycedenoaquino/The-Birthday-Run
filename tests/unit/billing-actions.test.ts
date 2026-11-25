@@ -119,6 +119,37 @@ describe("createCheckoutSession (FR-37)", () => {
     expect(fake.state.calls).toEqual([]);
   });
 
+  it("paid moments ago (webhook not synced yet): Stripe is asked, so BR-16, no second charge", async () => {
+    db.data.subscriptions.push({
+      user_id: USER,
+      stripe_customer_id: "cus_1",
+      status: null,
+      synced_at: "2000-01-01T00:00:00.000Z",
+    });
+    for (const status of ["active", "incomplete", "unpaid"]) {
+      fake.state.calls = [];
+      fake.state.subscriptions = [sub("sub_1", status, 1)];
+      expect(await createCheckoutSession(null, form()), status).toEqual({
+        ok: false,
+        error: "BR-16",
+      });
+      expect(fake.state.calls).not.toContain("checkout.sessions.create");
+    }
+  });
+
+  it("an ended subscription allows a new checkout", async () => {
+    db.data.subscriptions.push({
+      user_id: USER,
+      stripe_customer_id: "cus_1",
+      status: "canceled",
+      synced_at: "2000-01-01T00:00:00.000Z",
+    });
+    fake.state.subscriptions = [sub("sub_1", "canceled", 1)];
+    expect(await outcome(createCheckoutSession(null, form()))).toMatchObject({
+      redirect: expect.stringContaining("checkout.stripe.com"),
+    });
+  });
+
   it("a stored live subscription → BR-16, no session", async () => {
     db.data.subscriptions.push({
       user_id: USER,
@@ -189,6 +220,7 @@ describe("POST /api/stripe/webhook (NFR-8, D8)", () => {
       user_id: USER,
       stripe_customer_id: "cus_1",
       status: null,
+      synced_at: "2000-01-01T00:00:00.000Z",
     });
   });
 

@@ -30,6 +30,7 @@ beforeEach(() => {
         status: null,
         current_period_end: null,
         cancel_at_period_end: false,
+        synced_at: "2000-01-01T00:00:00.000Z",
       },
     ],
   });
@@ -62,7 +63,7 @@ describe("handleStripeEvent (D8, NFR-8)", () => {
     expect(db.data.stripe_events.map((e) => e.id)).toEqual(["evt_1"]);
   });
 
-  it("a failed sync releases the claim and throws (500); the retry then syncs", async () => {
+  it("a failed sync records nothing and throws (500); the retry then syncs", async () => {
     fake.state.subscriptions = [sub("sub_1", "active", 100)];
     fake.state.listFailures = 1;
     await expect(handleStripeEvent(updated(), deps())).rejects.toThrow();
@@ -71,6 +72,20 @@ describe("handleStripeEvent (D8, NFR-8)", () => {
       status: "synced",
     });
     expect(subRow().status).toBe("active");
+    expect(db.data.stripe_events.map((e) => e.id)).toEqual(["evt_1"]);
+  });
+
+  it("a run killed mid-sync leaves no record, so Stripe's retry still syncs (decision 0021)", async () => {
+    // Nothing is written before the sync: a crash at any point inside it leaves the table empty.
+    fake.state.subscriptions = [sub("sub_1", "active", 100)];
+    const real = fake.stripe.subscriptions.list;
+    fake.stripe.subscriptions.list = (async () => {
+      expect(db.data.stripe_events).toEqual([]);
+      return real();
+    }) as typeof real;
+    expect(await handleStripeEvent(updated(), deps())).toEqual({
+      status: "synced",
+    });
   });
 
   it("an event type we don't handle, or with no customer, changes nothing", async () => {
@@ -100,6 +115,33 @@ describe("handleStripeEvent (D8, NFR-8)", () => {
 });
 
 describe("syncCustomer (D8, T-117)", () => {
+  it("an older read never overwrites a newer one (two syncs at once)", async () => {
+    fake.state.subscriptions = [sub("sub_1", "active", 1)];
+    await syncCustomer("cus_1", {
+      ...deps(),
+      now: new Date("2026-11-25T10:00:02Z"),
+    });
+    // A sync that read Stripe earlier (it saw "incomplete") finishes last.
+    fake.state.subscriptions = [sub("sub_1", "incomplete", 1)];
+    const s = await syncCustomer("cus_1", {
+      ...deps(),
+      now: new Date("2026-11-25T10:00:01Z"),
+    });
+    expect(s).toMatchObject({ status: "active" });
+    expect(subRow().status).toBe("active");
+  });
+
+  it("a scheduled cancel (cancel_at) counts as ending, on its own date", async () => {
+    const s0 = sub("sub_1", "active", 1, { period_end: 1_900_000_000 });
+    fake.state.subscriptions = [
+      { ...s0, cancel_at: 1_850_000_000 } as typeof s0,
+    ];
+    expect(await syncCustomer("cus_1", deps())).toMatchObject({
+      cancel_at_period_end: true,
+      current_period_end: new Date(1_850_000_000 * 1000).toISOString(),
+    });
+  });
+
   it("an unknown customer gets no row", async () => {
     expect(await syncCustomer("cus_unknown", deps())).toBeNull();
     expect(db.data.subscriptions).toHaveLength(1);
@@ -185,16 +227,18 @@ describe("cancelForDeletion (FR-37, T-117)", () => {
     expect(fake.state.calls).toEqual([]);
   });
 
-  it("cancels live subscriptions (not ended ones), then deletes the Customer", async () => {
+  it("cancels live subscriptions (not ended ones) and keeps the Customer for later", async () => {
     fake.state.subscriptions = [
       sub("sub_live", "past_due", 2),
       sub("sub_done", "canceled", 1),
     ];
-    expect(await cancelForDeletion(USER, deps())).toEqual({ ok: true });
+    expect(await cancelForDeletion(USER, deps())).toEqual({
+      ok: true,
+      customerId: "cus_1",
+    });
     expect(fake.state.calls).toEqual([
       "subscriptions.list",
       "subscriptions.cancel sub_live",
-      "customers.del cus_1",
     ]);
   });
 

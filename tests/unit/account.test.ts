@@ -249,7 +249,7 @@ describe("deleteAccount (S-18)", () => {
     expect(auth.signOut).toHaveBeenCalledWith({ scope: "local" });
   });
 
-  it("a paying user: the subscription is cancelled and the Customer deleted first (FR-37)", async () => {
+  it("a paying user: the subscription is cancelled first, the Customer deleted last (FR-37)", async () => {
     billing.row = { stripe_customer_id: "cus_1" };
     deleteUser.mockImplementation(async () => {
       billing.calls.push("deleteUser");
@@ -258,12 +258,22 @@ describe("deleteAccount (S-18)", () => {
     expect(
       await run(deleteAccount, form({ email: "someone@example.com" })),
     ).toEqual({ redirect: "/?notice=account_deleted" });
+    // The Customer goes last, once the account is gone (a failed deletion keeps it).
     expect(billing.calls).toEqual([
       "list",
       "cancel sub_1",
-      "del cus_1",
       "deleteUser",
+      "del cus_1",
     ]);
+  });
+
+  it("the account deletion failing keeps the Stripe Customer (the user can still pay)", async () => {
+    billing.row = { stripe_customer_id: "cus_1" };
+    deleteUser.mockResolvedValue({ error: { code: "unexpected_failure" } });
+    expect(
+      await run(deleteAccount, form({ email: "someone@example.com" })),
+    ).toEqual({ ok: false, error: "M-7" });
+    expect(billing.calls).not.toContain("del cus_1");
   });
 
   it("Stripe failing → M-7 and nothing deleted (T-117)", async () => {

@@ -10,13 +10,12 @@ import { parseForm } from "@/lib/validation/form";
 import { requireOnboarded } from "@/server/auth/app-guards";
 import { paymentsEnabled } from "@/server/billing/flag";
 import { getStripe } from "@/server/billing/stripe";
-import { ensureCustomer } from "@/server/billing/sync";
+import { ensureCustomer, syncCustomer } from "@/server/billing/sync";
 import { env } from "@/server/env";
 import { getEntitlement } from "@/server/premium/entitlement";
 import { runAction } from "@/server/run-action";
 import { rateLimit } from "@/server/security/rate-limit";
 import { getSiteUrl } from "@/server/site-url";
-import { getAdminClient } from "@/server/supabase/admin";
 
 // Billing actions (BUILD F-8: FR-37, FR-38, NFR-8, D8). Public endpoints: each validates and
 // guards itself (rule 4). The payments flag is checked first, before any database or Stripe
@@ -24,8 +23,8 @@ import { getAdminClient } from "@/server/supabase/admin";
 
 const checkoutSchema = z.object({ from: nextSchema }).strict();
 const portalSchema = z.object({}).strict();
-/** A subscription in these states already gives premium (D5), so no second checkout. */
-const LIVE = new Set(["active", "past_due"]);
+/** Only these mean "no subscription in progress", so a new checkout is allowed. */
+const ENDED = new Set(["canceled", "incomplete_expired"]);
 
 function stripeOrThrow() {
   const stripe = getStripe();
@@ -55,11 +54,16 @@ export async function createCheckoutSession(
       throw new Error("createCheckoutSession: user has no email");
 
     const { stripe, price } = stripeOrThrow();
-    const { customerId, status } = await ensureCustomer(
+    const { customerId } = await ensureCustomer(
       { id: user.id, email: user.email },
-      { stripe, admin: getAdminClient(), supabase },
+      { stripe, supabase },
     );
-    if (status && LIVE.has(status)) return { ok: false, error: "BR-16" };
+    // Ask Stripe, not the row: a payment made moments ago (webhook not yet synced) or a
+    // subscription still in progress (incomplete, unpaid…) must not get a second checkout and a
+    // second charge. Any subscription that hasn't ended refuses with BR-16 and its portal link.
+    const current = await syncCustomer(customerId, { stripe });
+    if (current?.status && !ENDED.has(current.status))
+      return { ok: false, error: "BR-16" };
 
     const site = getSiteUrl();
     const session = await stripe.checkout.sessions.create({
