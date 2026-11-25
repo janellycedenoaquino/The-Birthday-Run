@@ -56,10 +56,7 @@ export function HeaderNav({ account }: { account: Account | null }) {
         aria-label="Account"
         className="flex shrink-0 items-center gap-1.5 sm:gap-2"
       >
-        <Link
-          href="/discover"
-          className="rounded-[10px] bg-background/70 px-3 py-2 text-[15px] font-bold outline-none hover:shadow-[inset_0_0_0_2px_var(--spring)] focus-visible:ring-3 focus-visible:ring-ring/50 max-sm:px-2.5 max-sm:text-sm"
-        >
+        <Link href="/discover" className="pill-link">
           {msg("M-101e")}
         </Link>
         {CARD_TABS.includes(path) ? null : (
@@ -73,17 +70,27 @@ export function HeaderNav({ account }: { account: Account | null }) {
 
   return (
     <nav aria-label="Account" className="flex shrink-0 items-center gap-2">
-      {/* C-101's first app link (M-101); the others arrive with their pages (Phase 2). */}
-      {path !== "/onboarding" && (
-        <Button asChild variant="ghost" size="lg" className={CURRENT}>
+      {/* C-101's first app link (M-101). Signed out it reads "Rewards" (M-101e) and looks like
+          "Sign in" next to it (owner, 2026-11-25). */}
+      {path !== "/onboarding" &&
+        (account ? (
+          <Button asChild variant="ghost" size="lg" className={CURRENT}>
+            <Link
+              href="/discover"
+              aria-current={path.startsWith("/discover") ? "page" : undefined}
+            >
+              {msg("M-101")}
+            </Link>
+          </Button>
+        ) : (
           <Link
             href="/discover"
             aria-current={path.startsWith("/discover") ? "page" : undefined}
+            className="pill-link"
           >
-            {msg(account ? "M-101" : "M-101e")}
+            {msg("M-101e")}
           </Link>
-        </Button>
-      )}
+        ))}
       {account && path !== "/onboarding" && (
         <Button asChild variant="ghost" size="lg" className={CURRENT}>
           <Link
