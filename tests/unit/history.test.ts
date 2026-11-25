@@ -14,6 +14,7 @@ const week = [{ type: "from_birthday" as const, days: 7 }];
 const pickup = (id: string, date: string): HistoryPickup => ({
   id,
   retailer: id,
+  reward: "Free item",
   date: d(date),
   note: null,
   locationLabel: null,

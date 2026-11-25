@@ -66,14 +66,15 @@ const LOOK: Record<string, { Icon: LucideIcon; tone: string }> = {
   },
 };
 
-function SectionIcon({ id }: { id: string }) {
+function SectionIcon({ id, onBand = false }: { id: string; onBand?: boolean }) {
   const look = LOOK[id];
   if (!look) return null;
   return (
     <span
       aria-hidden="true"
-      style={{ background: look.tone }}
-      className="grid size-7 shrink-0 place-items-center rounded-lg text-[var(--navy)] dark:text-foreground"
+      // On the card's band (already this colour) the tile is white, so it still shows.
+      style={onBand ? undefined : { background: look.tone }}
+      className={`grid size-7 shrink-0 place-items-center rounded-lg text-[var(--navy)] dark:text-foreground ${onBand ? "bg-white/85 dark:bg-white/10" : ""}`}
     >
       <look.Icon className="size-4" />
     </span>
@@ -101,7 +102,7 @@ function Card({
         style={{ background: LOOK[id]?.tone }}
         className="flex items-center gap-2.5 px-6 py-3 text-[var(--navy)] dark:text-foreground"
       >
-        <SectionIcon id={id} />
+        <SectionIcon id={id} onBand />
         <h2 id={`${id}-title`} className="text-lg font-extrabold">
           {title}
         </h2>
@@ -171,6 +172,7 @@ export default async function SettingsPage({
   const sections = [
     { id: "profile", title: "Profile" },
     { id: "birthday", title: "Birthday" },
+    { id: "reminders", title: "Reminders" },
     ...(hasPassword ? [{ id: "password", title: "Password" }] : []),
     { id: "two-step", title: "Two-step sign-in" },
     { id: "premium", title: "Premium" },
@@ -186,12 +188,12 @@ export default async function SettingsPage({
           aria-label="Settings sections"
           className="mt-4 md:sticky md:top-24"
         >
-          <ul className="flex flex-wrap gap-x-2 gap-y-2 text-sm md:flex-col md:gap-1">
+          <ul className="-mx-4 flex gap-2 overflow-x-auto px-4 pb-1 text-sm md:mx-0 md:flex-col md:gap-1 md:overflow-visible md:px-0">
             {sections.map((s) => (
               <li key={s.id}>
                 <a
                   href={`#${s.id}`}
-                  className="flex items-center gap-2.5 rounded-xl px-2 py-1.5 font-bold outline-none hover:bg-white/70 focus-visible:ring-3 focus-visible:ring-ring/50"
+                  className="flex items-center gap-2.5 rounded-xl px-2 py-1.5 font-bold whitespace-nowrap outline-none hover:bg-white/70 dark:hover:bg-white/10 focus-visible:ring-3 focus-visible:ring-ring/50"
                 >
                   <SectionIcon id={s.id} />
                   {s.title}
