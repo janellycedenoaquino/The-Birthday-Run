@@ -48,7 +48,7 @@ async function setup(page: Page, label: string, premium: boolean) {
   await birthdayTodayWith(user, [...NEAR, NO_STORE]);
   if (premium) await setPremium(db, user.email, "grant");
   await passwordSignIn(page, user.email, PASSWORD);
-  await expect(page).toHaveURL(/\/dashboard$/);
+  await expect(page).toHaveURL(/\/rewards$/);
   return user;
 }
 
@@ -238,6 +238,12 @@ test("Discover state filter: set a start → only that state; Show all clears; n
   expect(await geoCalls(page)).toEqual([]); // nothing on load (FR-5)
   await expect(elsewhere).toBeVisible();
   const filter = page.getByRole("region", { name: "Your state" });
+  // The filters sit behind "More filters" (owner, 2026-11-25).
+  const openFilters = async () => {
+    if (!(await filter.isVisible()))
+      await page.getByText("More filters").click();
+  };
+  await openFilters();
   await filter.getByLabel("ZIP code").fill(ZIP);
   await filter.getByRole("button", { name: "Use ZIP" }).click();
   await expect(
@@ -247,7 +253,7 @@ test("Discover state filter: set a start → only that state; Show all clears; n
   await expect(inNy).toBeVisible();
 
   // Category links keep the filter (memory, not the URL).
-  await page.getByRole("link", { name: "Food and drink" }).click();
+  await page.getByRole("link", { name: /^Food & drink/ }).click();
   await expect(page).toHaveURL(/category=food_drink/);
   await expect(
     page.getByText(/^Showing rewards available in NY/),
@@ -255,6 +261,7 @@ test("Discover state filter: set a start → only that state; Show all clears; n
   await expect(elsewhere).toHaveCount(0);
 
   // "Show all" turns it off and it stays off; the start is kept, so M-172b offers it again.
+  await openFilters();
   await filter.getByRole("button", { name: "Show all" }).click();
   await expect(elsewhere).toBeVisible();
   await filter.getByRole("button", { name: "Show only my state" }).click();
@@ -285,7 +292,7 @@ test("Smart Grouping: two nearby pairs → Apply all creates both groups; free g
   await birthdayTodayWith(user, [...NEAR, ...FAR, NO_STORE]);
   await setPremium(db, user.email, "grant");
   await passwordSignIn(page, user.email, PASSWORD);
-  await expect(page).toHaveURL(/\/dashboard$/);
+  await expect(page).toHaveURL(/\/rewards$/);
   await page.goto("/plan");
   const smart = page.getByRole("region", { name: "Smart Grouping" });
   await smart.getByRole("button", { name: "Suggest groups" }).click();

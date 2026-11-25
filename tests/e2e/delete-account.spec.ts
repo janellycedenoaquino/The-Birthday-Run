@@ -1,6 +1,6 @@
 import { existsSync } from "node:fs";
 import { expect, test } from "@playwright/test";
-import { ownIp } from "./support";
+import { ownIp, passwordSignIn } from "./support";
 
 // Its own client IP, so sign-ins don't share one per-IP budget (support.ts ownIp).
 test.use(ownIp(10));
@@ -14,17 +14,8 @@ test("delete account: typed email confirms; signed out; can't sign in; rows gone
   page,
 }) => {
   const user = await createUser("e2e-delete");
-  await page.goto("/sign-in");
-  await page.getByLabel("Email", { exact: true }).fill(user.email);
-  await page.locator('input[name="password"]').fill(PASSWORD);
-  await expect(page.locator('input[name="cf-turnstile-response"]')).toHaveValue(
-    /.+/,
-    {
-      timeout: 20_000,
-    },
-  );
-  await page.getByRole("button", { name: "Sign in", exact: true }).click();
-  await expect(page).toHaveURL(/\/dashboard$/);
+  await passwordSignIn(page, user.email, PASSWORD);
+  await expect(page).toHaveURL(/\/rewards$/);
 
   await page.goto("/settings#delete-account");
   const confirm = page.getByLabel(/Type your email to confirm/);
@@ -48,16 +39,7 @@ test("delete account: typed email confirms; signed out; can't sign in; rows gone
     .eq("id", user.id);
   expect(rows).toEqual([]);
 
-  await page.goto("/sign-in");
-  await page.getByLabel("Email", { exact: true }).fill(user.email);
-  await page.locator('input[name="password"]').fill(PASSWORD);
-  await expect(page.locator('input[name="cf-turnstile-response"]')).toHaveValue(
-    /.+/,
-    {
-      timeout: 20_000,
-    },
-  );
-  await page.getByRole("button", { name: "Sign in", exact: true }).click();
+  await passwordSignIn(page, user.email, PASSWORD);
   await expect(page.locator("[data-form-alert]")).toHaveText(
     "Wrong email or password. Try again, or reset your password.",
   );

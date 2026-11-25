@@ -204,7 +204,7 @@ export async function setInitialPassword(
     const target = safeRedirectPath(next);
     redirect(
       withNotice(
-        target.startsWith("/auth/") ? "/dashboard" : target,
+        target.startsWith("/auth/") ? "/rewards" : target,
         "password_set",
       ),
     );
@@ -492,6 +492,6 @@ export async function updatePasswordFromReset(
       });
 
     await clearRecoveryMarker();
-    redirect(withNotice("/dashboard", "password_changed"));
+    redirect(withNotice("/rewards", "password_changed"));
   });
 }

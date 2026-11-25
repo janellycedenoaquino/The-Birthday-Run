@@ -27,7 +27,7 @@ test("report a reward: reason required, thanks, then Reported (FR-48)", async ({
            values (${user.id}, ${retailer!.id})`;
 
   await passwordSignIn(page, user.email, PASSWORD);
-  await expect(page).toHaveURL(/\/dashboard$/);
+  await expect(page).toHaveURL(/\/rewards$/);
   await page.goto("/rewards");
   await expect(page.getByText(retailer!.name).first()).toBeVisible();
 

@@ -10,22 +10,27 @@ import {
 import { msg } from "@/lib/messages";
 
 /** M-170 (without "All", which is the tab for no category). */
+// Order from the Rewards prototype (decision 0016); names picked by the owner, 2026-11-25.
 export const CATEGORY_LABELS: Record<string, string> = {
-  food_drink: "Food and drink",
-  entertainment: "Entertainment",
+  food_drink: "Food & drink",
   retail: "Retail",
   beauty: "Beauty",
+  entertainment: "Entertainment",
 };
 export const CATEGORIES = Object.keys(CATEGORY_LABELS);
 
-/** M-180: label and explanation per reward type. */
+/**
+ * M-180: label and explanation per reward type. `note`: the few words the brand page's tag adds
+ * after the label, when they help someone decide (owner, 2026-11-25).
+ */
 export const REWARD_TYPE_LABELS: Record<
   string,
-  { label: string; explanation: string }
+  { label: string; explanation: string; note?: string }
 > = {
   free_item: {
     label: "Free item",
     explanation: "something free, no purchase needed.",
+    note: "no purchase needed",
   },
   discount: { label: "Discount", explanation: "money off your order." },
   bogo: {

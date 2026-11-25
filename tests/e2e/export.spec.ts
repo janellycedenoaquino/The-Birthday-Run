@@ -1,7 +1,7 @@
 import { existsSync } from "node:fs";
 import { readFile } from "node:fs/promises";
 import { expect, test } from "@playwright/test";
-import { ownIp } from "./support";
+import { downloadMyData, ownIp, passwordSignIn } from "./support";
 
 // Its own client IP, so sign-ins don't share one per-IP budget (support.ts ownIp).
 test.use(ownIp(11));
@@ -22,23 +22,10 @@ test("download: a JSON file with the account; then rate limited → inline M-5 (
   page,
 }) => {
   const user = await createUser("e2e-export");
-  await page.goto("/sign-in");
-  await page.getByLabel("Email", { exact: true }).fill(user.email);
-  await page.locator('input[name="password"]').fill(PASSWORD);
-  await expect(page.locator('input[name="cf-turnstile-response"]')).toHaveValue(
-    /.+/,
-    {
-      timeout: 20_000,
-    },
-  );
-  await page.getByRole("button", { name: "Sign in", exact: true }).click();
-  await expect(page).toHaveURL(/\/dashboard$/);
+  await passwordSignIn(page, user.email, PASSWORD);
+  await expect(page).toHaveURL(/\/rewards$/);
 
-  await page.goto("/settings#your-data");
-  const [download] = await Promise.all([
-    page.waitForEvent("download"),
-    page.getByRole("link", { name: "Download my data" }).click(),
-  ]);
+  const download = await downloadMyData(page);
   expect(download.suggestedFilename()).toMatch(
     /^the-birthday-run-data-\d{4}-\d{2}-\d{2}\.json$/,
   );

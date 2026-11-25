@@ -12,8 +12,8 @@ export default function Welcome({ siteUrl }: Props) {
       preview="Your account is ready."
       heading={`Welcome to ${appConfig.name}`}
       intro="Your account is ready."
-      buttonLabel="Go to your dashboard"
-      url={`${siteUrl}/dashboard`}
+      buttonLabel="Go to My Rewards"
+      url={`${siteUrl}/rewards`}
       footnote={`Questions? Reply to ${appConfig.supportEmail}.`}
     />
   );

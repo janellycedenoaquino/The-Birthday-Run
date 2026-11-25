@@ -41,7 +41,7 @@ test("Plan: groups, keyboard reorder, edits, the limit, and pickups (FR-22–FR-
   ];
 
   await passwordSignIn(page, user.email, PASSWORD);
-  await expect(page).toHaveURL(/\/dashboard$/);
+  await expect(page).toHaveURL(/\/rewards$/);
   await page.goto("/plan");
   await expect(
     page.getByRole("heading", { name: "Plan your run", level: 1 }),
@@ -153,7 +153,7 @@ test("Plan: groups, keyboard reorder, edits, the limit, and pickups (FR-22–FR-
   await page.goto("/rewards");
   const reward = page
     .getByRole("listitem")
-    .filter({ has: page.getByRole("heading", { name: fourth, level: 2 }) });
+    .filter({ has: page.getByRole("heading", { name: fourth, level: 3 }) });
   await reward.getByRole("button", { name: "Mark picked up" }).click();
   await page
     .getByRole("dialog")
@@ -201,7 +201,7 @@ test("Duplicate: premium gets (Copy) then (Copy 2) in the same order; free gets 
 
     const user = await make("e2e-dup", true);
     await passwordSignIn(page, user.email, PASSWORD);
-    await expect(page).toHaveURL(/\/dashboard$/);
+    await expect(page).toHaveURL(/\/rewards$/);
     await page.goto("/plan");
     const card = (name: string) =>
       page
@@ -225,7 +225,7 @@ test("Duplicate: premium gets (Copy) then (Copy 2) in the same order; free gets 
     const free = await ctx.newPage();
     const freeUser = await make("e2e-dup-free", false);
     await passwordSignIn(free, freeUser.email, PASSWORD);
-    await expect(free).toHaveURL(/\/dashboard$/);
+    await expect(free).toHaveURL(/\/rewards$/);
     await free.goto("/plan");
     await expect(
       free.getByRole("heading", { name: "Dup run", exact: true }),

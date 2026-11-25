@@ -65,5 +65,5 @@ export async function GET(request: NextRequest) {
   const cookieStore = await cookies();
   const next = cookieStore.get("auth_next")?.value;
   cookieStore.delete({ name: "auth_next", path: "/auth" });
-  return to(request, safeRedirectPath(next, "/dashboard"));
+  return to(request, safeRedirectPath(next, "/rewards"));
 }

@@ -1,6 +1,6 @@
 import { existsSync } from "node:fs";
 import { expect, test, type Page } from "@playwright/test";
-import { ownIp } from "./support";
+import { ownIp, passwordSignIn } from "./support";
 
 // Its own client IP, so sign-ins don't share one per-IP budget (support.ts ownIp).
 test.use(ownIp(18));
@@ -10,20 +10,11 @@ if (existsSync(".env.local")) process.loadEnvFile(".env.local");
 const { createUser, PASSWORD } = await import("../rls/helpers");
 
 async function signIn(page: Page, email: string, password: string) {
-  await page.goto("/sign-in");
-  await page.getByLabel("Email", { exact: true }).fill(email);
-  await page.locator('input[name="password"]').fill(password);
-  await expect(page.locator('input[name="cf-turnstile-response"]')).toHaveValue(
-    /.+/,
-    {
-      timeout: 20_000,
-    },
-  );
-  await page.getByRole("button", { name: "Sign in", exact: true }).click();
-  await expect(page).toHaveURL(/\/dashboard$/);
+  await passwordSignIn(page, email, password);
+  await expect(page).toHaveURL(/\/rewards$/);
 }
 
-test("display name: saved, shown on the dashboard (FR-12)", async ({
+test("display name: saved, shown in the account menu (FR-12)", async ({
   page,
 }) => {
   const user = await createUser("e2e-name");
@@ -35,10 +26,11 @@ test("display name: saved, shown on the dashboard (FR-12)", async ({
     .getByRole("button", { name: "Save", exact: true })
     .click();
   await expect(page.getByText("Name saved.")).toBeVisible();
-  await page.goto("/dashboard");
-  await expect(
-    page.getByRole("heading", { name: "Welcome, Sam Rivera" }),
-  ).toBeVisible();
+  // The dashboard's greeting is gone (decision 0018): the account menu shows the name.
+  await page.goto("/rewards");
+  await page.getByRole("button", { name: /account/ }).click();
+  await expect(page.getByRole("menu").getByText("Sam Rivera")).toBeVisible();
+  await page.keyboard.press("Escape");
 
   await page.goto("/settings");
   await page.getByLabel("Display name").fill("Sam\u0001");
