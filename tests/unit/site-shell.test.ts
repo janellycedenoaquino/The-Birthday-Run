@@ -119,11 +119,11 @@ describe("C-2 site footer", () => {
     ]);
   });
 
-  it("offers the theme select, System by default (FR-21)", () => {
+  it("offers the theme select, Light by default (FR-21, decision 0016)", () => {
     const html = renderToStaticMarkup(createElement(SiteFooter));
     expect(html).toMatch(/<label[^>]*>.*Theme.*<select/);
-    expect(html).toMatch(/<option value="system" selected="">System<\/option>/);
-    expect(html).toContain('<option value="light">Light</option>');
+    expect(html).toContain('<option value="system">System</option>');
+    expect(html).toMatch(/<option value="light" selected="">Light<\/option>/);
     expect(html).toContain('<option value="dark">Dark</option>');
   });
 });

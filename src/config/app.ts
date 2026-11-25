@@ -11,12 +11,13 @@ export const appConfig = Object.freeze(
     shortName: "Birthday Run",
     description: "Find free birthday rewards and pick them all up in time.",
     supportEmail: "hello@thebirthdayrun.com",
-    // Pairs must reach 4.5:1 (D24.24; the config test checks). Placeholder: soft sage neutrals.
+    // Pairs must reach 4.5:1 (D24.24; the config test checks). Decision 0016: sky-blue button
+    // with navy text (7.5:1), the same in light and cocoa.
     brand: {
-      primary: "#4a5d56",
-      primaryForeground: "#ffffff",
-      primaryDark: "#b8c9c1",
-      primaryForegroundDark: "#1f2925",
+      primary: "#8ec5ff",
+      primaryForeground: "#1f2a5c",
+      primaryDark: "#8ec5ff",
+      primaryForegroundDark: "#1f2a5c",
     },
     logo: {
       svg: "/brand/logo.svg",

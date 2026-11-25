@@ -68,9 +68,15 @@ test("@html footer links and support mailto on the page (FR-17)", async ({
   expect(html).toContain(`href="mailto:${appConfig.supportEmail}"`);
 });
 
+// Decision 0016: light is the default whatever the device says; dark (cocoa) only when the person
+// picks it in C-2 (kept in localStorage). Each theme runs on a device set to the other one.
 for (const scheme of ["light", "dark"] as const) {
-  test.describe(`${scheme} scheme`, () => {
-    test.use({ colorScheme: scheme });
+  test.describe(`${scheme} theme`, () => {
+    test.use({ colorScheme: scheme === "light" ? "dark" : "light" });
+    test.beforeEach(async ({ page }) => {
+      if (scheme === "dark")
+        await page.addInitScript(() => localStorage.setItem("theme", "dark"));
+    });
 
     test("no CSP violations; themes and brand applied with the nonce", async ({
       page,

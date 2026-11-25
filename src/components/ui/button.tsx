@@ -8,7 +8,9 @@ const buttonVariants = cva(
   {
     variants: {
       variant: {
-        default: "bg-primary text-primary-foreground hover:bg-primary/80",
+        // Decision 0016: sky blue, navy text, a 1.5 px navy outline; hover adds an offset shadow.
+        default:
+          "bg-primary font-bold text-primary-foreground shadow-[0_0_0_1.5px_var(--navy)] hover:shadow-[3px_3px_0_var(--navy),0_0_0_1.5px_var(--navy)]",
         outline:
           "border-border bg-background hover:bg-muted hover:text-foreground aria-expanded:bg-muted aria-expanded:text-foreground dark:border-input dark:bg-input/30 dark:hover:bg-input/50",
         secondary:

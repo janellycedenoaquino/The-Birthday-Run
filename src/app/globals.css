@@ -4,8 +4,10 @@
 
 @custom-variant dark (&:is(.dark *));
 
-/* Fonts: Tailwind's default system stack (SPEC §3.6, §3.8: no font files). */
+/* Font: Plus Jakarta Sans, self-hosted by next/font (decision 0016; no third-party request, the
+   CSP's font-src 'self' covers it). --font-jakarta is set on <html> by the root layout. */
 @theme inline {
+  --font-sans: var(--font-jakarta), ui-sans-serif, system-ui, sans-serif;
   --font-heading: var(--font-sans);
   --color-sidebar-ring: var(--sidebar-ring);
   --color-sidebar-border: var(--sidebar-border);
@@ -48,82 +50,140 @@
 }
 
 :root {
-  --background: oklch(1 0 0);
-  --foreground: oklch(0.145 0 0);
-  --card: oklch(1 0 0);
-  --card-foreground: oklch(0.145 0 0);
-  --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.145 0 0);
-  --primary: oklch(0.205 0 0);
-  --primary-foreground: oklch(0.985 0 0);
-  --secondary: oklch(0.97 0 0);
-  --secondary-foreground: oklch(0.205 0 0);
-  --muted: oklch(0.97 0 0);
-  --muted-foreground: oklch(0.556 0 0);
-  --accent: oklch(0.97 0 0);
-  --accent-foreground: oklch(0.205 0 0);
+  /* Brand tokens (decision 0016): cream page, navy text, sky-blue primary button with navy text,
+     bubblegum highlight, spring-green hover. Contrast: navy on cream 13.3:1, on sky blue 7.5:1,
+     muted on every glow colour ≥ 5.5:1. White text is never used on these colours.
+     Sky blue and navy are the config's button pair (src/config/app.ts, FR-26): BrandStyle sets
+     --primary and --primary-foreground, and navy is read from the latter. */
+  --cream: #fffcf7;
+  --navy: var(--primary-foreground);
+  --bubblegum: #ff9ec4;
+  --spring: #8fe3b0;
+  --glow-pink: #ffd6e5;
+  --glow-blue: #d6ebff;
+  --glow-mint: #d3f5e1;
+  --frost: rgb(255 252 247 / 58%);
+  --background: var(--cream);
+  --foreground: var(--navy);
+  --card: #ffffff;
+  --card-foreground: var(--navy);
+  --popover: #ffffff;
+  --popover-foreground: var(--navy);
+  --secondary: #ffe8f0;
+  --secondary-foreground: var(--navy);
+  --muted: #f4f1ec;
+  --muted-foreground: #4c557d;
+  --accent: #ffe8f0;
+  --accent-foreground: var(--navy);
   --destructive: oklch(0.577 0.245 27.325);
-  --border: oklch(0.922 0 0);
-  --input: oklch(0.922 0 0);
-  --ring: oklch(0.708 0 0);
-  --chart-1: oklch(0.87 0 0);
-  --chart-2: oklch(0.556 0 0);
-  --chart-3: oklch(0.439 0 0);
-  --chart-4: oklch(0.371 0 0);
-  --chart-5: oklch(0.269 0 0);
-  --radius: 0.625rem;
-  --sidebar: oklch(0.985 0 0);
-  --sidebar-foreground: oklch(0.145 0 0);
-  --sidebar-primary: oklch(0.205 0 0);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.97 0 0);
-  --sidebar-accent-foreground: oklch(0.205 0 0);
-  --sidebar-border: oklch(0.922 0 0);
-  --sidebar-ring: oklch(0.708 0 0);
+  --border: color-mix(in srgb, var(--navy) 16%, transparent);
+  --input: color-mix(in srgb, var(--navy) 22%, transparent);
+  --ring: var(--navy);
+  --chart-1: var(--bubblegum);
+  --chart-2: var(--primary);
+  --chart-3: var(--spring);
+  --chart-4: #4c557d;
+  --chart-5: var(--navy);
+  --radius: 0.75rem;
+  --sidebar: var(--cream);
+  --sidebar-foreground: var(--navy);
+  --sidebar-primary: var(--primary);
+  --sidebar-primary-foreground: var(--primary-foreground);
+  --sidebar-accent: #ffe8f0;
+  --sidebar-accent-foreground: var(--navy);
+  --sidebar-border: color-mix(in srgb, var(--navy) 16%, transparent);
+  --sidebar-ring: var(--navy);
 }
 
 .dark {
-  --background: oklch(0.145 0 0);
-  --foreground: oklch(0.985 0 0);
-  --card: oklch(0.205 0 0);
-  --card-foreground: oklch(0.985 0 0);
-  --popover: oklch(0.205 0 0);
-  --popover-foreground: oklch(0.985 0 0);
-  --primary: oklch(0.922 0 0);
-  --primary-foreground: oklch(0.205 0 0);
-  --secondary: oklch(0.269 0 0);
-  --secondary-foreground: oklch(0.985 0 0);
-  --muted: oklch(0.269 0 0);
-  --muted-foreground: oklch(0.708 0 0);
-  --accent: oklch(0.269 0 0);
-  --accent-foreground: oklch(0.985 0 0);
+  /* Cocoa (decision 0016): the same pastel glows, pink block, sky-blue button and green hover on
+     brown; cream text, 14:1 on cards. Logos sit on white tiles. */
+  --glow-pink: rgb(255 158 196 / 26%);
+  --glow-blue: rgb(214 235 255 / 16%);
+  --glow-mint: rgb(211 245 225 / 16%);
+  --frost: rgb(51 39 42 / 66%);
+  --background: #231a18;
+  --foreground: var(--cream);
+  --card: #33272a;
+  --card-foreground: var(--cream);
+  --popover: #33272a;
+  --popover-foreground: var(--cream);
+  --secondary: #4a3438;
+  --secondary-foreground: var(--cream);
+  --muted: #3d2f31;
+  --muted-foreground: #e8d9d2;
+  --accent: #4a3438;
+  --accent-foreground: var(--cream);
   --destructive: oklch(0.704 0.191 22.216);
-  --border: oklch(1 0 0 / 10%);
-  --input: oklch(1 0 0 / 15%);
-  --ring: oklch(0.556 0 0);
-  --chart-1: oklch(0.87 0 0);
-  --chart-2: oklch(0.556 0 0);
-  --chart-3: oklch(0.439 0 0);
-  --chart-4: oklch(0.371 0 0);
-  --chart-5: oklch(0.269 0 0);
-  --sidebar: oklch(0.205 0 0);
-  --sidebar-foreground: oklch(0.985 0 0);
-  --sidebar-primary: oklch(0.488 0.243 264.376);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.269 0 0);
-  --sidebar-accent-foreground: oklch(0.985 0 0);
-  --sidebar-border: oklch(1 0 0 / 10%);
-  --sidebar-ring: oklch(0.556 0 0);
+  --border: rgb(255 252 247 / 18%);
+  --input: rgb(255 252 247 / 22%);
+  --ring: var(--cream);
+  --sidebar: #33272a;
+  --sidebar-foreground: var(--cream);
+  --sidebar-primary: var(--primary);
+  --sidebar-primary-foreground: var(--primary-foreground);
+  --sidebar-accent: #4a3438;
+  --sidebar-accent-foreground: var(--cream);
+  --sidebar-border: rgb(255 252 247 / 18%);
+  --sidebar-ring: var(--cream);
 }
 
 @layer base {
   * {
     @apply border-border outline-ring/50;
   }
+  /* The still pastel glow behind every page (decision 0016). Pages with motion (landing, sign
+     in) draw their own moving layer on top. */
   body {
     @apply bg-background text-foreground;
+    background-image:
+      radial-gradient(
+        40vw 40vw at 12% 18%,
+        var(--glow-pink) 0%,
+        transparent 70%
+      ),
+      radial-gradient(
+        45vw 45vw at 88% 22%,
+        var(--glow-blue) 0%,
+        transparent 70%
+      ),
+      radial-gradient(
+        50vw 50vw at 50% 100%,
+        var(--glow-mint) 0%,
+        transparent 70%
+      );
+    background-attachment: fixed;
   }
   html {
     @apply font-sans;
   }
+}
+
+/* The frosted card (decision 0016): cream at 58% with a 14 px blur, a thin navy edge. */
+@utility frosted {
+  background: var(--frost);
+  backdrop-filter: blur(14px) saturate(1.2);
+  -webkit-backdrop-filter: blur(14px) saturate(1.2);
+  box-shadow:
+    0 0 0 1.5px color-mix(in srgb, var(--foreground) 12%, transparent),
+    0 20px 60px -30px rgb(0 0 0 / 25%);
+}
+
+/* The tilted headline block (decision 0016): the last words of a headline on bubblegum. Navy
+   text in both themes (7.1:1); white is never used on it. */
+@utility headline-block {
+  display: inline-block;
+  padding: 0 0.14em;
+  border-radius: 6px;
+  background: var(--bubblegum);
+  color: var(--navy);
+  transform: rotate(-2deg);
+}
+
+/* The headline type (decision 0016): weight 800, tight tracking and leading. */
+@utility headline {
+  font-family: var(--font-heading);
+  font-weight: 800;
+  letter-spacing: -0.035em;
+  line-height: 1.06;
 }
