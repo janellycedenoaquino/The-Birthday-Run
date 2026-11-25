@@ -22,6 +22,7 @@ export function EnrollToggle({
   enroll,
   unenroll,
   compact = false,
+  wide = false,
 }: {
   retailerId: string;
   name: string;
@@ -30,6 +31,8 @@ export function EnrollToggle({
   unenroll: Action;
   /** Discover's card corner (decision 0016): a 34 px "+" (a check once added). */
   compact?: boolean;
+  /** S-104 (decision 0016): "Add to My Rewards" / "Added to My Rewards". */
+  wide?: boolean;
 }) {
   // A new form (fresh action state) whenever the saved state flips.
   return (
@@ -40,6 +43,7 @@ export function EnrollToggle({
       enrolled={enrolled}
       action={enrolled ? unenroll : enroll}
       compact={compact}
+      wide={wide}
     />
   );
 }
@@ -54,12 +58,14 @@ function ToggleForm({
   enrolled,
   action: run,
   compact,
+  wide,
 }: {
   retailerId: string;
   name: string;
   enrolled: boolean;
   action: Action;
   compact: boolean;
+  wide: boolean;
 }) {
   const [state, action] = useActionState(run, null);
   const error = state && !state.ok ? state.error : null;
@@ -79,7 +85,12 @@ function ToggleForm({
       className={compact ? "relative" : "grid gap-1"}
     >
       <input type="hidden" name="retailerId" value={retailerId} />
-      <ToggleButton name={name} enrolled={enrolled} compact={compact} />
+      <ToggleButton
+        name={name}
+        enrolled={enrolled}
+        compact={compact}
+        wide={wide}
+      />
       {error ? (
         <p
           role="alert"
@@ -100,10 +111,12 @@ function ToggleButton({
   name,
   enrolled,
   compact,
+  wide,
 }: {
   name: string;
   enrolled: boolean;
   compact: boolean;
+  wide: boolean;
 }) {
   const { pending } = useFormStatus();
   const on = pending ? !enrolled : enrolled; // optimistic while saving
@@ -119,6 +132,22 @@ function ToggleButton({
       >
         <Icon className="size-5" strokeWidth={2.75} aria-hidden="true" />
       </button>
+    );
+  }
+  if (wide) {
+    const Icon = on ? Check : Plus;
+    return (
+      <Button
+        type="submit"
+        size="lg"
+        aria-pressed={on}
+        aria-label={`${msg("M-103")} ${name}`}
+        disabled={pending}
+        className={`h-11 px-4 ${on ? "bg-[var(--spring)]" : ""}`}
+      >
+        <Icon aria-hidden="true" />
+        {msg(on ? "M-298c" : "M-298b")}
+      </Button>
     );
   }
   return (

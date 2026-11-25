@@ -84,9 +84,12 @@ describe("config values appear only in src/config/app.ts (FR-26, FR-51)", () => 
 });
 
 describe("nothing app-specific (NFR-24)", () => {
-  // "registry" alone is the D12 user-data registry's name, so the grep is for "gift"; it still
-  // catches "gift registry" wording (BUILD F-3 "Tests").
-  it("no 'gift' outside README and docs", () => {
-    expect(filesContaining(/\bgifts?\b/i)).toEqual([]);
+  // "registry" alone is the D12 user-data registry's name, so the grep is for gift-registry
+  // wording (BUILD F-3 "Tests"). "Gift" alone is this app's word for a birthday reward
+  // (decision 0016: "Your birthday gift"), so it isn't banned.
+  it("no gift-registry wording outside README and docs", () => {
+    expect(
+      filesContaining(/\bgift[\s-]*(registry|registries|lists?)\b/i),
+    ).toEqual([]);
   });
 });

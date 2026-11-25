@@ -46,8 +46,34 @@ test("signed out: every non-retired retailer, the sign-up prompt, and a 404 for 
   await expect(
     page.getByRole("heading", { name: notPopular!.name, level: 1 }),
   ).toBeVisible();
-  await expect(page.getByText("Back to Discover")).toBeVisible();
-  await expect(page.getByRole("link", { name: "Sign up free" })).toBeVisible();
+  // Decision 0016: breadcrumb back to Discover, sign-up in place of the toggle, blurred sample
+  // dates (aria-hidden) with M-280, and the visitor band.
+  await expect(
+    page.getByRole("navigation", { name: "Breadcrumb" }).getByRole("link", {
+      name: "Discover",
+    }),
+  ).toBeVisible();
+  await expect(
+    page.getByRole("link", { name: "Sign up free to track it" }),
+  ).toBeVisible();
+  await expect(
+    page.getByRole("link", { name: "Sign up to see your dates" }),
+  ).toBeVisible();
+  await expect(page.getByRole("button", { name: /^Add/ })).toHaveCount(0);
+
+  // From Discover, a card opens the same brand as a pop-up with its own URL; Escape goes back.
+  await page.goto("/discover");
+  await page
+    .getByRole("link", { name: /Starbucks/ })
+    .first()
+    .click();
+  await expect(page).toHaveURL(/\/discover\/starbucks$/);
+  const sheet = page.getByRole("dialog", { name: "Starbucks" });
+  await expect(sheet).toBeVisible();
+  await expect(sheet.getByText("Your birthday gift")).toBeVisible();
+  await page.keyboard.press("Escape");
+  await expect(page).toHaveURL(/\/discover$/);
+  await expect(sheet).toBeHidden();
 
   // Retired and unknown IDs stay a 404.
   if (retired) {
