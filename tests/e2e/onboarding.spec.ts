@@ -22,6 +22,14 @@ test("a new user: onboarding, Discover, then Settings (FR-3, FR-6, FR-7, FR-8, F
     page.getByRole("heading", { name: "When's your birthday?" }),
   ).toBeVisible();
 
+  // Rewards before a birthday is saved: the line asks for one and links back here (M-295d/e).
+  await page.goto("/discover");
+  await expect(
+    page.getByText("Add your birthday to start your countdowns."),
+  ).toBeVisible();
+  await page.getByRole("link", { name: "Add my birthday" }).click();
+  await expect(page).toHaveURL(/\/onboarding$/);
+
   // The browser's zone is detected and shown (M-107); no year field anywhere (NFR-3).
   await expect(
     page.getByText(/^Time zone: .+ You can change it in Settings\.$/),
@@ -60,8 +68,12 @@ test("a new user: onboarding, Discover, then Settings (FR-3, FR-6, FR-7, FR-8, F
 
   // Discover (FR-3, FR-8): search and category combine; no match → M-179 and "Clear filters".
   await page.goto("/discover");
+  // With a birthday, the line names its next date (M-295c; Feb 29 counts as Feb 28 or 29).
+  await expect(
+    page.getByText(/We'll count down each one to your birthday, Feb 2[89]\.$/),
+  ).toBeVisible();
   await page.getByLabel("Search by name").fill("cream");
-  await page.getByRole("button", { name: "Search" }).click();
+  await page.getByRole("button", { name: "Search", exact: true }).click();
   await expect(page).toHaveURL(/q=cream/);
   await page.getByRole("link", { name: "Beauty" }).click();
   await expect(page.getByText("Nothing matches these filters.")).toBeVisible();

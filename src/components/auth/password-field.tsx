@@ -35,7 +35,8 @@ export function PasswordField({
         <Label htmlFor={id}>Password</Label>
         {labelAside}
       </div>
-      <div className="flex gap-2">
+      {/* Show/Hide sits inside the field's right end (decision 0016 look). */}
+      <div className="relative">
         <Input
           id={id}
           name={name}
@@ -44,14 +45,14 @@ export function PasswordField({
           required
           aria-invalid={errors?.length ? true : undefined}
           aria-describedby={describedBy}
-          className="h-11"
+          className="h-11 pr-[4.5rem]"
         />
         <button
           type="button"
           aria-pressed={shown}
           aria-controls={id}
           onClick={() => setShown((s) => !s)}
-          className="h-11 min-w-11 shrink-0 rounded-md border border-input px-3 text-sm outline-none hover:bg-muted focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50"
+          className="absolute top-1/2 right-1.5 h-9 min-w-11 -translate-y-1/2 rounded-lg px-3 text-sm font-bold text-[var(--navy)] outline-none hover:bg-muted focus-visible:ring-3 focus-visible:ring-ring/50 dark:text-foreground"
         >
           {shown ? "Hide" : "Show"}
           <span className="sr-only"> password</span>
