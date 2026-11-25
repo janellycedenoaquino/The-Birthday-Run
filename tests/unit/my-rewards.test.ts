@@ -103,6 +103,15 @@ describe("Starting later and the progress count (decision 0018)", () => {
     expect(r.pickedUp).toBe(1);
   });
 
+  it("counts rewards that ended unpicked (the ring's total keeps them)", () => {
+    const r = run("2026-06-17", [
+      retailer("one", { days_after: 1 }),
+      retailer("week"),
+    ]);
+    expect(r.expired).toBe(1);
+    expect(r.items.map((x) => x.id)).toEqual(["week"]);
+  });
+
   it("no programs → nothing later", () => {
     expect(run("2026-06-05", []).later).toEqual([]);
   });

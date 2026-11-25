@@ -25,6 +25,7 @@ import { RewardsRoute } from "@/components/map/rewards-route";
 import {
   availableRewards,
   myRewards,
+  REWARDS_PAGE_SIZE,
   type LaterItem,
   type RewardItem,
 } from "@/lib/rewards/my-rewards";
@@ -123,18 +124,24 @@ export default async function RewardsPage({
   const range = pickupDateRange(w);
   const name = profile.displayName;
   // The name goes on the pink block (decision 0016 prototype): "Happy birth month, [Jay]".
-  const heading = {
-    birthday: name ? msg("M-201").replace("{name}", "\u0000") : msg("M-201b"),
-    birth_month: name
-      ? msg("M-202").replace("{name}", "\u0000")
-      : msg("M-202b"),
+  // Templates with `{name}` split into the text before and after it; the rest have no block.
+  const template = {
+    birthday: name ? msg("M-201") : msg("M-201b"),
+    birth_month: name ? msg("M-202") : msg("M-202b"),
     window_open: msg("M-203"),
     other: msg("M-204"),
   }[r.header];
-  const [headLead, headTail] = heading.split("\u0000");
+  const [headLead, ...rest] = template.split("{name}");
+  const headTail = rest.length ? rest.join(name ?? "") : undefined;
+  // FR-21's count is every pickup this run, as History counts them (not per reward).
+  const pickupsThisRun = picked.filter(
+    (p) => compareDates(p.date, w.planning.cycleEnd) <= 0,
+  ).length;
   // Decision 0018's two cards: this run's progress, and what's open (or the days to go).
   const still = r.available + r.later.length;
-  const total = r.pickedUp + still;
+  // Every reward of this run, the ones that ended unpicked included, so the ring never grows
+  // just because rewards lapsed.
+  const total = r.pickedUp + still + r.expired;
   const runDay = w.inWindow
     ? compareDates(w.today, w.planning.start) + 1
     : null;
@@ -164,7 +171,7 @@ export default async function RewardsPage({
         </h1>
         <p className="mt-1.5 text-muted-foreground">
           {lastPickup
-            ? `${msg("M-126").replace("{count}", String(r.pickedUp))} · ${msg("M-127").replace("{date}", formatDate(lastPickup, "short"))}`
+            ? `${msg("M-126").replace("{count}", String(pickupsThisRun))} · ${msg("M-127").replace("{date}", formatDate(lastPickup, "short"))}`
             : msg("M-128")}
         </p>
       </header>
@@ -345,7 +352,9 @@ export default async function RewardsPage({
                     href={query({ page: String(filters.page + 1) })}
                     scroll={false}
                   >
-                    {msg("M-209")} ({r.matched - r.items.length})
+                    {/* How many the click adds: the next page, not everything left. */}
+                    {msg("M-209")} (
+                    {Math.min(REWARDS_PAGE_SIZE, r.matched - r.items.length)})
                   </Link>
                 </Button>
               </div>

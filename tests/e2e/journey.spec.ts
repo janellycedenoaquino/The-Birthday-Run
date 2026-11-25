@@ -63,7 +63,7 @@ test("the account journey (FR-39)", async ({ page, context }) => {
   await expect(page).toHaveURL(/\/auth\/set-password/);
   if (!DEPLOYED) {
     const welcome = await newestMail(EMAIL, /^Welcome$/);
-    expect(welcome.html).toContain("/dashboard");
+    expect(welcome.html).toContain("/rewards");
   }
   await page.locator('input[name="password"]').fill(FIRST);
   await page.getByRole("button", { name: "Save password" }).click();

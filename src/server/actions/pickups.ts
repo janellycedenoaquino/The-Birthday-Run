@@ -29,7 +29,7 @@ import { rateLimit } from "@/server/security/rate-limit";
 // guards itself (rule 4). The rules come from the timing module; create_pickup re-checks the
 // one-per-cycle rule under a lock in the database.
 
-const PAGES = ["/rewards", "/history", "/dashboard", "/plan"];
+const PAGES = ["/rewards", "/history", "/plan"];
 const TIMING_COLUMNS = "id, retired_at, timing_type, days_before, days_after";
 
 // create_pickup's raised messages → catalogue IDs (BUILD §0.2's list).

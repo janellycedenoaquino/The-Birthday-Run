@@ -47,6 +47,8 @@ export type MyRewards = {
   later: LaterItem[];
   /** This run's rewards already picked up (decision 0018's progress ring). */
   pickedUp: number;
+  /** This run's rewards that ended without a pickup: still part of the ring's total. */
+  expired: number;
 };
 
 /** S-105's list size per "Show more" step (BUILD F-4: a build constant). */
@@ -66,6 +68,7 @@ export function availableRewards<R extends EnrolledTiming>(input: {
   open: (R & { daysLeft: number })[];
   later: (R & { opens: LocalDate })[];
   pickedUp: number;
+  expired: number;
 } {
   const { birthday, today, enrolled, pickups } = input;
   const timings = enrolled.map(timingOf);
@@ -88,7 +91,8 @@ export function availableRewards<R extends EnrolledTiming>(input: {
       (a, b) => a.opens.localeCompare(b.opens) || a.name.localeCompare(b.name),
     );
   const pickedUp = rows.filter((x) => x.status === "picked_up").length;
-  return { window: w, open, later, pickedUp };
+  const expired = rows.filter((x) => x.status === "expired").length;
+  return { window: w, open, later, pickedUp, expired };
 }
 
 export function myRewards(input: {
@@ -99,7 +103,7 @@ export function myRewards(input: {
   filters: { q?: string; within?: 1 | 7 | 14; page?: number };
 }): MyRewards {
   const { enrolled, filters } = input;
-  const { window: w, open, later, pickedUp } = availableRewards(input);
+  const { window: w, open, later, pickedUp, expired } = availableRewards(input);
 
   const q = filters.q ? fold(filters.q) : "";
   const matching = open.filter(
@@ -129,5 +133,6 @@ export function myRewards(input: {
     hasMore: view === "list" && matching.length > items.length,
     later: view === "none" ? [] : later,
     pickedUp,
+    expired,
   };
 }

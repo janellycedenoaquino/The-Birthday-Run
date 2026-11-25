@@ -47,7 +47,7 @@ export async function updateDisplayName(
       });
 
     revalidatePath("/settings");
-    revalidatePath("/dashboard");
+    revalidatePath("/rewards");
     return { ok: true, message: "M-21" };
   });
 }
