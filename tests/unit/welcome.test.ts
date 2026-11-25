@@ -39,8 +39,8 @@ describe("sendWelcomeIfFirst", () => {
       to: "someone@example.com",
       subject: "Welcome",
     });
-    expect(message.html).toContain("https://app.example/dashboard");
-    expect(message.text).toContain("https://app.example/dashboard");
+    expect(message.html).toContain("https://app.example/rewards");
+    expect(message.text).toContain("https://app.example/rewards");
     expect(release).not.toHaveBeenCalled();
   });
 

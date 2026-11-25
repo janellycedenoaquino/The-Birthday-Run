@@ -52,11 +52,11 @@ describe.each(auth)("%s", (_id, Template, type, heading, button) => {
 });
 
 describe("E-4 welcome", () => {
-  it("links to the dashboard on the real site, with the support address", async () => {
+  it("links to My Rewards on the real site, with the support address", async () => {
     const html = await render(
       createElement(Welcome, { siteUrl: "https://app.example" }),
     );
-    expect(html).toContain('href="https://app.example/dashboard"');
+    expect(html).toContain('href="https://app.example/rewards"');
     expect(html).toContain('src="https://app.example/brand/logo.png"');
     expect(html).toContain(escapeHtml(`Welcome to ${appConfig.name}`));
     expect(html).toContain(

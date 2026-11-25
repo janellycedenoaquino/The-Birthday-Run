@@ -22,12 +22,15 @@ export async function UpgradePrompt({
   feature,
   limit,
   compact = false,
+  tag = false,
 }: {
   /** The page's own client, so getEntitlement's per-request cache answers (one RPC, F-7). */
   supabase: SupabaseClient<Database>;
   feature: Feature;
   limit?: number;
   compact?: boolean;
+  /** S-103's small pink-ringed tag (decision 0016 prototype): M-131a, then the button if on. */
+  tag?: boolean;
 }) {
   const { premium } = await getEntitlement(supabase);
   if (premium) return null;
@@ -45,6 +48,15 @@ export async function UpgradePrompt({
       compact={compact}
     />
   ) : null;
+  if (tag)
+    return (
+      <span className="flex flex-wrap items-center gap-2">
+        <span className="rounded-[10px] bg-white/70 px-3 py-2 text-[13px] font-bold text-[var(--navy)] shadow-[inset_0_0_0_1.5px_var(--bubblegum)] dark:bg-white/10 dark:text-foreground">
+          {msg("M-131a")}
+        </span>
+        {button}
+      </span>
+    );
   // S-110: the Settings card is already titled "Premium", so no second title (owner, 2026-11-24).
   const text =
     feature === "M-138" ? (

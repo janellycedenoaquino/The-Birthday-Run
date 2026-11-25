@@ -209,7 +209,7 @@ describe("updatePasswordFromReset (S-7)", () => {
       signRecoveryMarker("user-1", "session-1", Date.now()),
     );
     expect(await run(updatePasswordFromReset, valid())).toEqual({
-      redirect: "/dashboard?notice=password_changed",
+      redirect: "/rewards?notice=password_changed",
     });
     expect(auth.updateUser).toHaveBeenCalledWith({
       password: "a-long-new-password-1",

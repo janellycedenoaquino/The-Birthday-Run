@@ -37,30 +37,46 @@ const NAME = escaped(appConfig.name);
 const SUPPORT = `mailto:${appConfig.supportEmail}`;
 
 describe("C-1 site header, signed out", () => {
-  it("links the logo and name home, with Sign in and Sign up", () => {
-    const html = header("/");
-    expect(html).toContain(`alt="${escaped(appConfig.logo.alt)}"`);
-    expect(html).toMatch(/src="\/brand\/logo.svg"/);
-    // C-101's Discover link (M-101) is public, so it shows signed out too.
+  it("links the name home, with Rewards and Get started", () => {
+    const html = header("/privacy");
+    // The name only, on a cream pill: no logo image (decision 0016 prototypes).
+    expect(html).not.toContain("<img");
+    // C-101's Rewards link (M-101) is public, so it shows signed out too; one "Get started"
+    // goes to sign up, whose card has a "Sign in" tab (owner, 2026-11-25).
     expect(links(html)).toEqual([
       ["/", NAME],
-      ["/discover", "Discover"],
-      ["/sign-in", "Sign in"],
-      ["/sign-up", "Sign up"],
+      ["/discover", "Rewards"],
+      ["/sign-up", "Get started"],
     ]);
   });
 
-  it("hides its own button on S-4 and S-5", () => {
-    expect(links(header("/sign-in"))).toEqual([
+  it("leaves Rewards out on Rewards itself (decision 0016 prototype)", () => {
+    expect(links(header("/discover"))).toEqual([
       ["/", NAME],
-      ["/discover", "Discover"],
-      ["/sign-up", "Sign up"],
+      ["/sign-up", "Get started"],
     ]);
-    expect(links(header("/sign-up"))).toEqual([
+  });
+
+  it("floats over the landing page with Rewards and Sign in (decision 0016)", () => {
+    const html = header("/");
+    expect(html).toMatch(/<header class="pointer-events-none absolute /);
+    expect(links(html)).toEqual([
       ["/", NAME],
-      ["/discover", "Discover"],
+      ["/discover", "Rewards"],
       ["/sign-in", "Sign in"],
     ]);
+    expect(header("/discover")).toMatch(/<header class="relative /);
+  });
+
+  it("floats with the name and Rewards on S-4 and S-5: the card's tabs switch (decision 0016)", () => {
+    for (const path of ["/sign-in", "/sign-up"]) {
+      const html = header(path);
+      expect(html).toMatch(/<header class="pointer-events-none absolute /);
+      expect(links(html)).toEqual([
+        ["/", NAME],
+        ["/discover", "Rewards"],
+      ]);
+    }
   });
 
   it("shows only the logo and name on the step pages S-9, S-10, S-11", () => {
@@ -70,8 +86,8 @@ describe("C-1 site header, signed out", () => {
       "/auth/reauthenticate",
     ]) {
       const html = header(path, { email: "a@example.com", displayName: null });
-      // Signed in, so the logo goes to the dashboard (SPEC §3.2); the guards own the step itself.
-      expect(links(html)).toEqual([["/dashboard", NAME]]);
+      // Signed in, so the name goes to My Rewards (decision 0018); the guards own the step itself.
+      expect(links(html)).toEqual([["/rewards", NAME]]);
       expect(html).not.toContain("a@example.com");
       expect(html).not.toContain("<button");
     }
@@ -79,19 +95,24 @@ describe("C-1 site header, signed out", () => {
 });
 
 describe("C-1 site header, signed in", () => {
-  it("links home to the dashboard and always shows the email (D24.9)", () => {
+  it("links the name to My Rewards and always shows the email (D24.9, decision 0018)", () => {
     const html = header("/settings", {
       email: "someone@example.com",
       displayName: "Sam",
     });
     expect(links(html)).toEqual([
-      ["/dashboard", NAME],
-      ["/discover", "Discover"],
+      ["/rewards", NAME],
+      ["/discover", "Rewards"],
       ["/rewards", "My Rewards"],
       ["/plan", "Plan"],
       ["/history", "History"],
     ]);
-    expect(html).toMatch(/<button[^>]*>.*someone@example\.com.*<\/button>/);
+    // A round initial of the EMAIL (not the name "Sam"); the name starts with the letter
+    // (WCAG 2.5.3) and carries the email, as does the tooltip (decision 0022, D24.9).
+    expect(html).toMatch(
+      /<button[^>]*aria-label="S, account someone@example\.com"[^>]*>.*>S<\/span><\/button>/,
+    );
+    expect(html).toContain('title="someone@example.com"');
     expect(html).not.toContain(">Sign in<");
   });
 
@@ -102,6 +123,25 @@ describe("C-1 site header, signed in", () => {
     });
     expect(html).not.toContain("<img src=x>");
     expect(html).toContain("&lt;img src=x&gt;");
+  });
+});
+
+describe("C-1 account initial (decision 0022, T22)", () => {
+  it("comes from the email, so a display name can't copy someone else's letter", () => {
+    const html = header("/settings", {
+      email: "zed@example.com",
+      displayName: "Victim Name",
+    });
+    expect(html).toMatch(/>Z<\/span><\/button>/);
+  });
+
+  it("is one whole character, upper case, or ? when there's none", async () => {
+    const { accountInitial } = await import("@/components/layout/account-menu");
+    expect(accountInitial("ann@example.com")).toBe("A");
+    expect(accountInitial("  bo@example.com")).toBe("B");
+    expect(accountInitial("😀x@example.com")).toBe("😀");
+    expect(accountInitial("ßa@example.com")).toBe("S");
+    expect(accountInitial("")).toBe("?");
   });
 });
 

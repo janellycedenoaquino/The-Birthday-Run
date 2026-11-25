@@ -56,6 +56,7 @@ Two launches (ROADMAP): **v1** after phase 4 and **v2 sign-off** after phase 7 (
 - [ ] In Gmail's "Show original" of a real reminder, Resend's DKIM signature covers `List-Unsubscribe` and `List-Unsubscribe-Post` (RFC 8058; BUILD F-12 "Unverified")
 - [ ] **Reminder emails and CAN-SPAM:** decide the postal-address question (DESIGN §4.4) before any reminder reaches someone outside the family
 - [ ] Report heartbeat check fails loudly when the reminder cron is stopped (D16)
+- [ ] **Sign-in links ask "Is this you?" first** (decision 0022, T22): opening a sign-in or confirm link shows the masked email of the account it signs into, and nothing signs in until the visitor confirms
 - [ ] The checker's GitHub token has only the scopes in D16, and expires within a year
 
 ## Before turning payments on (owner's decision; DESIGN §5.6)

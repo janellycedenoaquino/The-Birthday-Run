@@ -51,6 +51,9 @@ export type GroupCardData = {
   items: GroupItem[];
 };
 
+// Decision 0016: the theme's red is about 3.5:1 on the pink ticket; this one is about 6:1 (WCAG AA).
+const TICKET_ALERT = "font-bold text-[#a3001b] dark:text-destructive";
+
 // One S-106 group (SPEC §3.3: FR-27). The rewards reorder by drag, or by keyboard on the handle
 // (Space to lift, arrows to move, Space to drop) with M-237's announcements; without JS each row
 // has Move up / Move down buttons posting the reordered list.
@@ -132,7 +135,7 @@ export function GroupCard({
             <h3 className="text-lg font-extrabold">{group.name}</h3>
             <p className="text-sm text-muted-foreground">{group.pickupLabel}</p>
             {group.outside ? (
-              <p className="text-sm text-destructive">{msg("M-235")}</p>
+              <p className={`text-sm ${TICKET_ALERT}`}>{msg("M-235")}</p>
             ) : null}
           </div>
         </div>
@@ -154,7 +157,7 @@ export function GroupCard({
       {conflict ? (
         <div
           role="alert"
-          className="flex flex-wrap items-center gap-2 text-sm text-destructive"
+          className={`flex flex-wrap items-center gap-2 text-sm ${TICKET_ALERT}`}
         >
           {msg("BR-17")}
           <Button
@@ -249,7 +252,7 @@ function SortableRow({
         {...attributes}
         {...listeners}
         aria-label={msg("M-236").replace("{retailer}", item.name)}
-        className="flex size-9 items-center justify-center rounded-md hover:bg-muted"
+        className="flex size-9 items-center justify-center rounded-md hover:bg-[var(--glow-pink)]"
       >
         <GripVertical aria-hidden="true" className="size-4" />
       </button>

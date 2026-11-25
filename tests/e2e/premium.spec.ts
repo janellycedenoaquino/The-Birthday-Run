@@ -26,21 +26,15 @@ test("free → granted → revoked: prompts, filters and Settings follow (FR-35,
   const db = sql();
   try {
     await passwordSignIn(page, user.email, PASSWORD);
-    await expect(page).toHaveURL(/\/dashboard$/);
+    await expect(page).toHaveURL(/\/rewards$/);
 
-    // Free: C-104 instead of the filters, "coming soon", and nothing to click (FR-38, FR-39).
+    // Free: C-104's tag instead of the filters, and nothing to click (FR-38, FR-39; the tag is
+    // decision 0016's prototype). "Coming soon" is on the Settings card below.
     await page.goto("/discover?length=day&early=1");
     const prompt = page.getByText(
-      "Filter by your state and reward length is part of Premium.",
+      "Premium: filter by your state and reward length",
     );
     await expect(prompt).toBeVisible();
-    await expect(
-      page
-        .getByText(
-          "Premium is coming soon. Everything else in the app stays free.",
-        )
-        .first(),
-    ).toBeVisible();
     await expect(page.getByLabel("Length")).toHaveCount(0);
     await expect(page.getByRole("button", { name: /upgrade/i })).toHaveCount(0);
     await expect(page.getByRole("link", { name: /upgrade/i })).toHaveCount(0);
@@ -75,6 +69,8 @@ test("free → granted → revoked: prompts, filters and Settings follow (FR-35,
     await page.reload();
     await expect(card.getByText("You have Premium.")).toBeVisible();
     await page.goto("/discover");
+    // The filters sit behind "More filters" (owner, 2026-11-25).
+    await page.getByText("More filters").click();
     await expect(page.getByLabel("Length")).toBeVisible();
     await expect(page.getByLabel("Can start before my birthday")).toBeVisible();
     await expect(prompt).toHaveCount(0);

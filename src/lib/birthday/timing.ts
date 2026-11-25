@@ -60,6 +60,16 @@ export function isoFromUnix(seconds: number): string {
   return new Date(seconds * 1000).toISOString();
 }
 
+/** True when the stored instant is at most `minutes` before `now` (S-101's finish card). */
+export function isWithinMinutes(
+  instant: string,
+  minutes: number,
+  now: Date,
+): boolean {
+  const age = now.getTime() - new Date(instant).getTime();
+  return age >= 0 && age <= minutes * 60_000;
+}
+
 /** The ISO instant `days` × 24 h before `now` (A-20's retention cutoff). */
 export function isoDaysBefore(now: Date, days: number): string {
   return new Date(now.getTime() - days * 86_400_000).toISOString();
