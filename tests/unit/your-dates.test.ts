@@ -26,8 +26,14 @@ describe("yourDates (M-279)", () => {
     expect(yourDates(week, june15, d("2027-06-21")).status).toBe("Ends today");
   });
 
-  it("after it closed this cycle: next year's dates", () => {
+  it("after it closed, while the cycle runs: this year's dates, 'Ended this year' (as My Rewards)", () => {
     const y = yourDates(week, june15, d("2027-06-25"));
+    expect([y.opens, y.closes]).toEqual(["2027-06-15", "2027-06-21"]);
+    expect(y.status).toBe("Ended this year");
+  });
+
+  it("once the cycle has moved on: next year's dates", () => {
+    const y = yourDates(week, june15, d("2027-09-01"));
     expect([y.opens, y.closes]).toEqual(["2028-06-15", "2028-06-21"]);
     expect(y.status).toMatch(/^Starts in \d+ days$/);
   });

@@ -10,6 +10,7 @@ import {
 import { joinByLine } from "@/lib/retailers/labels";
 import { yourDates, yourDatesLine } from "@/lib/rewards/your-dates";
 import { retailerIdSchema } from "@/lib/validation/retailers";
+import { logError } from "@/server/errors";
 import { reportedThisCycle } from "@/server/reports/own";
 import { createClient } from "@/server/supabase/server";
 
@@ -20,7 +21,8 @@ import { createClient } from "@/server/supabase/server";
 
 const MORE = 4;
 
-export const loadBrand = cache(async (raw: string) => {
+/** `withMore`: the full page's 4 more brands and the catalogue count (the pop-up shows neither). */
+export const loadBrand = cache(async (raw: string, withMore: boolean) => {
   const id = retailerIdSchema.safeParse(raw);
   if (!id.success) notFound();
   const supabase = await createClient();
@@ -38,21 +40,26 @@ export const loadBrand = cache(async (raw: string) => {
   if (!retailer) notFound();
   const user = auth.user;
 
-  const [{ data: more }, { count: total }] = await Promise.all([
-    supabase
-      .from("retailers")
-      .select("id, name, logo_file, reward_description")
-      .eq("category", retailer.category)
-      .neq("id", retailer.id)
-      .is("retired_at", null)
-      .order("is_popular", { ascending: false })
-      .order("name")
-      .limit(MORE),
-    supabase
-      .from("retailers")
-      .select("id", { count: "exact", head: true })
-      .is("retired_at", null),
-  ]);
+  const [more, total] = withMore
+    ? await Promise.all([
+        supabase
+          .from("retailers")
+          .select("id, name, logo_file, reward_description")
+          .eq("category", retailer.category)
+          .neq("id", retailer.id)
+          .is("retired_at", null)
+          .order("is_popular", { ascending: false })
+          .order("name")
+          .limit(MORE),
+        supabase
+          .from("retailers")
+          .select("id", { count: "exact", head: true })
+          .is("retired_at", null),
+      ])
+    : [null, null];
+  // Extras only: a failed read leaves them out, logged, never an error page.
+  if (more?.error) logError(more.error, { op: "brand.more" });
+  if (total?.error) logError(total.error, { op: "brand.total" });
 
   let enrolled = false;
   let joinBy: string | null = null;
@@ -104,8 +111,8 @@ export const loadBrand = cache(async (raw: string) => {
     joinBy,
     dates,
     reported,
-    more: more ?? [],
-    total: total ?? 0,
+    more: more?.data ?? [],
+    total: total?.count ?? 0,
   };
 });
 

@@ -224,7 +224,8 @@ export function BrandDetails({
           <ul className="mt-3.5 grid grid-cols-2 gap-3.5 md:grid-cols-4">
             {brand.more.map((m) => (
               <li key={m.id}>
-                <Link
+                {/* A full page load: a soft one under /discover would open the pop-up. */}
+                <a
                   href={`/discover/${m.id}`}
                   className="flex h-full flex-col gap-1.5 rounded-[18px] bg-white/85 p-3.5 shadow-[0_0_0_1.5px_var(--border)] outline-none hover:shadow-[0_0_0_3px_var(--spring)] focus-visible:shadow-[0_0_0_3px_var(--spring)] dark:bg-white/10"
                 >
@@ -239,7 +240,7 @@ export function BrandDetails({
                   <span className="leading-tight font-extrabold">
                     {m.reward_description}
                   </span>
-                </Link>
+                </a>
               </li>
             ))}
           </ul>

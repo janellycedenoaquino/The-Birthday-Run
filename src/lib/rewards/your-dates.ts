@@ -1,8 +1,8 @@
 import {
-  birthdayIn,
-  compareDates,
+  daysLeft,
   formatDate,
   rewardDays,
+  rewardStatus,
   windowFor,
   type Birthday,
   type LocalDate,
@@ -11,11 +11,12 @@ import {
 import { msg } from "@/lib/messages";
 
 // M-279 (S-104 signed in, decision 0017): the user's own window for one reward, from the timing
-// module (NFR-5). The planning cycle's dates; once this cycle's window has closed, next year's.
+// module only (NFR-5). It follows rewardStatus, so it agrees with My Rewards: the planning
+// cycle's dates, "Ended" once they've passed in this cycle, and next year's once the cycle moves on.
 export type YourDates = {
   opens: LocalDate;
   closes: LocalDate;
-  /** "Starts in 12 days", "Starts in 1 day", "12 days left" or "Ends today". */
+  /** "Starts in 12 days", "Starts in 1 day", "12 days left", "Ends today" or "Ended". */
   status: string;
 };
 
@@ -25,23 +26,25 @@ export function yourDates(
   today: LocalDate,
 ): YourDates {
   const w = windowFor(birthday, [t], today);
-  let days = rewardDays(t, w.planning.birthday);
-  if (compareDates(today, days.closes) > 0)
-    days = rewardDays(
-      t,
-      birthdayIn(Number(w.planning.birthday.slice(0, 4)) + 1, birthday),
-    );
-  const untilOpen = compareDates(days.opens, today);
-  // Days left including today, like daysLeft(): 1 on the last day, which reads "Ends today".
-  const left = compareDates(days.closes, today) + 1;
-  const status =
-    untilOpen > 1
-      ? msg("M-279c").replace("{days}", String(untilOpen))
-      : untilOpen === 1
+  const days = rewardDays(t, w.planning.birthday);
+  const state = rewardStatus(t, w, []);
+  let status: string;
+  if (state === "expired") status = msg("M-279f");
+  else if (state === "not_open") {
+    // Days until it opens = days left on the day before it opens, minus the window itself.
+    const until =
+      daysLeft(t, w) - daysLeft(t, windowFor(birthday, [t], days.opens));
+    status =
+      until === 1
         ? msg("M-279e")
-        : left === 1
-          ? msg("M-279d")
-          : msg("M-279a").replace("{days}", String(left));
+        : msg("M-279c").replace("{days}", String(until));
+  } else {
+    const left = daysLeft(t, w);
+    status =
+      left === 1
+        ? msg("M-279d")
+        : msg("M-279a").replace("{days}", String(left));
+  }
   return { ...days, status };
 }
 

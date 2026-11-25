@@ -11,7 +11,7 @@ import { loadBrand } from "@/server/catalog/brand";
 export async function generateMetadata({
   params,
 }: PageProps<"/discover/[retailerId]">): Promise<Metadata> {
-  const { retailer } = await loadBrand((await params).retailerId);
+  const { retailer } = await loadBrand((await params).retailerId, true);
   return {
     title: msg("M-298").replace("{brand}", retailer.name),
     description: retailer.reward_description,
@@ -21,7 +21,7 @@ export async function generateMetadata({
 export default async function RetailerPage({
   params,
 }: PageProps<"/discover/[retailerId]">) {
-  const brand = await loadBrand((await params).retailerId);
+  const brand = await loadBrand((await params).retailerId, true);
   return (
     <div className="mx-auto w-full max-w-5xl px-4 py-10 sm:px-6">
       <BrandDetails brand={brand} variant="page" />

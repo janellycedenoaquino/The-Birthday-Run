@@ -323,6 +323,7 @@ export const M = {
   "M-279c": "Starts in {days} days",
   "M-279d": "Ends today",
   "M-279e": "Starts in 1 day",
+  "M-279f": "Ended this year",
   "M-280": "Sign up to see your dates",
   "M-298": "{brand} birthday reward",
   "M-298a": "Your birthday gift",

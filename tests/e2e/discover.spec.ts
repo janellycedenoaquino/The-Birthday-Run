@@ -63,10 +63,9 @@ test("signed out: every non-retired retailer, the sign-up prompt, and a 404 for 
 
   // From Discover, a card opens the same brand as a pop-up with its own URL; Escape goes back.
   await page.goto("/discover");
-  await page
-    .getByRole("link", { name: /Starbucks/ })
-    .first()
-    .click();
+  const card = page.getByRole("link", { name: /Starbucks/ }).first();
+  await card.focus();
+  await page.keyboard.press("Enter");
   await expect(page).toHaveURL(/\/discover\/starbucks$/);
   const sheet = page.getByRole("dialog", { name: "Starbucks" });
   await expect(sheet).toBeVisible();
@@ -74,6 +73,8 @@ test("signed out: every non-retired retailer, the sign-up prompt, and a 404 for 
   await page.keyboard.press("Escape");
   await expect(page).toHaveURL(/\/discover$/);
   await expect(sheet).toBeHidden();
+  // Focus goes back to the card that opened it (WCAG 2.4.3).
+  await expect(card).toBeFocused();
 
   // Retired and unknown IDs stay a 404.
   if (retired) {
