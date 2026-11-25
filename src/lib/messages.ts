@@ -317,10 +317,11 @@ export const M = {
   "M-294c":
     "Some last a day, some all month. We check each one on the brand's own site.\nSign up free to get your countdown and plan your run.",
   "M-294d": "{count} brands with a birthday treat",
-  "M-295": "Birthday",
-  "M-295b": "rewards",
+  // S-103 signed in: the same h1 as signed out (M-294/M-294b; owner, 2026-11-25).
   "M-295c":
-    "Add the programs you're in. We'll count down each one for your birthday.",
+    "Add the ones you've joined, or join new ones in time. We'll count down each one to your birthday, {date}.",
+  "M-295d": "Add your birthday to start your countdowns.",
+  "M-295e": "Add my birthday",
   "M-296": "Needs a purchase",
   "BR-12": "We don't recognise that ZIP code.",
   "BR-13":

@@ -7,7 +7,12 @@ import {
 } from "@/components/retailers/retailer-card";
 import { UpgradePrompt } from "@/components/billing/upgrade-prompt";
 import { Button } from "@/components/ui/button";
-import { today, windowFor, type LocalDate } from "@/lib/birthday/timing";
+import {
+  formatDate,
+  today,
+  windowFor,
+  type LocalDate,
+} from "@/lib/birthday/timing";
 import { msg } from "@/lib/messages";
 import { filterRetailers, type FilterRow } from "@/lib/retailers/filter";
 import { CATEGORIES, CATEGORY_LABELS } from "@/lib/retailers/labels";
@@ -90,22 +95,28 @@ export default async function DiscoverPage({
       cause: enrollError,
     });
   const enrolledIds = new Set(enrolled.map((e) => e.retailer_id));
-  // Premium filters are read only for premium users, measured for their next birthday (FR-45).
+  // The next birthday: named in the line under the headline (owner, 2026-11-25), and what the
+  // premium filters measure from (FR-45).
   const { premium } = await getEntitlement(supabase);
-  let occurrence: LocalDate | undefined;
-  if (premium) {
-    const { data: profile } = await supabase
-      .from("profiles")
-      .select("birth_month, birth_day, time_zone")
-      .eq("id", user.id)
-      .maybeSingle();
-    if (profile?.birth_month && profile.birth_day && profile.time_zone)
-      occurrence = windowFor(
-        { month: profile.birth_month, day: profile.birth_day },
-        [],
-        today(profile.time_zone, new Date()),
-      ).planning.birthday;
-  }
+  const { data: profile, error: profileError } = await supabase
+    .from("profiles")
+    .select("birth_month, birth_day, time_zone")
+    .eq("id", user.id)
+    .maybeSingle();
+  // A failed read must not look like "no birthday saved".
+  if (profileError)
+    throw new Error("S-103: could not read the profile", {
+      cause: profileError,
+    });
+  const birthday: LocalDate | undefined =
+    profile?.birth_month && profile.birth_day && profile.time_zone
+      ? windowFor(
+          { month: profile.birth_month, day: profile.birth_day },
+          [],
+          today(profile.time_zone, new Date()),
+        ).planning.birthday
+      : undefined;
+  const occurrence = premium ? birthday : undefined;
   const { shown, total } = filterRetailers(
     rows as Row[],
     premium
@@ -142,7 +153,23 @@ export default async function DiscoverPage({
     : [];
 
   return (
-    <Shell title={msg("M-295")} block={msg("M-295b")} lead={msg("M-295c")}>
+    <Shell
+      title={msg("M-294")}
+      block={msg("M-294b")}
+      lead={
+        birthday
+          ? msg("M-295c").replace("{date}", formatDate(birthday, "short"))
+          : msg("M-295d")
+      }
+      action={
+        birthday ? undefined : (
+          // Only a signed-in user who left onboarding before saving a birthday sees this.
+          <Button asChild size="lg" className="mt-4 h-11 px-5">
+            <Link href="/onboarding">{msg("M-295e")}</Link>
+          </Button>
+        )
+      }
+    >
       <form
         method="get"
         className="mx-auto mt-6 flex max-w-xl flex-wrap justify-center gap-2"
@@ -287,12 +314,14 @@ function Shell({
   block,
   lead,
   count,
+  action,
   children,
 }: {
   title: string;
   block: string;
   lead: string;
   count?: string;
+  action?: React.ReactNode;
   children: React.ReactNode;
 }) {
   return (
@@ -304,6 +333,7 @@ function Shell({
         <p className="mx-auto mt-4 max-w-2xl text-base leading-relaxed whitespace-pre-line text-muted-foreground sm:text-lg">
           {lead}
         </p>
+        {action}
         {count ? (
           <p className="mt-3.5 text-[13px] font-bold tracking-[0.12em] text-muted-foreground uppercase">
             {count}
