@@ -38,13 +38,21 @@ const SUPPORT = `mailto:${appConfig.supportEmail}`;
 
 describe("C-1 site header, signed out", () => {
   it("links the name home, with Sign in and Sign up", () => {
-    const html = header("/discover");
+    const html = header("/privacy");
     // The name only, on a cream pill: no logo image (decision 0016 prototypes).
     expect(html).not.toContain("<img");
     // C-101's Discover link is public, so it shows signed out too, as "Rewards" (M-101e).
     expect(links(html)).toEqual([
       ["/", NAME],
       ["/discover", "Rewards"],
+      ["/sign-in", "Sign in"],
+      ["/sign-up", "Sign up"],
+    ]);
+  });
+
+  it("leaves Rewards out on Rewards itself (decision 0016 prototype)", () => {
+    expect(links(header("/discover"))).toEqual([
+      ["/", NAME],
       ["/sign-in", "Sign in"],
       ["/sign-up", "Sign up"],
     ]);

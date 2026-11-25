@@ -18,9 +18,10 @@ const FLOATING = ["/", "/sign-in", "/sign-up"];
 const CARD_TABS = ["/sign-in", "/sign-up"];
 
 /**
- * C-1's frame. On the FLOATING pages it floats over the page's motion, full width, and leaves the
- * top-right corner to the page's "Pause motion" (decision 0016 prototypes). Only its links take
- * clicks there, so the gaps reach the motion and the pause button below.
+ * C-1's frame, full width as in the prototypes. On the FLOATING pages it floats over the page's
+ * motion and leaves the top-right corner to the page's "Pause motion" (decision 0016
+ * prototypes). Only its links take clicks there, so the gaps reach the motion and the pause
+ * button below.
  */
 export function HeaderShell({ children }: { children: ReactNode }) {
   const floating = FLOATING.includes(usePathname());
@@ -33,7 +34,7 @@ export function HeaderShell({ children }: { children: ReactNode }) {
       }
     >
       <div
-        className={`mx-auto flex h-16 w-full items-center justify-between ${floating ? "gap-2 pr-[60px] pl-3 sm:gap-4 sm:pr-[184px] sm:pl-6 [&>*]:pointer-events-auto" : "max-w-5xl gap-4 px-4 sm:px-6"}`}
+        className={`mx-auto flex h-16 w-full items-center justify-between ${floating ? "gap-2 pr-[60px] pl-3 sm:gap-4 sm:pr-[184px] sm:pl-6 [&>*]:pointer-events-auto" : "gap-4 px-4 sm:px-6"}`}
       >
         {children}
       </div>
@@ -82,7 +83,8 @@ export function HeaderNav({ account }: { account: Account | null }) {
               {msg("M-101")}
             </Link>
           </Button>
-        ) : (
+        ) : path === "/discover" ? null : (
+          // Not on Rewards itself, as in the prototype (it would only point at this page).
           <Link
             href="/discover"
             aria-current={path.startsWith("/discover") ? "page" : undefined}

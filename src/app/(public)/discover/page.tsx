@@ -296,12 +296,12 @@ function Shell({
   children: React.ReactNode;
 }) {
   return (
-    <div className="mx-auto w-full max-w-5xl px-4 py-12 sm:px-6">
-      <header className="mx-auto max-w-2xl text-center">
+    <div className="mx-auto w-full max-w-[1180px] px-4 pt-6 pb-12 sm:px-6">
+      <header className="text-center">
         <h1 className="headline text-[40px] sm:text-[clamp(40px,5.5vw,60px)]">
           {title} <span className="headline-block">{block}</span>
         </h1>
-        <p className="mt-4 text-base leading-relaxed text-muted-foreground sm:text-lg">
+        <p className="mx-auto mt-4 max-w-2xl text-base leading-relaxed text-muted-foreground sm:text-lg">
           {lead}
         </p>
         {count ? (
