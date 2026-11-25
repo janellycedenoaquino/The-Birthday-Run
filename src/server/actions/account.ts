@@ -13,6 +13,8 @@ import { parseForm } from "@/lib/validation/form";
 import { requireRecentSignIn, requireUser } from "@/server/auth/guards";
 import { logError, toUserMessage } from "@/server/errors";
 import { runAction } from "@/server/run-action";
+import { getStripe } from "@/server/billing/stripe";
+import { cancelForDeletion, deleteCustomer } from "@/server/billing/sync";
 import { getAdminClient } from "@/server/supabase/admin";
 import { rateLimit } from "@/server/security/rate-limit";
 
@@ -132,8 +134,18 @@ export async function deleteAccount(
     const limit = await rateLimit("deleteAccount", { userId: user.id });
     if (!limit.ok) return limit;
 
-    const { error } = await getAdminClient().auth.admin.deleteUser(user.id);
+    // F-8 (FR-37, T-117): cancel any subscription first; if Stripe can't be reached, nothing is
+    // deleted (M-7), so no one keeps paying for no account. The Stripe Customer goes only once
+    // the account is gone, so a failed deletion leaves the user able to pay later.
+    const admin = getAdminClient();
+    const stripe = getStripe();
+    const billing = await cancelForDeletion(user.id, { stripe, admin });
+    if (!billing.ok) return { ok: false, error: "M-7" };
+
+    const { error } = await admin.auth.admin.deleteUser(user.id);
     if (error) throw new Error("deleteAccount failed", { cause: error });
+    if (billing.customerId)
+      await deleteCustomer(billing.customerId, { stripe });
 
     // The account is gone; end this device's session whatever Supabase answers.
     await supabase.auth.signOut({ scope: "local" }).catch(() => {});

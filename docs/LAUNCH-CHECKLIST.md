@@ -61,6 +61,7 @@ Two launches (ROADMAP): **v1** after phase 4 and **v2 sign-off** after phase 7 (
 ## Before turning payments on (owner's decision; DESIGN §5.6)
 - [ ] Vercel Pro (Hobby is non-commercial)
 - [ ] A physical postal address for commercial email (DESIGN §4.4)
+- [ ] Stripe test mode (F-8): a sandbox with the Premium Product and monthly Price, the customer portal set to cancel at period end with no plan switching, "if all retries fail: cancel the subscription", and a webhook endpoint for BUILD F-8's eight events; a second sandbox's secret key saved as the GitHub secret `STRIPE_TEST_SECRET_KEY`, and CI's integration job shows metric 3 passing (not SKIPPED)
 - [ ] Live Stripe keys, webhook endpoint, price set; a real-card test and refund
 - [ ] Privacy policy and terms updated for paid plans
 

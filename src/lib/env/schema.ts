@@ -49,9 +49,21 @@ export const serverEnvSchema = z
     REPORTS_EXPORT_SECRET: optional(z.string().min(32)),
     // FR-38 (D8): payments stay off unless this is exactly "true".
     PAYMENTS_ENABLED: optional(z.enum(["true", "false"])),
+    // F-8 (D8): optional while payments are off; all three are required when they're on.
+    STRIPE_SECRET_KEY: optional(z.string().regex(/^(sk|rk)_(test|live)_\w+$/)),
+    STRIPE_WEBHOOK_SECRET: optional(z.string().regex(/^whsec_\w+$/)),
+    STRIPE_PRICE_ID: optional(z.string().regex(/^price_\w+$/)),
   })
   .superRefine((values, ctx) => {
     checkPublic(values, ctx);
+    if (values.PAYMENTS_ENABLED === "true")
+      for (const key of [
+        "STRIPE_SECRET_KEY",
+        "STRIPE_WEBHOOK_SECRET",
+        "STRIPE_PRICE_ID",
+      ] as const)
+        if (!values[key])
+          missing(ctx, key, "required when PAYMENTS_ENABLED is true");
     if (values.EMAIL_TRANSPORT === "resend" && !values.RESEND_API_KEY)
       missing(ctx, "RESEND_API_KEY", "required when EMAIL_TRANSPORT is resend");
     if (values.EMAIL_TRANSPORT === "mailpit") {

@@ -2,6 +2,9 @@ import { describe, expect, it } from "vitest";
 import {
   addDays,
   monthsBefore,
+  isoDaysBefore,
+  isoFromUnix,
+  localDateOf,
   birthdayIn,
   compareDates,
   cycleFor,
@@ -80,6 +83,23 @@ describe("monthsBefore (FR-47: the 6-month staleness cutoff)", () => {
     ["2026-05-01", 0, "2026-05-01"],
   ])("%s − %d months = %s", (start, n, end) => {
     expect(monthsBefore(d(start), n)).toBe(end);
+  });
+});
+
+describe("Stripe instants (F-8)", () => {
+  it("isoFromUnix: seconds → ISO", () => {
+    expect(isoFromUnix(1_800_000_000)).toBe("2027-01-15T08:00:00.000Z");
+  });
+  it("isoDaysBefore: 30 days of 24 h", () => {
+    expect(isoDaysBefore(new Date("2026-03-31T12:00:00Z"), 30)).toBe(
+      "2026-03-01T12:00:00.000Z",
+    );
+  });
+  it("localDateOf: the date in the user's zone, not UTC's", () => {
+    expect(localDateOf("2026-12-01T03:00:00Z", "America/New_York")).toBe(
+      "2026-11-30",
+    );
+    expect(localDateOf("2026-12-01T03:00:00Z", "UTC")).toBe("2026-12-01");
   });
 });
 

@@ -109,6 +109,8 @@ describe("LIMITS (the §0.4 table)", () => {
         "setReminders",
         "reminderUnsubscribe",
         "reportReward",
+        "createCheckoutSession",
+        "createPortalSession",
         "authConfirm",
         "authCallback",
       ].sort(),

@@ -91,7 +91,7 @@ const eslintConfig = defineConfig([
             {
               regex: "(^|/)supabase/admin$",
               message:
-                "The secret-key client is only for security/rate-limit.ts, email/welcome.ts, actions/account.ts and the two reminder routes (BUILD §0.1, rule 6).",
+                "The secret-key client is only for the files listed in this config's allowlist below (BUILD §0.1, rule 6).",
             },
           ],
         },
@@ -138,6 +138,9 @@ const eslintConfig = defineConfig([
       // F-13 (D16): the report summary and its ack (bearer-checked, counts only).
       "src/app/api/reports/pending/route.ts",
       "src/app/api/reports/ack/route.ts",
+      // F-8 (D8, BUILD F-8 Data): the signed Stripe webhook and the billing module.
+      "src/app/api/stripe/webhook/route.ts",
+      "src/server/billing/sync.ts",
     ],
     rules: { "no-restricted-imports": "off" },
   },

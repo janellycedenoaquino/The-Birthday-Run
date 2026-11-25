@@ -16,3 +16,5 @@ The Template's own decisions are in `docs/template/decisions/`.
 | 0017 | The whole retailer catalogue is public (signed-out Discover, every retailer page, sitemap) | accepted | 2026-11-24 |
 | 0018 | My Rewards is the signed-in home; no separate dashboard | accepted | 2026-11-24 |
 | 0019 | The plan-ahead email goes out when the user can first act (up to 32 days before) | accepted | 2026-11-24 |
+| 0020 | Stripe: checkout and portal hosts in form-action; `stripe` 23.2.0 (API `2026-11-18.endive`) | accepted | 2026-11-25 |
+| 0021 | Stripe webhook records the event after its sync; checkout asks Stripe first; Customer deleted last | accepted | 2026-11-25 |

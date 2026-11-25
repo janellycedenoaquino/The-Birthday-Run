@@ -37,4 +37,9 @@ export const NON_USER_DATA_TABLES = [
     table: "zip_centroids",
     reason: "Census ZIP centroids (D10)",
   },
+  {
+    schema: "public",
+    table: "stripe_events",
+    reason: "webhook event IDs, 30 days (D8, A-20)",
+  },
 ] as const satisfies readonly NonUserDataTable[];

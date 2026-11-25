@@ -49,8 +49,9 @@ export function buildCsp({
     `connect-src 'self' ${map}`,
     `frame-src https://challenges.cloudflare.com`,
     // Chrome applies form-action to redirects after a form POST (the Google button before
-    // hydration), so Supabase and Google are listed.
-    `form-action 'self' ${supabase} https://accounts.google.com`,
+    // hydration), so Supabase and Google are listed, and Stripe's Checkout and customer portal
+    // hosts for the billing forms (F-8; only reachable when payments are on).
+    `form-action 'self' ${supabase} https://accounts.google.com https://checkout.stripe.com https://billing.stripe.com`,
     `frame-ancestors 'none'`,
     `base-uri 'self'`,
     `object-src 'none'`,

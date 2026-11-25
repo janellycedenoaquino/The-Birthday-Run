@@ -53,6 +53,23 @@ export function compareDates(a: LocalDate, b: LocalDate): number {
   return toDayNumber(a) - toDayNumber(b);
 }
 
+// ---- Instants from Stripe (F-8) ----------------------------------------------------------------
+
+/** A Unix time in seconds (Stripe's timestamps) as an ISO instant for timestamptz columns. */
+export function isoFromUnix(seconds: number): string {
+  return new Date(seconds * 1000).toISOString();
+}
+
+/** The ISO instant `days` × 24 h before `now` (A-20's retention cutoff). */
+export function isoDaysBefore(now: Date, days: number): string {
+  return new Date(now.getTime() - days * 86_400_000).toISOString();
+}
+
+/** The local date in `timeZone` of a stored instant (S-110's renew/end date). */
+export function localDateOf(instant: string, timeZone: string): LocalDate {
+  return today(timeZone, new Date(instant));
+}
+
 /** The date and time on a wall clock in `timeZone` at the instant `now`. */
 function wallClock(timeZone: string, now: Date) {
   // formatToParts gives named pieces, so no locale-specific string parsing (MDN).

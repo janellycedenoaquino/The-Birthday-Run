@@ -156,6 +156,9 @@ Names and rules: BUILD §0.6 and F-2. Real values go only in `.env.local` (and i
 | `SUPABASE_DB_URL` | **secret**, scripts only | Session-pooler DB URL for backups (a GitHub secret in the app repo) | Supabase → Connect → Session pooler |
 | `BACKUP_AGE_RECIPIENT` | scripts only | `age` public key for backups (a GitHub variable) | `age-keygen` (keep the private key offline) |
 | `PAYMENTS_ENABLED` | server | `true` turns Stripe checkout on (FR-38); unset or `false` keeps payments off. Keep `false` | Your choice |
+| `STRIPE_SECRET_KEY` | **secret** | Stripe API key, **test mode** (`sk_test_…`) until the owner decides (F-8, FR-38). Optional while payments are off; required when `PAYMENTS_ENABLED=true` | Stripe dashboard (sandbox) → Developers → API keys |
+| `STRIPE_WEBHOOK_SECRET` | **secret** | Signing secret of the webhook endpoint `/api/stripe/webhook` (`whsec_…`, D8). Required when payments are on | Stripe → Webhooks → endpoint; locally `stripe listen --forward-to localhost:3000/api/stripe/webhook` prints one |
+| `STRIPE_PRICE_ID` | server | The monthly Premium price (`price_…`). Required when payments are on | Stripe → Product catalogue → the Premium price |
 | `E2E_TARGET` | tests only | Empty = local; `deployed` for the deployed e2e run | Your choice |
 | `E2E_EMAIL` | tests only | Resend account owner's address, for the deployed run | Your Resend login email |
 

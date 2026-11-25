@@ -67,8 +67,38 @@ vi.mock("@/server/security/rate-limit", () => ({
 }));
 vi.mock("next/cache", () => ({ revalidatePath: vi.fn() }));
 const deleteUser = vi.fn();
+// F-8: the user's subscriptions row (null: never checked out) and a fake Stripe (the boundary).
+const billing = {
+  row: null as { stripe_customer_id: string } | null,
+  calls: [] as string[],
+  fail: false,
+};
 vi.mock("@/server/supabase/admin", () => ({
-  getAdminClient: () => ({ auth: { admin: { deleteUser } } }),
+  getAdminClient: () => ({
+    auth: { admin: { deleteUser } },
+    from: () => ({
+      select: () => ({
+        eq: () => ({
+          maybeSingle: async () => ({ data: billing.row, error: null }),
+        }),
+      }),
+    }),
+  }),
+}));
+vi.mock("@/server/billing/stripe", () => ({
+  getStripe: () => ({
+    subscriptions: {
+      list: async () => {
+        billing.calls.push("list");
+        if (billing.fail) throw new Error("stripe down");
+        return { data: [{ id: "sub_1", status: "active" }] };
+      },
+      cancel: async (id: string) => billing.calls.push(`cancel ${id}`),
+    },
+    customers: {
+      del: async (id: string) => billing.calls.push(`del ${id}`),
+    },
+  }),
 }));
 vi.mock("next/headers", () => ({
   headers: async () => new Headers({ "x-pathname": "/settings" }),
@@ -113,6 +143,9 @@ beforeEach(() => {
   state.amrAge = 60;
   state.provider = "email";
   deleteUser.mockReset().mockResolvedValue({ error: null });
+  billing.row = null;
+  billing.calls = [];
+  billing.fail = false;
 });
 
 describe("displayNameSchema (M-35..M-37)", () => {
@@ -214,6 +247,42 @@ describe("deleteAccount (S-18)", () => {
     ).toEqual({ redirect: "/?notice=account_deleted" });
     expect(deleteUser).toHaveBeenCalledWith("user-1");
     expect(auth.signOut).toHaveBeenCalledWith({ scope: "local" });
+  });
+
+  it("a paying user: the subscription is cancelled first, the Customer deleted last (FR-37)", async () => {
+    billing.row = { stripe_customer_id: "cus_1" };
+    deleteUser.mockImplementation(async () => {
+      billing.calls.push("deleteUser");
+      return { error: null };
+    });
+    expect(
+      await run(deleteAccount, form({ email: "someone@example.com" })),
+    ).toEqual({ redirect: "/?notice=account_deleted" });
+    // The Customer goes last, once the account is gone (a failed deletion keeps it).
+    expect(billing.calls).toEqual([
+      "list",
+      "cancel sub_1",
+      "deleteUser",
+      "del cus_1",
+    ]);
+  });
+
+  it("the account deletion failing keeps the Stripe Customer (the user can still pay)", async () => {
+    billing.row = { stripe_customer_id: "cus_1" };
+    deleteUser.mockResolvedValue({ error: { code: "unexpected_failure" } });
+    expect(
+      await run(deleteAccount, form({ email: "someone@example.com" })),
+    ).toEqual({ ok: false, error: "M-7" });
+    expect(billing.calls).not.toContain("del cus_1");
+  });
+
+  it("Stripe failing → M-7 and nothing deleted (T-117)", async () => {
+    billing.row = { stripe_customer_id: "cus_1" };
+    billing.fail = true;
+    expect(
+      await run(deleteAccount, form({ email: "someone@example.com" })),
+    ).toEqual({ ok: false, error: "M-7" });
+    expect(deleteUser).not.toHaveBeenCalled();
   });
 
   it("a different email → M-24 on the field, nothing deleted", async () => {

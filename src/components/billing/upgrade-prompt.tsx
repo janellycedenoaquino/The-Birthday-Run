@@ -1,6 +1,12 @@
 import "server-only";
 import { Sparkles } from "lucide-react";
 import { msg, type MessageId } from "@/lib/messages";
+import { CheckoutButton } from "@/components/billing/billing-buttons";
+import {
+  createCheckoutSession,
+  createPortalSession,
+} from "@/server/actions/billing";
+import { paymentsEnabled } from "@/server/billing/flag";
 import { getEntitlement } from "@/server/premium/entitlement";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type { Database } from "@/lib/types/database.types";
@@ -10,7 +16,7 @@ type Feature =
 
 // C-104 Upgrade prompt (SPEC §3.3, FR-39): an inline card where a premium feature would be.
 // Never rendered for premium users. Payments off (FR-38): M-139, no button, no link. Payments
-// on needs F-8's checkout form; until F-8 is built the card stays in its "coming soon" form.
+// on (F-8): M-140 and the checkout button.
 export async function UpgradePrompt({
   supabase,
   feature,
@@ -30,20 +36,36 @@ export async function UpgradePrompt({
     String(limit ?? ""),
   );
   const title = msg("M-130").replace("{feature}", name);
-  // Payments are off everywhere until F-8 builds checkout; F-8 then shows M-140 and the button
-  // when paymentsEnabled() is true. Until then the card can only say "coming soon" (FR-38).
-  const body = msg("M-139");
+  const payments = paymentsEnabled();
+  const body = msg(payments ? "M-140" : "M-139");
+  const button = payments ? (
+    <CheckoutButton
+      createCheckoutSession={createCheckoutSession}
+      createPortalSession={createPortalSession}
+      compact={compact}
+    />
+  ) : null;
   // S-110: the Settings card is already titled "Premium", so no second title (owner, 2026-11-24).
-  if (feature === "M-138")
-    return <p className="text-sm text-muted-foreground">{body}</p>;
-  if (compact)
-    return (
+  const text =
+    feature === "M-138" ? (
+      <p className="text-sm text-muted-foreground">{body}</p>
+    ) : compact ? (
       <p className="flex items-center gap-2 text-sm text-muted-foreground">
         <Sparkles aria-hidden="true" className="size-4" />
         <span>
           <span className="font-medium text-foreground">{title}.</span> {body}
         </span>
       </p>
+    ) : null;
+  // Payments off: the text alone, with no control (FR-38).
+  if (text)
+    return button ? (
+      <div className="grid gap-2">
+        {text}
+        {button}
+      </div>
+    ) : (
+      text
     );
   return (
     <section
@@ -57,6 +79,7 @@ export async function UpgradePrompt({
       <div className="grid gap-1">
         <h3 className="font-semibold">{title}</h3>
         <p className="text-sm text-muted-foreground">{body}</p>
+        {button ? <div className="mt-2">{button}</div> : null}
       </div>
     </section>
   );

@@ -13,6 +13,7 @@ import { buildCsp, newNonce } from "@/server/security/csp";
 // /account/export isn't here: its route handler redirects signed-out callers itself, back to
 // /settings rather than to the download (BUILD F-11, D24.19).
 const PROTECTED_PREFIXES = [
+  "/billing",
   "/dashboard",
   "/history",
   "/onboarding",
