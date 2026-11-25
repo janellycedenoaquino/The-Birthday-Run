@@ -29,7 +29,7 @@ export function BrandSheet({ children }: { children: ReactNode }) {
           const target = event.target as Element | null;
           if (target?.closest("[data-sonner-toaster]")) event.preventDefault();
         }}
-        className="max-h-[88dvh] overflow-y-auto rounded-[28px] bg-background p-5 text-base sm:max-w-xl sm:p-6 max-sm:top-auto max-sm:bottom-0 max-sm:max-w-full max-sm:translate-y-0 max-sm:rounded-b-none"
+        className="max-h-[88dvh] overflow-y-auto rounded-[28px] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden bg-background p-5 text-base sm:max-w-xl sm:p-6 max-sm:top-auto max-sm:bottom-0 max-sm:max-w-full max-sm:translate-y-0 max-sm:rounded-b-none"
       >
         {children}
       </DialogContent>

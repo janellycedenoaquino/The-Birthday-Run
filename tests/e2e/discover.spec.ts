@@ -46,16 +46,19 @@ test("signed out: every non-retired retailer, the sign-up prompt, and a 404 for 
   await expect(
     page.getByRole("heading", { name: notPopular!.name, level: 1 }),
   ).toBeVisible();
-  // Decision 0016: breadcrumb back to Rewards, sign-up in place of the toggle, blurred sample
-  // dates (aria-hidden) with M-280, and the visitor band.
+  // Decision 0016 (owner, 2026-11-25): a back arrow on wide screens (the breadcrumb is for
+  // phones), no sign-up button beside the website link, blurred sample dates (aria-hidden)
+  // with M-280, the visitor band, and no "What you need" for visitors.
   await expect(
-    page.getByRole("navigation", { name: "Breadcrumb" }).getByRole("link", {
-      name: "Rewards",
-    }),
+    page.getByRole("link", { name: "Back to Rewards" }),
   ).toBeVisible();
   await expect(
-    page.getByRole("link", { name: "Sign up free to track it" }),
-  ).toBeVisible();
+    page.getByRole("navigation", { name: "Breadcrumb" }),
+  ).toBeHidden();
+  await expect(page.getByRole("link", { name: /^Sign up free/ })).toHaveCount(
+    1,
+  );
+  await expect(page.getByText("What you need")).toHaveCount(0);
   await expect(
     page.getByRole("link", { name: "Sign up to see your dates" }),
   ).toBeVisible();

@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { ArrowUpRight } from "lucide-react";
+import { ArrowLeft, ArrowUpRight } from "lucide-react";
 import { cn } from "cn";
 import { EnrollToggle } from "@/components/retailers/enroll-toggle";
 import { RetailerLogo } from "@/components/retailers/retailer-logo";
@@ -55,16 +55,27 @@ export function BrandDetails({
 
   return (
     <div>
+      {/* The full page's way back (owner, 2026-11-25): the breadcrumb on phones, a back arrow on
+          wider screens. The pop-up has neither: it closes with its X or a click outside. */}
       {page ? (
-        <nav
-          aria-label="Breadcrumb"
-          className="mt-1.5 mb-3.5 text-sm text-muted-foreground"
-        >
-          <Link href="/discover" className={LINK}>
-            {msg("M-171a")}
-          </Link>{" "}
-          / {category} / {r.name}
-        </nav>
+        <>
+          <nav
+            aria-label="Breadcrumb"
+            className="mt-1.5 mb-3.5 text-sm text-muted-foreground sm:hidden"
+          >
+            <Link href="/discover" className={LINK}>
+              {msg("M-171a")}
+            </Link>{" "}
+            / {category} / {r.name}
+          </nav>
+          <Link
+            href="/discover"
+            className="mt-1.5 mb-3.5 hidden items-center gap-1.5 rounded-[10px] text-sm font-bold text-[var(--navy)] outline-none hover:underline focus-visible:ring-3 focus-visible:ring-ring/50 sm:inline-flex dark:text-foreground"
+          >
+            <ArrowLeft aria-hidden="true" className="size-4" />
+            {msg("M-171c")}
+          </Link>
+        </>
       ) : null}
 
       <section
@@ -83,7 +94,7 @@ export function BrandDetails({
           </div>
           {page ? (
             <h1 className="headline mt-4 text-[30px] leading-[1.08]">
-              {msg("M-298").replace("{brand}", r.name)}
+              {r.name}
             </h1>
           ) : (
             // The pop-up's own title, so the dialog is named by it.
@@ -113,6 +124,8 @@ export function BrandDetails({
             </p>
           ) : null}
           <div className="mt-[18px] flex flex-wrap items-start gap-2.5">
+            {/* Signed out, no sign-up button here: the dates card and the band below have one
+                each, and three on a page is too many (owner, 2026-11-25). */}
             {signedIn ? (
               <EnrollToggle
                 retailerId={r.id}
@@ -122,11 +135,7 @@ export function BrandDetails({
                 unenroll={unenroll}
                 wide
               />
-            ) : (
-              <Button asChild size="lg" className="h-11 px-4">
-                <Link href={signUpHref}>{msg("M-298d")}</Link>
-              </Button>
-            )}
+            ) : null}
             {r.website_url ? (
               <Button
                 asChild
@@ -150,7 +159,7 @@ export function BrandDetails({
       </section>
 
       <section
-        className={`mt-[18px] grid gap-3.5 ${page ? "md:grid-cols-3" : ""}`}
+        className={`mt-[18px] grid gap-3.5 ${page ? (signedIn ? "md:grid-cols-3" : "md:grid-cols-2") : ""}`}
       >
         <div className={FACT}>
           <h3 className={FACT_TITLE}>{msg("M-298f")}</h3>
@@ -198,18 +207,21 @@ export function BrandDetails({
             <p className="mt-1">{msg("M-298m")}</p>
           </div>
         )}
-        <div className={FACT}>
-          <h3 className={FACT_TITLE}>{msg("M-298n")}</h3>
-          {needs.length ? (
-            needs.map(({ label, text }) => (
-              <p key={label}>
-                <b>{label}</b> {text}
-              </p>
-            ))
-          ) : (
-            <p>{msg("M-298o")}</p>
-          )}
-        </div>
+        {/* Signed in only (owner, 2026-11-25: less to read for visitors). */}
+        {signedIn ? (
+          <div className={FACT}>
+            <h3 className={FACT_TITLE}>{msg("M-298n")}</h3>
+            {needs.length ? (
+              needs.map(({ label, text }) => (
+                <p key={label}>
+                  <b>{label}</b> {text}
+                </p>
+              ))
+            ) : (
+              <p>{msg("M-298o")}</p>
+            )}
+          </div>
+        ) : null}
       </section>
 
       {page && !signedIn ? (
