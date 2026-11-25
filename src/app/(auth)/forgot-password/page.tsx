@@ -10,7 +10,7 @@ export const metadata: Metadata = { title: "Reset your password" };
 export default async function ForgotPasswordPage() {
   const nonce = (await headers()).get("x-nonce") ?? "";
   return (
-    <div className="mx-auto w-full max-w-md px-4 py-12 sm:px-6">
+    <div className="small-page frosted">
       <h1 className="text-2xl font-semibold">Reset your password</h1>
       <p className="mt-2 mb-8">
         Enter the email you sign in with and we&apos;ll send you a link to

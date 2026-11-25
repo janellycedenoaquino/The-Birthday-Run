@@ -440,6 +440,7 @@ Template M-, API-, E- texts apply unchanged. Placeholders in `{braces}` are fill
 - M-101 (C-101): "Discover" · "My Rewards" (M-101b) · "Plan" (M-101d) · "History" (M-101c) · M-299 (the phone tab bar's label): "Main"
 - M-302 (S-105 filter chips' label, decision 0016): "Ends within" · M-302a–M-302d: "Any time" / "1 day" / "7 days" / "14 days" (links; they replace the select and "Apply") · M-302e: "Search" (the search button) · M-303 (outside the window, over a calendar tile): "Your next run starts {date}"
 - M-304 (S-107 year tabs' label, decision 0016): "Birthday Runs by year" (links `?year=`; one run at a time, newest by default)
+- M-305 (C-3 loading, screen readers only): "Loading"
 - M-300 / M-300b (S-101 step 1 h1, decision 0016): "When's your" / "birthday?" (M-105 stays the same words in one string) · M-301 / M-301b (step 2 h1): "Which programs" / "are you in?" · M-301c: "Pick the ones you've joined. You can add more later on Discover."
 - M-102 (S-1): "Browse rewards"
 - M-294 / M-294b (S-103 h1 signed out, decision 0016): "Every birthday treat," / "in one place." · M-294c: "Each reward is checked on the brand's own page. Sign up free to get your own countdown and plan your run." · M-294d: "{count} brands with a birthday treat" · M-295 / M-295b (S-103 h1 signed in): "Discover" / "rewards" · M-295c: "Add the programs you're in. We'll count down each one for your birthday." · M-296 (C-102 card): "Needs a purchase"

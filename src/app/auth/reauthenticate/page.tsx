@@ -42,7 +42,7 @@ export default async function ReauthenticatePage({
   const hasPassword = Boolean(profile.password_set_at);
 
   return (
-    <div className="mx-auto w-full max-w-md px-4 py-12 sm:px-6">
+    <div className="small-page frosted">
       <h1 className="text-2xl font-semibold">Confirm it&apos;s you</h1>
       <p className="mt-2 mb-8 text-muted-foreground">
         For your security, sign in again before making this change.

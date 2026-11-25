@@ -1,24 +1,18 @@
 "use client";
 
-import * as Sentry from "@sentry/nextjs";
 import Link from "next/link";
-import { useEffect } from "react";
+import {
+  useReportError,
+  type ErrorPageProps,
+} from "@/components/layout/report-error";
 import { SupportLinkText } from "@/components/layout/support-link-text";
 import { msg } from "@/lib/messages";
 import "./globals.css";
 
 // S-20 (FR-23) for errors in the root layout itself: its own minimal document, no header. Never
 // shows the error's message, digest or a Sentry ID (NFR-9); the details go to Sentry (D15).
-export default function GlobalError({
-  error,
-  retry,
-}: {
-  error: Error & { digest?: string };
-  retry: () => void;
-}) {
-  useEffect(() => {
-    Sentry.captureException(error);
-  }, [error]);
+export default function GlobalError({ error, retry }: ErrorPageProps) {
+  useReportError(error);
 
   return (
     <html lang="en">

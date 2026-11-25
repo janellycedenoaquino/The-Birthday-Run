@@ -23,7 +23,7 @@ export default async function UnsubscribePage({
 }: PageProps<"/reminders/unsubscribe">) {
   const { token, done, error } = searchSchema.parse(await searchParams);
   return (
-    <div className="mx-auto w-full max-w-md px-4 py-16 sm:px-6">
+    <div className="small-page frosted">
       {done ? (
         <>
           <h1 className="text-2xl font-semibold">{msg("M-273")}</h1>

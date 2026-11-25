@@ -294,3 +294,26 @@
     opacity: 1;
   }
 }
+
+/* The small pages (decision 0016: Template S-6–S-11, S-19, S-20; S-111, S-112): one frosted card
+   on the still glow, with the headline type. Used with `frosted`. */
+.small-page {
+  margin: 3rem auto;
+  width: calc(100% - 2rem);
+  max-width: 28rem;
+  border-radius: 28px;
+  padding: 2rem 1.75rem;
+}
+.small-page h1 {
+  font-weight: 800;
+  font-size: 1.875rem;
+  line-height: 1.15;
+  letter-spacing: -0.03em;
+}
+
+/* The loading dots (decision 0016), motion-safe only. */
+@keyframes dot-bounce {
+  50% {
+    transform: translateY(-8px);
+  }
+}

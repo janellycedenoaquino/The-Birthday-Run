@@ -1,27 +1,21 @@
 "use client";
 
-import * as Sentry from "@sentry/nextjs";
 import Link from "next/link";
-import { useEffect } from "react";
+import {
+  useReportError,
+  type ErrorPageProps,
+} from "@/components/layout/report-error";
 import { SupportLinkText } from "@/components/layout/support-link-text";
 import { Button } from "@/components/ui/button";
 import { msg } from "@/lib/messages";
 
 // S-20 (SPEC §3.3, FR-23, NFR-9): inside the root layout. Never the error's message, digest or a
 // Sentry id; the details go to Sentry (D15).
-export default function ErrorPage({
-  error,
-  retry,
-}: {
-  error: Error & { digest?: string };
-  retry: () => void;
-}) {
-  useEffect(() => {
-    Sentry.captureException(error);
-  }, [error]);
+export default function ErrorPage({ error, retry }: ErrorPageProps) {
+  useReportError(error);
 
   return (
-    <div className="mx-auto w-full max-w-md px-4 py-20 sm:px-6">
+    <div className="small-page frosted">
       <h1 className="text-2xl font-semibold">Something went wrong</h1>
       <p className="mt-2 mb-8">
         <SupportLinkText text={msg("M-39")} />

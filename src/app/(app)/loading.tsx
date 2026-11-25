@@ -1,12 +1,27 @@
-// C-3 loading state for the signed-in area (SPEC §3.2): a quiet skeleton, no spinner wall.
+import { msg } from "@/lib/messages";
+
+// C-3 loading state for the signed-in area (SPEC §3.2; look: decision 0016): three pastel dots
+// that bounce in turn, still under reduced motion. The decision's loading pictures wait for the
+// owner's illustration files.
 export default function Loading() {
   return (
     <div
-      className="mx-auto w-full max-w-5xl px-4 py-12 sm:px-6"
+      className="grid min-h-[50vh] place-items-center"
       aria-busy="true"
+      role="status"
     >
-      <div className="h-8 w-48 animate-pulse rounded-md bg-muted motion-reduce:animate-none" />
-      <div className="mt-6 h-24 w-full animate-pulse rounded-lg bg-muted motion-reduce:animate-none" />
+      <span className="sr-only">{msg("M-305")}</span>
+      <span aria-hidden="true" className="flex gap-1.5">
+        {["var(--bubblegum)", "var(--primary)", "var(--spring)"].map(
+          (color, i) => (
+            <i
+              key={color}
+              style={{ background: color, animationDelay: `${i * 0.15}s` }}
+              className="size-2.5 rounded-full motion-safe:animate-[dot-bounce_1s_ease-in-out_infinite]"
+            />
+          ),
+        )}
+      </span>
     </div>
   );
 }

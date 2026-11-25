@@ -19,7 +19,7 @@ export default async function ResetPasswordPage() {
   const allowed = await isRecoverySessionNow(user.id, claims);
 
   return (
-    <div className="mx-auto w-full max-w-md px-4 py-12 sm:px-6">
+    <div className="small-page frosted">
       {allowed ? (
         <>
           <h1 className="text-2xl font-semibold">Choose a new password</h1>
