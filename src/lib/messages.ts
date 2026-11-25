@@ -306,6 +306,17 @@ export const M = {
   "M-292b": "back",
   "M-292c": "Your rewards are right where you left them.",
   "M-293": "Waiting for you",
+  // S-103 look (decision 0016).
+  "M-294": "Every birthday treat,",
+  "M-294b": "in one place.",
+  "M-294c":
+    "Each reward is checked on the brand's own page. Sign up free to get your own countdown and plan your run.",
+  "M-294d": "{count} brands with a birthday treat",
+  "M-295": "Discover",
+  "M-295b": "rewards",
+  "M-295c":
+    "Add the programs you're in. We'll count down each one for your birthday.",
+  "M-296": "Needs a purchase",
   "BR-12": "We don't recognise that ZIP code.",
   "BR-13":
     "We couldn't look up stores right now, so these stops have no map pin. Try again later.",

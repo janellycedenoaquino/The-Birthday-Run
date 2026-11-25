@@ -1,6 +1,7 @@
 "use client";
 
 import { useActionState, useEffect, useRef } from "react";
+import { Check, Plus } from "lucide-react";
 import { useFormStatus } from "react-dom";
 import { Button } from "@/components/ui/button";
 import type { ActionResult } from "@/lib/action-result";
@@ -20,12 +21,15 @@ export function EnrollToggle({
   enrolled,
   enroll,
   unenroll,
+  compact = false,
 }: {
   retailerId: string;
   name: string;
   enrolled: boolean;
   enroll: Action;
   unenroll: Action;
+  /** Discover's card corner (decision 0016): a 34 px "+" (a check once added). */
+  compact?: boolean;
 }) {
   // A new form (fresh action state) whenever the saved state flips.
   return (
@@ -35,6 +39,7 @@ export function EnrollToggle({
       name={name}
       enrolled={enrolled}
       action={enrolled ? unenroll : enroll}
+      compact={compact}
     />
   );
 }
@@ -48,11 +53,13 @@ function ToggleForm({
   name,
   enrolled,
   action: run,
+  compact,
 }: {
   retailerId: string;
   name: string;
   enrolled: boolean;
   action: Action;
+  compact: boolean;
 }) {
   const [state, action] = useActionState(run, null);
   const error = state && !state.ok ? state.error : null;
@@ -69,12 +76,19 @@ function ToggleForm({
       onSubmit={() => {
         lastPressed = retailerId;
       }}
-      className="grid gap-1"
+      className={compact ? "relative" : "grid gap-1"}
     >
       <input type="hidden" name="retailerId" value={retailerId} />
-      <ToggleButton name={name} enrolled={enrolled} />
+      <ToggleButton name={name} enrolled={enrolled} compact={compact} />
       {error ? (
-        <p role="alert" className="text-sm text-destructive">
+        <p
+          role="alert"
+          className={
+            compact
+              ? "absolute right-0 bottom-full mb-2 w-52 rounded-lg bg-background p-2 text-sm text-destructive shadow-[0_0_0_1.5px_var(--border)]"
+              : "text-sm text-destructive"
+          }
+        >
           {msg(error as MessageId)}
         </p>
       ) : null}
@@ -82,9 +96,31 @@ function ToggleForm({
   );
 }
 
-function ToggleButton({ name, enrolled }: { name: string; enrolled: boolean }) {
+function ToggleButton({
+  name,
+  enrolled,
+  compact,
+}: {
+  name: string;
+  enrolled: boolean;
+  compact: boolean;
+}) {
   const { pending } = useFormStatus();
   const on = pending ? !enrolled : enrolled; // optimistic while saving
+  if (compact) {
+    const Icon = on ? Check : Plus;
+    return (
+      <button
+        type="submit"
+        aria-pressed={on}
+        aria-label={`${msg("M-103")} ${name}`}
+        disabled={pending}
+        className={`grid size-[34px] place-items-center rounded-[10px] text-[var(--navy)] shadow-[0_0_0_1.5px_var(--navy)] outline-none focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-[var(--navy)] disabled:opacity-70 ${on ? "bg-[var(--spring)]" : "bg-white"}`}
+      >
+        <Icon className="size-5" strokeWidth={2.75} aria-hidden="true" />
+      </button>
+    );
+  }
   return (
     <Button
       type="submit"

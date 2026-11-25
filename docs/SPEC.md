@@ -379,8 +379,8 @@ flowchart TD
 - **Who:** anyone. Data by role (D3).
 - **Look (decision 0016):** big centred headline, logo-only cards in a grid that show the brand and reward on hover or keyboard focus (always shown on touch screens), no timing and no category tags on the cards, glow background.
 - **Signed-in look (decision 0016):** the same logo cards with a "+" add button on each and a pink "Added" ribbon on enrolled ones; clicking a card opens S-104 as a pop-up card over Discover (bottom sheet on phones), with its own URL.
-- **Signed out shows:** h1 M-171a; text M-171b; every non-retired C-102 card (no toggle, no filters; decision 0017); at the end, card M-111 with "Sign up free" → Template S-5 (`next=/discover`) and "Sign in".
-- **Signed in shows:** h1 M-171a; search "Search by name"; category tabs (M-170); premium filters row: state filter (FR-5: needs C-105; on → M-172 with `{state}`, `{hidden}` and "Show all" M-173) and duration select (M-174–M-177) and checkbox M-177a (FR-45). Free users see one C-104 (M-131) in place of both. Then the grid of C-102 with M-178 (`{shown}` of `{total}`).
+- **Signed out shows:** h1 M-294 with M-294b in the tilted block; text M-294c; count M-294d (M-171a stays the page title, M-171b its meta description); every non-retired C-102 card (no toggle, no filters; decision 0017); at the end, card M-111 with "Sign up free" → Template S-5 (`next=/discover`) and "Sign in".
+- **Signed in shows:** h1 M-295 with M-295b in the tilted block; text M-295c; search "Search by name"; category tabs (M-170); premium filters row: state filter (FR-5: needs C-105; on → M-172 with `{state}`, `{hidden}` and "Show all" M-173) and duration select (M-174–M-177) and checkbox M-177a (FR-45). Free users see one C-104 (M-131) in place of both. Then the grid of C-102 with M-178 (`{shown}` of `{total}`).
 - **Main action:** open S-104; toggle enrollment.
 - **States:** no match: M-179 with "Clear filters" · loading: skeleton · error: Template S-20 · not allowed: none (public).
 
@@ -439,6 +439,7 @@ Template M-, API-, E- texts apply unchanged. Placeholders in `{braces}` are fill
 **Navigation and onboarding**
 - M-101 (C-101): "Discover" · "My Rewards" (M-101b) · "Plan" (M-101d) · "History" (M-101c)
 - M-102 (S-1): "Browse rewards"
+- M-294 / M-294b (S-103 h1 signed out, decision 0016): "Every birthday treat," / "in one place." · M-294c: "Each reward is checked on the brand's own page. Sign up free to get your own countdown and plan your run." · M-294d: "{count} brands with a birthday treat" · M-295 / M-295b (S-103 h1 signed in): "Discover" / "rewards" · M-295c: "Add the programs you're in. We'll count down each one for your birthday." · M-296 (C-102 card): "Needs a purchase"
 - M-282 / M-282b (S-1 h1, decision 0016): "Every birthday freebie," / "one run." (in the tilted block) · M-283: "See which brands treat you on your birthday, sign up in time, and plan the stops so nothing expires." · M-284: "{count} brands waiting"
 - M-285 / M-285b (pause control, S-1 and S-4/S-5): "Pause motion" / "Play motion"
 - M-290 / M-290b (S-4/S-5 tabs, decision 0016): "Create account" / "Sign in" · M-290c (the tabs' label): "Sign in or create an account" · M-291 / M-291b (S-5 h1): "Create your" / "account" (in the tilted block) · M-291c: "Free, and it takes a minute." · M-292 / M-292b (S-4 h1): "Welcome" / "back" · M-292c: "Your rewards are right where you left them." · M-293 (the rotating reward's label): "Waiting for you"

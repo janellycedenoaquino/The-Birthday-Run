@@ -29,7 +29,7 @@ export const metadata: Metadata = {
 };
 
 const CARD_COLUMNS =
-  "id, name, category, reward_description, reward_type, logo_file, timing_type, days_before, days_after, states_scope, state_codes";
+  "id, name, category, reward_description, reward_type, logo_file, requires_purchase, timing_type, days_before, days_after, states_scope, state_codes";
 
 // BUILD F-3: bad values are dropped, never an error. The premium filters (FR-45: length and
 // "starts early") are read only for premium users; free users' URLs with them get the plain list
@@ -65,9 +65,13 @@ export default async function DiscoverPage({
 
   if (!user) {
     return (
-      <Shell>
-        <p className="mt-2 text-muted-foreground">{msg("M-171b")}</p>
-        <ul className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+      <Shell
+        title={msg("M-294")}
+        block={msg("M-294b")}
+        lead={msg("M-294c")}
+        count={msg("M-294d").replace("{count}", String(rows.length))}
+      >
+        <ul className={GRID}>
           {(rows as Row[]).map((r) => (
             <RetailerCard key={r.id} retailer={r} />
           ))}
@@ -138,8 +142,12 @@ export default async function DiscoverPage({
     : [];
 
   return (
-    <Shell>
-      <form method="get" className="mt-6 flex gap-2" role="search">
+    <Shell title={msg("M-295")} block={msg("M-295b")} lead={msg("M-295c")}>
+      <form
+        method="get"
+        className="mx-auto mt-6 flex max-w-xl flex-wrap justify-center gap-2"
+        role="search"
+      >
         {filters.category ? (
           <input type="hidden" name="category" value={filters.category} />
         ) : null}
@@ -153,7 +161,7 @@ export default async function DiscoverPage({
           defaultValue={filters.q ?? ""}
           placeholder="Search by name"
           maxLength={100}
-          className="h-11 w-full max-w-sm rounded-md border border-input bg-background px-3 text-base"
+          className="h-11 w-full max-w-sm rounded-xl border-0 bg-white px-3.5 text-base text-[var(--navy)] shadow-[inset_0_0_0_1.5px_var(--border)] outline-none focus-visible:shadow-[inset_0_0_0_2px_var(--navy),0_0_0_4px_color-mix(in_srgb,var(--primary)_45%,transparent)]"
         />
         <Button type="submit" size="lg" variant="outline">
           Search
@@ -196,8 +204,8 @@ export default async function DiscoverPage({
           <UpgradePrompt supabase={supabase} feature="M-131" compact />
         </div>
       )}
-      <nav aria-label="Categories" className="mt-4">
-        <ul className="flex flex-wrap gap-2 text-sm">
+      <nav aria-label="Categories" className="mt-5">
+        <ul className="flex flex-wrap justify-center gap-2 text-sm">
           {[undefined, ...CATEGORIES].map((c) => {
             const current = filters.category === c;
             return (
@@ -205,7 +213,14 @@ export default async function DiscoverPage({
                 <Link
                   href={href(c)}
                   aria-current={current ? "page" : undefined}
-                  className={`inline-flex h-9 items-center rounded-full border px-3 ${current ? "border-primary bg-primary text-primary-foreground" : "border-border/70"}`}
+                  style={
+                    c
+                      ? ({
+                          "--chip": `var(--cat-${c})`,
+                        } as React.CSSProperties)
+                      : undefined
+                  }
+                  className={`inline-flex h-9 items-center rounded-[10px] bg-[var(--chip,#fff)] px-3.5 font-bold text-[var(--navy)] ${current ? "shadow-[inset_0_0_0_2px_var(--navy),2px_2px_0_var(--navy)]" : "shadow-[inset_0_0_0_1.5px_var(--border)]"}`}
                 >
                   {c ? CATEGORY_LABELS[c] : "All"}
                 </Link>
@@ -217,7 +232,10 @@ export default async function DiscoverPage({
       {premium ? (
         <StateCount rows={stateRows} total={total} />
       ) : (
-        <p className="mt-4 text-sm text-muted-foreground" aria-live="polite">
+        <p
+          className="mt-4 text-center text-sm text-muted-foreground"
+          aria-live="polite"
+        >
           {msg("M-178")
             .replace("{shown}", String(shown.length))
             .replace("{total}", String(total))}
@@ -236,7 +254,7 @@ export default async function DiscoverPage({
           ) : null}
         </div>
       ) : (
-        <ul className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        <ul className={GRID}>
           {shown.map((r) => {
             const card = (
               <RetailerCard
@@ -259,10 +277,39 @@ export default async function DiscoverPage({
   );
 }
 
-function Shell({ children }: { children: React.ReactNode }) {
+const GRID =
+  "mt-6 grid grid-cols-2 gap-3 sm:grid-cols-[repeat(auto-fill,minmax(220px,1fr))] sm:gap-[18px]";
+
+// Decision 0016: a big centred headline with the tilted block, the lead and (signed out) the
+// brand count; the glow background comes from the root layout.
+function Shell({
+  title,
+  block,
+  lead,
+  count,
+  children,
+}: {
+  title: string;
+  block: string;
+  lead: string;
+  count?: string;
+  children: React.ReactNode;
+}) {
   return (
     <div className="mx-auto w-full max-w-5xl px-4 py-12 sm:px-6">
-      <h1 className="text-2xl font-semibold">{msg("M-171a")}</h1>
+      <header className="mx-auto max-w-2xl text-center">
+        <h1 className="headline text-[40px] sm:text-[clamp(40px,5.5vw,60px)]">
+          {title} <span className="headline-block">{block}</span>
+        </h1>
+        <p className="mt-4 text-base leading-relaxed text-muted-foreground sm:text-lg">
+          {lead}
+        </p>
+        {count ? (
+          <p className="mt-3.5 text-[13px] font-bold tracking-[0.12em] text-muted-foreground uppercase">
+            {count}
+          </p>
+        ) : null}
+      </header>
       {children}
     </div>
   );
@@ -271,7 +318,7 @@ function Shell({ children }: { children: React.ReactNode }) {
 /** M-111: the way in (FR-2): what signing up adds to the public list. */
 function SignUpPrompt() {
   return (
-    <li className="flex flex-col justify-center gap-3 rounded-lg border border-dashed border-border p-4">
+    <li className="col-span-2 flex flex-col justify-center gap-3.5 rounded-[18px] bg-background/70 p-5 font-bold shadow-[inset_0_0_0_2px_var(--bubblegum)] sm:col-span-1">
       <p>{msg("M-111")}</p>
       <div className="flex gap-2">
         <Button asChild size="sm">
