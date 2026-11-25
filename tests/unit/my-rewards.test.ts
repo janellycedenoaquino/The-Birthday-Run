@@ -73,6 +73,63 @@ describe("which view S-105 shows (FR-12, FR-15, FR-16)", () => {
   });
 });
 
+describe("Starting later and the progress count (decision 0018)", () => {
+  it("lists this run's rewards not open yet, soonest first, and counts pickups", () => {
+    // Today Jun 5: the window opened Jun 1 (14 days before); from-birthday ones open Jun 15.
+    const r = run(
+      "2026-06-05",
+      [
+        retailer("early", {
+          timing_type: "around_birthday",
+          days_before: 14,
+          days_after: 7,
+        }),
+        retailer("zeta"),
+        retailer("alpha"),
+        retailer("got", {
+          timing_type: "around_birthday",
+          days_before: 14,
+          days_after: 7,
+        }),
+      ],
+      {},
+      [{ retailerId: "got", date: d("2026-06-02") }],
+    );
+    expect(r.items.map((x) => x.id)).toEqual(["early"]);
+    expect(r.later.map((x) => [x.id, x.opens])).toEqual([
+      ["alpha", "2026-06-15"],
+      ["zeta", "2026-06-15"],
+    ]);
+    expect(r.pickedUp).toBe(1);
+  });
+
+  it("counts rewards that ended unpicked (the ring's total keeps them)", () => {
+    const r = run("2026-06-17", [
+      retailer("one", { days_after: 1 }),
+      retailer("week"),
+    ]);
+    expect(r.expired).toBe(1);
+    expect(r.items.map((x) => x.id)).toEqual(["week"]);
+  });
+
+  it("counts open rewards ending within 3 days, whatever the filters", () => {
+    const r = run(
+      "2026-06-15",
+      [
+        retailer("a", { days_after: 1 }),
+        retailer("b", { days_after: 3 }),
+        retailer("c", { days_after: 4 }),
+      ],
+      { q: "c" },
+    );
+    expect(r.endingSoon).toBe(2);
+  });
+
+  it("no programs → nothing later", () => {
+    expect(run("2026-06-05", []).later).toEqual([]);
+  });
+});
+
 describe("filters and pages (FR-13)", () => {
   const many = Array.from({ length: 25 }, (_, i) =>
     retailer(`r${String(i).padStart(2, "0")}`, { days_after: 1 + i }),

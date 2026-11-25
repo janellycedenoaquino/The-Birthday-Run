@@ -36,7 +36,7 @@ function isSameSitePath(value: string): boolean {
  * `input` if it's a safe same-site path, else `fallback`. Checks the value and up to three rounds
  * of URL-decoding, so encoded tricks (`%2F%2Fevil`, `%252F…`, `/%5Cevil`) fall back too.
  */
-export function safeRedirectPath(input: unknown, fallback = "/dashboard") {
+export function safeRedirectPath(input: unknown, fallback = "/rewards") {
   if (typeof input !== "string" || input.length > MAX_LENGTH) return fallback;
 
   let value = input;

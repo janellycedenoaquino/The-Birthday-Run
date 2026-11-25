@@ -55,7 +55,7 @@ export default async function OnboardingPage({
       !profile.birth_day ||
       !isWithinMinutes(profile.onboarded_at, 15, new Date())
     )
-      redirect("/dashboard");
+      redirect("/rewards");
     const { count, error: cError } = await supabase
       .from("enrollments")
       .select("retailer_id", { count: "exact", head: true });

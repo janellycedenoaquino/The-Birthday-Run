@@ -75,13 +75,13 @@ test("password sign-in goes to next; signed-in /sign-in and /sign-up go on (FR-3
     PASSWORD,
     "/sign-in?next=%2Fdashboard",
   );
-  await expect(page).toHaveURL(/\/dashboard$/);
+  await expect(page).toHaveURL(/\/rewards$/);
   await expect(page.getByRole("button", { name: user.email })).toBeVisible();
 
   await page.goto("/sign-in");
-  await expect(page).toHaveURL(/\/dashboard$/);
+  await expect(page).toHaveURL(/\/rewards$/);
   await page.goto("/sign-up");
-  await expect(page).toHaveURL(/\/dashboard$/);
+  await expect(page).toHaveURL(/\/rewards$/);
 
   // A cancelled Google re-auth brings a signed-in user back to S-11, not the dashboard.
   await page.goto("/sign-in?error=oauth_cancelled");
@@ -118,7 +118,7 @@ test("magic link: signs in once; the same link again → S-8 (FR-4)", async ({
 
   const link = await confirmPath(user.email);
   await page.goto(link);
-  await expect(page).toHaveURL(/\/dashboard$/);
+  await expect(page).toHaveURL(/\/rewards$/);
   await expect(page.getByRole("button", { name: user.email })).toBeVisible();
 
   await page.goto(link);
@@ -159,7 +159,7 @@ test("sign-out clears the session cookies; the dashboard then asks to sign in (F
 }) => {
   const user = await createUser("e2e-signout");
   await passwordSignIn(page, user.email, PASSWORD);
-  await expect(page).toHaveURL(/\/dashboard$/);
+  await expect(page).toHaveURL(/\/rewards$/);
   expect((await context.cookies()).some((c) => c.name.startsWith("sb-"))).toBe(
     true,
   );

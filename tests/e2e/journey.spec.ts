@@ -2,6 +2,9 @@ import { expect, test } from "@playwright/test";
 import { totp } from "../rls/totp";
 import {
   completeOnboarding,
+  downloadMyData,
+  turnOffTwoStep,
+  verifyTwoStep,
   confirmLink,
   newestMail,
   ownIp,
@@ -60,7 +63,7 @@ test("the account journey (FR-39)", async ({ page, context }) => {
   await expect(page).toHaveURL(/\/auth\/set-password/);
   if (!DEPLOYED) {
     const welcome = await newestMail(EMAIL, /^Welcome$/);
-    expect(welcome.html).toContain("/dashboard");
+    expect(welcome.html).toContain("/rewards");
   }
   await page.locator('input[name="password"]').fill(FIRST);
   await page.getByRole("button", { name: "Save password" }).click();
@@ -103,7 +106,7 @@ test("the account journey (FR-39)", async ({ page, context }) => {
   // Sign out, sign in with the password.
   await signOut();
   await passwordSignIn(page, EMAIL, FIRST);
-  await expect(page).toHaveURL(/\/dashboard$/);
+  await expect(page).toHaveURL(/\/rewards$/);
 
   // Reset the password (FR-7, FR-8).
   await signOut();
@@ -118,7 +121,7 @@ test("the account journey (FR-39)", async ({ page, context }) => {
   await expect(page).toHaveURL(/\/reset-password$/);
   await page.locator('input[name="password"]').fill(SECOND);
   await page.getByRole("button", { name: "Save new password" }).click();
-  await expect(page).toHaveURL(/\/dashboard$/);
+  await expect(page).toHaveURL(/\/rewards$/);
   await expect(page.getByText("Password changed.")).toBeVisible();
 
   // MFA on (the reset session is recent) (FR-57).
@@ -135,29 +138,19 @@ test("the account journey (FR-39)", async ({ page, context }) => {
   await passwordSignIn(page, EMAIL, SECOND);
   await expect(page).toHaveURL(/\/auth\/mfa/);
   await untilStepAfter(enrolledStep);
-  await page.getByLabel("6-digit code").fill(code(secret));
+  const signInCode = code(secret);
   const signInStep = stepNow();
-  await page.getByRole("button", { name: "Verify" }).click();
-  await expect(page).toHaveURL(/\/dashboard$/);
+  await verifyTwoStep(page, signInCode);
 
   // MFA off with a fresh code (FR-59; the sign-in was a moment ago, so recent).
-  await page.goto("/settings#two-step");
-  await page.getByRole("button", { name: "Turn off two-step sign-in" }).click();
-  await untilStepAfter(signInStep);
-  await page
-    .getByLabel("Enter a current code to turn it off")
-    .fill(code(secret));
-  await page.getByRole("button", { name: "Turn off", exact: true }).click();
-  await expect(
-    page.getByText("Two-step sign-in is off.", { exact: false }).first(),
-  ).toBeVisible();
+  await turnOffTwoStep(
+    page,
+    () => code(secret),
+    () => untilStepAfter(signInStep),
+  );
 
   // Export (FR-15).
-  await page.goto("/settings#your-data");
-  const [download] = await Promise.all([
-    page.waitForEvent("download"),
-    page.getByRole("link", { name: "Download my data" }).click(),
-  ]);
+  const download = await downloadMyData(page);
   expect(download.suggestedFilename()).toMatch(
     /-data-\d{4}-\d{2}-\d{2}\.json$/,
   );

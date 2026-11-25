@@ -48,7 +48,7 @@ async function setup(page: Page, label: string, premium: boolean) {
   await birthdayTodayWith(user, [...NEAR, NO_STORE]);
   if (premium) await setPremium(db, user.email, "grant");
   await passwordSignIn(page, user.email, PASSWORD);
-  await expect(page).toHaveURL(/\/dashboard$/);
+  await expect(page).toHaveURL(/\/rewards$/);
   return user;
 }
 
@@ -292,7 +292,7 @@ test("Smart Grouping: two nearby pairs → Apply all creates both groups; free g
   await birthdayTodayWith(user, [...NEAR, ...FAR, NO_STORE]);
   await setPremium(db, user.email, "grant");
   await passwordSignIn(page, user.email, PASSWORD);
-  await expect(page).toHaveURL(/\/dashboard$/);
+  await expect(page).toHaveURL(/\/rewards$/);
   await page.goto("/plan");
   const smart = page.getByRole("region", { name: "Smart Grouping" });
   await smart.getByRole("button", { name: "Suggest groups" }).click();

@@ -69,13 +69,15 @@ export function ReportDialog({
     trigger === "menu" ? (
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
+          {/* The prototype's "⋯" box (decision 0016); its name still says what it's for. */}
           <Button
             ref={returnTo as Ref<HTMLButtonElement>}
             variant="ghost"
             size="sm"
             aria-label={`More for ${retailer}`}
+            className="size-10 rounded-xl bg-white/80 text-lg font-extrabold text-[var(--navy)] shadow-[inset_0_0_0_1.5px_var(--border)] dark:bg-white/10 dark:text-foreground"
           >
-            More
+            <span aria-hidden="true">⋯</span>
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="start">

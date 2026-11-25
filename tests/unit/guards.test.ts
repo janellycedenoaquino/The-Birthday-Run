@@ -233,7 +233,7 @@ describe("requireUser, redirect mode (pages)", () => {
   it("a hostile x-pathname never becomes an open redirect", async () => {
     state.user = null;
     state.pathname = "//evil.example/x";
-    expect(await redirectOf(requireUser())).toBe("/sign-in?next=%2Fdashboard");
+    expect(await redirectOf(requireUser())).toBe("/sign-in?next=%2Frewards");
   });
 });
 
@@ -306,10 +306,10 @@ describe("refuse mode (actions) and runAction", () => {
     const outcome = await redirectOf(
       runAction("test", async () => {
         const { redirect } = await import("next/navigation");
-        return redirect("/dashboard");
+        return redirect("/rewards");
       }),
     );
-    expect(outcome).toBe("/dashboard");
+    expect(outcome).toBe("/rewards");
   });
 
   it("anything else → M-7, logged", async () => {

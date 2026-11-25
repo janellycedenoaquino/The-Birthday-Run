@@ -26,7 +26,7 @@ test("free → granted → revoked: prompts, filters and Settings follow (FR-35,
   const db = sql();
   try {
     await passwordSignIn(page, user.email, PASSWORD);
-    await expect(page).toHaveURL(/\/dashboard$/);
+    await expect(page).toHaveURL(/\/rewards$/);
 
     // Free: C-104's tag instead of the filters, and nothing to click (FR-38, FR-39; the tag is
     // decision 0016's prototype). "Coming soon" is on the Settings card below.

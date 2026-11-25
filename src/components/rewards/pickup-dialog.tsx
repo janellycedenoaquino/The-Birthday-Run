@@ -47,7 +47,13 @@ export function PickupDialog({
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button size="sm">{msg("M-115")}</Button>
+        {/* White with the navy ring, as in the prototype (decision 0016). */}
+        <Button
+          size="sm"
+          className="h-10 bg-white px-3.5 text-sm font-bold shadow-[0_0_0_1.5px_var(--navy)] dark:bg-white/10 dark:text-foreground"
+        >
+          {msg("M-115")}
+        </Button>
       </DialogTrigger>
       <DialogContent>
         <DialogHeader>

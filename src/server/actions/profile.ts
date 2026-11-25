@@ -21,7 +21,7 @@ import { rateLimit, type RateLimitAction } from "@/server/security/rate-limit";
 // itself (rule 4). All three are `user` level: onboarding and settings are exempt from FR-6.
 
 // Every page that shows dates for the user (FR-9: all of them recompute from the new date).
-const DATE_PAGES = ["/settings", "/dashboard", "/rewards", "/plan", "/history"];
+const DATE_PAGES = ["/settings", "/rewards", "/plan", "/history"];
 
 type ProfileUpdate = {
   birth_month?: number;
@@ -99,7 +99,7 @@ async function saveOnboardingBirthday(
       throw new Error("saveOnboarding: could not save the birthday", {
         cause: writeError,
       });
-    revalidatePath("/dashboard");
+    revalidatePath("/rewards");
     return { ok: true };
   });
   // Outside runAction: redirect() throws. /onboarding shows step 2 (or the dashboard if done).
@@ -173,8 +173,7 @@ async function saveOnboardingPrograms(
       .is("onboarded_at", null);
     if (doneError)
       throw new Error("saveOnboarding: could not finish", { cause: doneError });
-    for (const path of ["/dashboard", "/discover", "/rewards"])
-      revalidatePath(path);
+    for (const path of ["/discover", "/rewards"]) revalidatePath(path);
     return { ok: true };
   });
   // The "You're all set!" card (owner, 2026-11-25); it links on to My Rewards.
