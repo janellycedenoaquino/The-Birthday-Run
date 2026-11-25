@@ -48,11 +48,7 @@ export default async function RootLayout({ children }: LayoutProps<"/">) {
 
   // suppressHydrationWarning: next-themes sets the theme class on <html> before React hydrates.
   return (
-    <html
-      lang="en"
-      className={`scroll-pt-16 ${jakarta.variable}`}
-      suppressHydrationWarning
-    >
+    <html lang="en" className={jakarta.variable} suppressHydrationWarning>
       <head>
         {nonce && <BrandStyle nonce={nonce} brand={appConfig.brand} />}
       </head>

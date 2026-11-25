@@ -277,6 +277,26 @@ export const M = {
   "M-169": "Finding stores near you…",
   "M-210": "Route",
   "M-238": "Show route",
+  // S-1 landing (decision 0016).
+  "M-102": "Browse rewards",
+  // "\n" marks the phone line breaks (S-1 shows them only on small screens; elsewhere a space).
+  "M-282": "How many\nfree things\ncan you get",
+  "M-282b": "on your\nbirthday?",
+  "M-282c": "Find my birthday freebies",
+  "M-283":
+    "Find every brand that treats you, join in time, and plan your stops so nothing expires.",
+  "M-284": "{count} brands waiting to treat you",
+  "M-285": "Pause motion",
+  "M-285b": "Play motion",
+  "M-286": "Catch the prizes",
+  "M-286b": "Close",
+  "M-287": "Play 30 seconds",
+  "M-287b": "Play again ({score} pts)",
+  "M-288": "Mouse, touch or arrow keys",
+  "M-289": "Score",
+  "M-289b": "Time",
+  "M-289c": "Best",
+  "M-289d": "Catch-the-prizes game. Steer with the arrow keys.",
   "BR-12": "We don't recognise that ZIP code.",
   "BR-13":
     "We couldn't look up stores right now, so these stops have no map pin. Try again later.",
