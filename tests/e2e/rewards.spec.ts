@@ -60,15 +60,18 @@ test("My Rewards: the list, filters, pages, and the other views (FR-12–FR-16, 
   if (error) throw new Error(error.message);
 
   await passwordSignIn(page, user.email, PASSWORD);
-  await expect(page).toHaveURL(/\/dashboard$/);
+  await expect(page).toHaveURL(/\/rewards$/);
 
-  // S-102: no pickups yet, and the link cards (FR-21).
+  // Decision 0018: sign-in lands on My Rewards; its header holds FR-21 (no pickups yet), and
+  // the two cards show the run's progress and what's open.
   await expect(
     page.getByText("No pickups yet this Birthday Run."),
   ).toBeVisible();
-  await page
-    .getByRole("link", { name: /My Rewards See what's open now/ })
-    .click();
+  await expect(page.getByText("0/22")).toBeVisible();
+  await expect(page.getByText("22 still to get this run")).toBeVisible();
+  await expect(page.getByText(/^Day \d+ of your Birthday Run$/)).toBeVisible();
+  // The old dashboard address goes here too.
+  await page.goto("/dashboard");
   await expect(page).toHaveURL(/\/rewards$/);
 
   // Signed in, the landing page sends you to My Rewards, and so does the name (decision 0018).
@@ -85,7 +88,7 @@ test("My Rewards: the list, filters, pages, and the other views (FR-12–FR-16, 
   await expect(page.getByText("Showing 22 of 22")).toBeVisible();
   const cards = page
     .getByRole("listitem")
-    .filter({ has: page.getByRole("heading", { level: 2 }) });
+    .filter({ has: page.getByRole("heading", { level: 3 }) });
   await expect(cards).toHaveCount(20);
   await expect(cards.first()).toContainText(oneDay[0]!.name);
   await expect(cards.first()).toContainText("Last day");
@@ -109,7 +112,7 @@ test("My Rewards: the list, filters, pages, and the other views (FR-12–FR-16, 
   await page.goto("/rewards");
   const target = cards.nth(1);
   const name = (
-    await target.getByRole("heading", { level: 2 }).innerText()
+    await target.getByRole("heading", { level: 3 }).innerText()
   ).trim();
   await target.getByRole("button", { name: "Mark picked up" }).click();
   const dialog = page.getByRole("dialog");
@@ -127,7 +130,7 @@ test("My Rewards: the list, filters, pages, and the other views (FR-12–FR-16, 
 
   // Again, then History shows it with note and place under this year's Birthday Run (FR-19).
   await page
-    .getByRole("heading", { name, level: 2 })
+    .getByRole("heading", { name, level: 3 })
     .locator("xpath=ancestor::li")
     .getByRole("button", { name: "Mark picked up" })
     .click();
@@ -141,10 +144,12 @@ test("My Rewards: the list, filters, pages, and the other views (FR-12–FR-16, 
     .click();
   await expect(page.getByText(`${name} picked up.`)).toBeVisible();
   // A second pickup of the same reward isn't possible: it's no longer in the list.
-  await expect(page.getByRole("heading", { name, level: 2 })).toHaveCount(0);
+  await expect(page.getByRole("heading", { name, level: 3 })).toHaveCount(0);
 
-  await page.goto("/dashboard");
-  await expect(page.getByText("1 picked up this Birthday Run")).toBeVisible();
+  await page.goto("/rewards");
+  await expect(
+    page.getByText(/^1 picked up this Birthday Run · /),
+  ).toBeVisible();
   await page.goto("/history");
   await expect(
     page.getByRole("heading", { name: /^\d{4} Birthday Run$/ }).first(),

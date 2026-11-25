@@ -68,7 +68,7 @@ test("reset: new password works, the old one doesn't, other sessions end (FR-7, 
   const user = await createUser("e2e-reset");
   const deviceB = await (await browser.newContext()).newPage();
   await signIn(deviceB, user.email, PASSWORD);
-  await expect(deviceB).toHaveURL(/\/dashboard$/);
+  await expect(deviceB).toHaveURL(/\/rewards$/);
 
   const deviceA = await (await browser.newContext()).newPage();
   await requestReset(deviceA, user.email);
@@ -82,7 +82,7 @@ test("reset: new password works, the old one doesn't, other sessions end (FR-7, 
 
   await deviceA.locator('input[name="password"]').fill(NEW_PASSWORD);
   await deviceA.getByRole("button", { name: "Save new password" }).click();
-  await expect(deviceA).toHaveURL(/\/dashboard$/);
+  await expect(deviceA).toHaveURL(/\/rewards$/);
   await expect(deviceA.getByText("Password changed.")).toBeVisible();
 
   // D24.4: the other device is signed out.
@@ -96,7 +96,7 @@ test("reset: new password works, the old one doesn't, other sessions end (FR-7, 
     "Wrong email or password. Try again, or reset your password.",
   );
   await signIn(fresh, user.email, NEW_PASSWORD);
-  await expect(fresh).toHaveURL(/\/dashboard$/);
+  await expect(fresh).toHaveURL(/\/rewards$/);
 
   // The same link again: used → S-8.
   await fresh.goto(link);
@@ -108,7 +108,7 @@ test("/reset-password without a reset link shows the expired content (D24.6)", a
 }) => {
   const user = await createUser("e2e-noreset");
   await signIn(page, user.email, PASSWORD);
-  await expect(page).toHaveURL(/\/dashboard$/);
+  await expect(page).toHaveURL(/\/rewards$/);
   await page.goto("/reset-password");
   await expect(
     page.getByRole("heading", { name: "That link didn't work" }),

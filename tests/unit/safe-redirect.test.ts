@@ -15,7 +15,7 @@ describe("safeRedirectPath", () => {
     "\t/dashboard",
     " /dashboard",
   ])("falls back for off-site %j", (input) => {
-    expect(safeRedirectPath(input)).toBe("/dashboard");
+    expect(safeRedirectPath(input)).toBe("/rewards");
   });
 
   it.each([
@@ -40,14 +40,14 @@ describe("safeRedirectPath", () => {
     "/dashboard/../sign-in",
     "/%61uth/confirm",
   ])("falls back for the auth loop %j", (input) => {
-    expect(safeRedirectPath(input)).toBe("/dashboard");
+    expect(safeRedirectPath(input)).toBe("/rewards");
   });
 
   it("falls back for non-strings, over-long values and broken encodings", () => {
-    expect(safeRedirectPath(undefined)).toBe("/dashboard");
-    expect(safeRedirectPath(["/settings"])).toBe("/dashboard");
-    expect(safeRedirectPath(`/${"a".repeat(2048)}`)).toBe("/dashboard");
-    expect(safeRedirectPath("/%E0%A4%A")).toBe("/dashboard");
+    expect(safeRedirectPath(undefined)).toBe("/rewards");
+    expect(safeRedirectPath(["/settings"])).toBe("/rewards");
+    expect(safeRedirectPath(`/${"a".repeat(2048)}`)).toBe("/rewards");
+    expect(safeRedirectPath("/%E0%A4%A")).toBe("/rewards");
   });
 
   it("uses the given fallback", () => {

@@ -40,7 +40,7 @@ export default async function SignInPage({
     redirect(
       error === "oauth_cancelled"
         ? "/auth/reauthenticate?next=%2Fsettings"
-        : "/dashboard",
+        : "/rewards",
     );
 
   const nonce = (await headers()).get("x-nonce") ?? "";

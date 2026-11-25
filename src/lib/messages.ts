@@ -385,6 +385,16 @@ export const M = {
   "M-302d": "14 days",
   "M-302e": "Search",
   "M-303": "Your next run starts {date}",
+  // S-105's cards and sections (decision 0018 + 0016 prototype; owner, 2026-11-25).
+  "M-310": "Picked up",
+  "M-310a": "{count} still to get this run",
+  "M-310b": "open now",
+  "M-310c": "Day {day} of your Birthday Run",
+  "M-310d": "Starting later",
+  "M-310e": "Opens {date}",
+  "M-310f": "Open now",
+  "M-310g": "days until your birthday",
+  "M-310h": "day until your birthday",
   "BR-12": "We don't recognise that ZIP code.",
   "BR-13":
     "We couldn't look up stores right now, so these stops have no map pin. Try again later.",

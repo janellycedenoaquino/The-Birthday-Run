@@ -89,8 +89,8 @@ test("sign up → confirm by email → set password → onboarding → dashboard
   await page.getByLabel("Password", { exact: true }).fill(PASSWORD);
   await page.getByRole("button", { name: "Save password" }).click();
   await completeOnboarding(page); // no birthday yet: onboarding first (FR-6)
-  await expect(page.getByRole("heading", { name: "Welcome" })).toBeVisible();
-  // C-1 always shows the signed-in email (D24.9).
+  await expect(page).toHaveURL(/\/rewards$/);
+  // The account button carries the email (decision 0022).
   await expect(page.getByRole("button", { name: email })).toBeVisible();
 
   // The same link again: used up → S-8.

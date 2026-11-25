@@ -78,7 +78,7 @@ test("a new user: onboarding, Discover, then Settings (FR-3, FR-6, FR-7, FR-8, F
 
   // Done: onboarding sends you back to the dashboard, and Discover shows both as added.
   await page.goto("/onboarding");
-  await expect(page).toHaveURL(/\/dashboard$/);
+  await expect(page).toHaveURL(/\/rewards$/);
   await page.goto("/discover?q=starbucks");
   await expect(
     page.getByRole("button", { name: "Add Starbucks" }),

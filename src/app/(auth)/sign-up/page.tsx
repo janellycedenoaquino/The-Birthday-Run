@@ -20,7 +20,7 @@ export default async function SignUpPage({
   const {
     data: { user },
   } = await supabase.auth.getUser();
-  if (user) redirect("/dashboard");
+  if (user) redirect("/rewards");
   const nonce = (await headers()).get("x-nonce") ?? "";
   // S-4 passes `next` on; the email flow doesn't carry one (D10), Google does (#14 review).
   const { next } = await searchParams;

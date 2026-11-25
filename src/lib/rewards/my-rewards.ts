@@ -3,6 +3,7 @@
 import {
   daysLeft,
   headerState,
+  rewardDays,
   rewardStatus,
   timingOf,
   windowFor,
@@ -30,6 +31,8 @@ export type EnrolledTiming = Pick<
 >;
 
 export type RewardItem = EnrolledRetailer & { daysLeft: number };
+/** A reward of this run that hasn't opened yet, with the day it opens (decision 0018). */
+export type LaterItem = EnrolledRetailer & { opens: LocalDate };
 
 export type MyRewards = {
   window: BirthdayWindow;
@@ -40,6 +43,10 @@ export type MyRewards = {
   matched: number; // after the filters (M-178 `{shown}`)
   available: number; // before the filters (M-178 `{total}`)
   hasMore: boolean;
+  /** "Starting later" (decision 0018): this run's rewards not open yet, soonest first. */
+  later: LaterItem[];
+  /** This run's rewards already picked up (decision 0018's progress ring). */
+  pickedUp: number;
 };
 
 /** S-105's list size per "Show more" step (BUILD F-4: a build constant). */
@@ -54,21 +61,34 @@ export function availableRewards<R extends EnrolledTiming>(input: {
   today: LocalDate;
   enrolled: R[];
   pickups: { retailerId: string; date: LocalDate }[];
-}): { window: BirthdayWindow; open: (R & { daysLeft: number })[] } {
+}): {
+  window: BirthdayWindow;
+  open: (R & { daysLeft: number })[];
+  later: (R & { opens: LocalDate })[];
+  pickedUp: number;
+} {
   const { birthday, today, enrolled, pickups } = input;
   const timings = enrolled.map(timingOf);
   const w = windowFor(birthday, timings, today);
-  const open = enrolled
-    .map((r, i) => {
-      const own = pickups
-        .filter((p) => p.retailerId === r.id)
-        .map((p) => p.date);
-      return { r, t: timings[i]!, status: rewardStatus(timings[i]!, w, own) };
-    })
+  const rows = enrolled.map((r, i) => {
+    const own = pickups.filter((p) => p.retailerId === r.id).map((p) => p.date);
+    return { r, t: timings[i]!, status: rewardStatus(timings[i]!, w, own) };
+  });
+  const open = rows
     .filter((x) => x.status === "available")
     .map(({ r, t }) => ({ ...r, daysLeft: daysLeft(t, w) }))
     .sort((a, b) => a.daysLeft - b.daysLeft || a.name.localeCompare(b.name));
-  return { window: w, open };
+  const later = rows
+    .filter((x) => x.status === "not_open")
+    .map(({ r, t }) => ({
+      ...r,
+      opens: rewardDays(t, w.planning.birthday).opens,
+    }))
+    .sort(
+      (a, b) => a.opens.localeCompare(b.opens) || a.name.localeCompare(b.name),
+    );
+  const pickedUp = rows.filter((x) => x.status === "picked_up").length;
+  return { window: w, open, later, pickedUp };
 }
 
 export function myRewards(input: {
@@ -79,7 +99,7 @@ export function myRewards(input: {
   filters: { q?: string; within?: 1 | 7 | 14; page?: number };
 }): MyRewards {
   const { enrolled, filters } = input;
-  const { window: w, open } = availableRewards(input);
+  const { window: w, open, later, pickedUp } = availableRewards(input);
 
   const q = filters.q ? fold(filters.q) : "";
   const matching = open.filter(
@@ -107,5 +127,7 @@ export function myRewards(input: {
     matched: matching.length,
     available: open.length,
     hasMore: view === "list" && matching.length > items.length,
+    later: view === "none" ? [] : later,
+    pickedUp,
   };
 }
