@@ -34,8 +34,8 @@ export default async function OnboardingPage() {
   if (step === 1) {
     const zones = ["UTC", ...Intl.supportedValuesOf("timeZone")];
     return (
-      <Shell step={1} title={msg("M-105")}>
-        <p className="mb-8 text-muted-foreground">{msg("M-106")}</p>
+      <Shell step={1} title={msg("M-300")} block={msg("M-300b")}>
+        <p className="mb-7 text-muted-foreground">{msg("M-106")}</p>
         {/* A birthday saved without a zone (possible from Settings) is kept (BUILD F-2). */}
         <OnboardingForm
           saveOnboarding={saveOnboarding}
@@ -63,7 +63,8 @@ export default async function OnboardingPage() {
       cause: rError ?? eError,
     });
   return (
-    <Shell step={2} title={msg("M-109")}>
+    <Shell step={2} title={msg("M-301")} block={msg("M-301b")}>
+      <p className="mb-5 text-muted-foreground">{msg("M-301c")}</p>
       <ProgramsForm
         saveOnboarding={saveOnboarding}
         retailers={retailers}
@@ -76,19 +77,31 @@ export default async function OnboardingPage() {
 function Shell({
   step,
   title,
+  block,
   children,
 }: {
   step: number;
   title: string;
+  block: string;
   children: React.ReactNode;
 }) {
+  // Decision 0016: one frosted card on the still glow, no motion of its own (so no pause
+  // control). Each step turns in on its vertical axis; not when the device asks for reduced
+  // motion (motion-safe).
   return (
-    <div className="mx-auto w-full max-w-xl px-4 py-12 sm:px-6">
-      <p className="text-sm text-muted-foreground">
-        {msg("M-118").replace("{step}", String(step))}
-      </p>
-      <h1 className="mt-1 mb-2 text-2xl font-semibold">{title}</h1>
-      {children}
+    <div className="mx-auto w-full max-w-2xl px-4 py-10 [perspective:1200px] sm:px-6">
+      <div
+        key={step}
+        className="frosted rounded-[28px] px-6 py-8 motion-safe:animate-[card-turn-in_0.8s_ease-out] sm:px-9"
+      >
+        <p className="text-xs font-extrabold tracking-[0.12em] text-muted-foreground uppercase">
+          {msg("M-118").replace("{step}", String(step))}
+        </p>
+        <h1 className="headline mt-2 mb-2 text-[32px] leading-[1.1] sm:text-[38px]">
+          {title} <span className="headline-block">{block}</span>
+        </h1>
+        {children}
+      </div>
     </div>
   );
 }

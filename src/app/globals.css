@@ -282,3 +282,15 @@
     transform: translateX(-50%);
   }
 }
+
+/* Onboarding's card turning to its next step (decision 0016; used under motion-safe only). */
+@keyframes card-turn-in {
+  from {
+    transform: rotateY(-90deg);
+    opacity: 0.4;
+  }
+  to {
+    transform: rotateY(0);
+    opacity: 1;
+  }
+}

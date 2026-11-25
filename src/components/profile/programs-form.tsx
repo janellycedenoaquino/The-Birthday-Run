@@ -69,7 +69,7 @@ export function ProgramsForm({
             if (e.key === "Enter") e.preventDefault();
           }}
           hidden={!hydrated}
-          className="h-11 w-full rounded-md border border-input bg-background px-3 text-base"
+          className="h-11 w-full rounded-xl border-0 bg-white px-3.5 text-base text-[var(--navy)] shadow-[inset_0_0_0_1.5px_var(--border)] outline-none focus-visible:shadow-[inset_0_0_0_2px_var(--navy),0_0_0_4px_color-mix(in_srgb,var(--primary)_45%,transparent)]"
         />
         {hydrated ? (
           <div
@@ -83,17 +83,23 @@ export function ProgramsForm({
                 type="button"
                 aria-pressed={category === c}
                 onClick={() => setCategory(c)}
-                className={`h-9 rounded-full border px-3 ${category === c ? "border-primary bg-primary text-primary-foreground" : "border-border/70"}`}
+                style={
+                  c
+                    ? ({ "--chip": `var(--cat-${c})` } as React.CSSProperties)
+                    : undefined
+                }
+                className={`h-9 rounded-[10px] bg-[var(--chip,#fff)] px-3.5 font-bold text-[var(--navy)] ${category === c ? "shadow-[inset_0_0_0_2px_var(--navy),2px_2px_0_var(--navy)]" : "shadow-[inset_0_0_0_1.5px_var(--border)]"}`}
               >
                 {c ? CATEGORY_LABELS[c] : "All"}
               </button>
             ))}
           </div>
         ) : null}
-        <ul className="grid max-h-[28rem] gap-2 overflow-y-auto rounded-lg border border-border/70 p-2">
+        {/* Decision 0016: a logo grid of real checkboxes; the Save button's count is the feedback. */}
+        <ul className="grid max-h-[28rem] grid-cols-2 gap-2.5 overflow-y-auto p-1 sm:grid-cols-3">
           {retailers.map((r) => (
             <li key={r.id} hidden={hydrated && !visible.has(r.id)}>
-              <label className="flex cursor-pointer items-center gap-3 rounded-md p-2 hover:bg-muted">
+              <label className="relative flex h-full cursor-pointer flex-col items-center gap-1.5 rounded-2xl bg-white/85 px-2.5 pt-4 pb-3 text-center text-[var(--navy)] shadow-[0_0_0_1.5px_var(--border)] has-checked:bg-[#effaf2] has-checked:shadow-[0_0_0_3px_var(--spring)] has-focus-visible:shadow-[0_0_0_3px_var(--navy)] has-disabled:cursor-default">
                 <input
                   type="checkbox"
                   name="retailerIds"
@@ -101,12 +107,12 @@ export function ProgramsForm({
                   checked={joined.has(r.id) || selected.has(r.id)}
                   disabled={joined.has(r.id)}
                   onChange={(e) => toggle(r.id, e.target.checked)}
-                  className="size-5 shrink-0"
+                  className="absolute top-2 right-2 size-5 accent-[var(--navy)]"
                 />
-                <RetailerLogo name={r.name} logoFile={r.logo_file} size={36} />
+                <RetailerLogo name={r.name} logoFile={r.logo_file} size={40} />
                 <span className="min-w-0">
-                  <span className="block font-medium">{r.name}</span>
-                  <span className="block text-sm text-muted-foreground">
+                  <span className="block text-sm font-bold">{r.name}</span>
+                  <span className="line-clamp-2 block text-xs text-[#4c557d]">
                     {r.reward_description}
                   </span>
                 </span>

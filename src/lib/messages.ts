@@ -351,6 +351,13 @@ export const M = {
   "M-298u": "Checked on the brand's own page on {date}",
   "M-298v": "source",
   "M-298x": "Jan 3 – Feb 2 · 12 days left",
+  "M-299": "Main",
+  // S-101 look (decision 0016).
+  "M-300": "When's your",
+  "M-300b": "birthday?",
+  "M-301": "Which programs",
+  "M-301b": "are you in?",
+  "M-301c": "Pick the ones you've joined. You can add more later on Discover.",
   "BR-12": "We don't recognise that ZIP code.",
   "BR-13":
     "We couldn't look up stores right now, so these stops have no map pin. Try again later.",

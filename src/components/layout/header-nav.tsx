@@ -20,7 +20,13 @@ export function HeaderNav({ account }: { account: Account | null }) {
     <nav aria-label="Account" className="flex shrink-0 items-center gap-2">
       {/* C-101's first app link (M-101); the others arrive with their pages (Phase 2). */}
       {path !== "/onboarding" && (
-        <Button asChild variant="ghost" size="lg">
+        <Button
+          asChild
+          variant="ghost"
+          size="lg"
+          // Signed in, phones use the bottom tab bar instead (C-101, decision 0016).
+          className={account ? "max-sm:hidden" : undefined}
+        >
           <Link
             href="/discover"
             aria-current={path.startsWith("/discover") ? "page" : undefined}
@@ -30,7 +36,7 @@ export function HeaderNav({ account }: { account: Account | null }) {
         </Button>
       )}
       {account && path !== "/onboarding" && (
-        <Button asChild variant="ghost" size="lg">
+        <Button asChild variant="ghost" size="lg" className="max-sm:hidden">
           <Link
             href="/rewards"
             aria-current={path.startsWith("/rewards") ? "page" : undefined}
@@ -40,7 +46,7 @@ export function HeaderNav({ account }: { account: Account | null }) {
         </Button>
       )}
       {account && path !== "/onboarding" && (
-        <Button asChild variant="ghost" size="lg">
+        <Button asChild variant="ghost" size="lg" className="max-sm:hidden">
           <Link
             href="/plan"
             aria-current={path.startsWith("/plan") ? "page" : undefined}
@@ -50,7 +56,7 @@ export function HeaderNav({ account }: { account: Account | null }) {
         </Button>
       )}
       {account && path !== "/onboarding" && (
-        <Button asChild variant="ghost" size="lg">
+        <Button asChild variant="ghost" size="lg" className="max-sm:hidden">
           <Link
             href="/history"
             aria-current={path.startsWith("/history") ? "page" : undefined}
