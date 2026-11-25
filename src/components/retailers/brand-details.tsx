@@ -114,10 +114,8 @@ export function BrandDetails({
               <h2>{r.name}</h2>
             </DialogTitle>
           )}
-          <p className="mt-2 text-[#4c557d]">{r.description}</p>
-          <span className="mt-2.5 inline-block rounded-[9px] bg-white/60 px-2.5 py-1 text-xs font-extrabold shadow-[inset_0_0_0_1.5px_var(--border)]">
-            {category}
-          </span>
+          {/* No description line or category tag: both repeated what's around them, the same on
+              every brand page (owner, 2026-11-25). */}
         </div>
         <div className={page ? "px-7 py-7 sm:px-8" : "pt-5"}>
           <small className="text-xs font-extrabold tracking-[0.12em] text-muted-foreground uppercase">
@@ -126,11 +124,11 @@ export function BrandDetails({
           <strong className="mt-1.5 block text-[26px] leading-tight font-extrabold tracking-[-0.025em] sm:text-[30px]">
             {r.reward_description}
           </strong>
+          {/* The type as a short tag; "no purchase needed" helps people decide (owner). */}
           {type ? (
-            <p className="mt-2 text-sm text-muted-foreground">
-              <b className="text-foreground">{type.label}:</b>{" "}
-              {type.explanation}
-            </p>
+            <span className="mt-2.5 inline-block rounded-[9px] bg-white/70 px-2.5 py-1 text-xs font-extrabold text-[var(--navy)] shadow-[inset_0_0_0_1.5px_var(--border)] dark:bg-white/10 dark:text-foreground">
+              {type.note ? `${type.label} · ${type.note}` : type.label}
+            </span>
           ) : null}
           <div className="mt-[18px] flex flex-wrap items-start gap-2.5">
             {/* Signed out, no sign-up button here: the dates card and the band below have one
@@ -254,7 +252,6 @@ export function BrandDetails({
           <h2 className="text-2xl font-extrabold tracking-[-0.02em]">
             {msg("M-298r").replace("{category}", category.toLowerCase())}
           </h2>
-          <p className="mt-1 text-muted-foreground">{msg("M-298s")}</p>
           <ul className="mt-3.5 grid grid-cols-2 gap-3.5 md:grid-cols-4">
             {brand.more.map((m) => (
               <li key={m.id}>

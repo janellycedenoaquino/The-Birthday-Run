@@ -356,7 +356,6 @@ export const M = {
   "M-298q":
     "Sign up free to get a countdown for your own birthday and plan your run.",
   "M-298r": "More {category} birthday treats",
-  "M-298s": "Checked on each brand's own page.",
   "M-298t": "See all {count} birthday rewards",
   "M-298u": "Checked on the brand's own page on {date}",
   "M-298v": "source",
