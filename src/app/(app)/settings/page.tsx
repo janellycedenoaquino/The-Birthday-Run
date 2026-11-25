@@ -1,4 +1,15 @@
 import type { Metadata } from "next";
+import {
+  Bell,
+  Cake,
+  Download,
+  KeyRound,
+  ShieldCheck,
+  Sparkles,
+  Trash2,
+  UserRound,
+  type LucideIcon,
+} from "lucide-react";
 import Link from "next/link";
 import type { ReactNode } from "react";
 import { z } from "zod";
@@ -39,6 +50,36 @@ export const metadata: Metadata = {
   robots: { index: false },
 };
 
+// Decision 0016: each section has a line icon on its own pastel colour (never emoji), used in the
+// side menu and the card's header band; Delete account is red.
+const LOOK: Record<string, { Icon: LucideIcon; tone: string }> = {
+  profile: { Icon: UserRound, tone: "var(--glow-blue)" },
+  birthday: { Icon: Cake, tone: "var(--glow-pink)" },
+  reminders: { Icon: Bell, tone: "var(--glow-mint)" },
+  password: { Icon: KeyRound, tone: "var(--glow-mint)" },
+  "two-step": { Icon: ShieldCheck, tone: "var(--glow-blue)" },
+  premium: { Icon: Sparkles, tone: "var(--glow-pink)" },
+  "your-data": { Icon: Download, tone: "var(--glow-mint)" },
+  "delete-account": {
+    Icon: Trash2,
+    tone: "color-mix(in srgb, var(--destructive) 16%, transparent)",
+  },
+};
+
+function SectionIcon({ id }: { id: string }) {
+  const look = LOOK[id];
+  if (!look) return null;
+  return (
+    <span
+      aria-hidden="true"
+      style={{ background: look.tone }}
+      className="grid size-7 shrink-0 place-items-center rounded-lg text-[var(--navy)] dark:text-foreground"
+    >
+      <look.Icon className="size-4" />
+    </span>
+  );
+}
+
 function Card({
   id,
   title,
@@ -54,12 +95,18 @@ function Card({
     <section
       id={id}
       aria-labelledby={`${id}-title`}
-      className={`scroll-mt-20 rounded-lg border p-6 ${destructive ? "border-destructive/60" : "border-border/70"}`}
+      className={`scroll-mt-20 overflow-hidden rounded-[22px] bg-white/85 dark:bg-white/5 ${destructive ? "shadow-[0_0_0_2px_var(--destructive)]" : "shadow-[0_0_0_1.5px_var(--border)]"}`}
     >
-      <h2 id={`${id}-title`} className="mb-4 text-lg font-semibold">
-        {title}
-      </h2>
-      {children}
+      <div
+        style={{ background: LOOK[id]?.tone }}
+        className="flex items-center gap-2.5 px-6 py-3 text-[var(--navy)] dark:text-foreground"
+      >
+        <SectionIcon id={id} />
+        <h2 id={`${id}-title`} className="text-lg font-extrabold">
+          {title}
+        </h2>
+      </div>
+      <div className="p-6">{children}</div>
     </section>
   );
 }
@@ -134,18 +181,19 @@ export default async function SettingsPage({
   return (
     <div className="mx-auto w-full max-w-5xl px-4 py-12 sm:px-6 md:grid md:grid-cols-[12rem_1fr] md:gap-10">
       <div>
-        <h1 className="text-2xl font-semibold">Settings</h1>
+        <h1 className="headline text-[34px]">Settings</h1>
         <nav
           aria-label="Settings sections"
           className="mt-4 md:sticky md:top-24"
         >
-          <ul className="flex flex-wrap gap-x-4 gap-y-2 text-sm md:flex-col">
+          <ul className="flex flex-wrap gap-x-2 gap-y-2 text-sm md:flex-col md:gap-1">
             {sections.map((s) => (
               <li key={s.id}>
                 <a
                   href={`#${s.id}`}
-                  className="underline-offset-4 hover:underline"
+                  className="flex items-center gap-2.5 rounded-xl px-2 py-1.5 font-bold outline-none hover:bg-white/70 focus-visible:ring-3 focus-visible:ring-ring/50"
                 >
+                  <SectionIcon id={s.id} />
                   {s.title}
                 </a>
               </li>

@@ -366,6 +366,7 @@ export const M = {
   "M-302d": "14 days",
   "M-302e": "Search",
   "M-303": "Your next run starts {date}",
+  "M-304": "Birthday Runs by year",
   "BR-12": "We don't recognise that ZIP code.",
   "BR-13":
     "We couldn't look up stores right now, so these stops have no map pin. Try again later.",
