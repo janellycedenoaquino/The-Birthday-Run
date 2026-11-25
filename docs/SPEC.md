@@ -308,7 +308,7 @@ flowchart TD
 - Signed in: links Discover · My Rewards · Plan · History in a row under the header on wider screens (no Dashboard, decision 0018); current page `aria-current="page"`. Settings stays in the Template account menu.
 - **Phones (decision 0016):** the links move to a bottom tab bar fixed to the bottom of the screen: four tabs (Discover, My Rewards, Plan, History) with an icon and a label, the current one on the pink block. The account menu stays on the round initial top right (Settings, Birthday & reminders, Premium, Sign out). Page content keeps room above the bar.
 - Signed out: "Rewards" (M-101, left out on S-103 itself) and one "Get started" (M-101f) → Template S-5, in place of Template C-1's Sign in / Sign up (S-5's card has a "Sign in" tab; owner, 2026-11-25). The floating pages keep their own (C-1 header look below).
-- **Header look (decision 0016 prototypes; owner, 2026-11-25):** no bar and no logo image: the app name on a cream pill (signed out → S-1, signed in → S-105, decision 0018), links on the page's own background; it scrolls with the page. The current link and "Sign in" sit on a white pill with the navy ring. On S-1 the header floats over the logo tunnel with "Rewards" and "Sign in" signed out, left of the page's pause button; on Template S-4/S-5 it floats over the card wall with "Rewards" only (the card's tabs switch between them).
+- **Header look (decision 0016 prototypes; owner, 2026-11-25):** full width; signed in, the links sit next to the name and the account is a round initial far right (decision 0022: its name and tooltip carry the email). No bar and no logo image: the app name on a cream pill (signed out → S-1, signed in → S-105, decision 0018), links on the page's own background; it scrolls with the page. The current link and "Sign in" sit on a white pill with the navy ring. On S-1 the header floats over the logo tunnel with "Rewards" and "Sign in" signed out, left of the page's pause button; on Template S-4/S-5 it floats over the card wall with "Rewards" only (the card's tabs switch between them).
 - Hidden on S-101 (onboarding has one job) and on Template S-9–S-11.
 - Labels: M-101.
 
@@ -381,7 +381,7 @@ flowchart TD
 - **Look (decision 0016):** big centred headline, logo-only cards in a grid that show the brand and reward on hover or keyboard focus (always shown on touch screens), no timing and no category tags on the cards, glow background.
 - **Signed-in look (decision 0016):** the same logo cards with a "+" add button on each and a pink "Added" ribbon on enrolled ones; clicking a card opens S-104 as a pop-up card over Discover (bottom sheet on phones), with its own URL.
 - **Signed out shows:** h1 M-294 with M-294b in the tilted block; text M-294c; count M-294d (M-171a stays the page title, M-171b its meta description); every non-retired C-102 card (no toggle, no filters; decision 0017); at the end, card M-111 with "Sign up free" → Template S-5 (`next=/discover`) and "Sign in".
-- **Signed in shows:** h1 M-294 with M-294b in the tilted block (owner, 2026-11-25); text M-295c with the next birthday (`formatDate` short, NFR-5), or with no birthday saved yet M-295d and a button M-295e → S-101; search "Search by name"; category tabs (M-170); premium filters row: state filter (FR-5: needs C-105; on → M-172 with `{state}`, `{hidden}` and "Show all" M-173) and duration select (M-174–M-177) and checkbox M-177a (FR-45). Free users see one C-104 (M-131) in place of both. Then the grid of C-102 with M-178 (`{shown}` of `{total}`).
+- **Signed in shows (decision 0016 prototype):** the headline block on the left with the search box on its right (Enter searches, no button); h1 M-294 with M-294b in the tilted block (owner, 2026-11-25); text M-295c with the next birthday (`formatDate` short, NFR-5), or with no birthday saved yet M-295d and a button M-295e → S-101; search "Search by name"; category tabs (M-170); premium filters row: state filter (FR-5: needs C-105; on → M-172 with `{state}`, `{hidden}` and "Show all" M-173) and duration select (M-174–M-177) and checkbox M-177a (FR-45). Free users see one C-104 as a tag (M-131a), right of the M-178 count, in place of both. Category tabs show each category's brand count; names and order M-170. Then the grid of C-102 with M-178 (`{shown}` of `{total}`).
 - **Main action:** open S-104; toggle enrollment.
 - **States:** no match: M-179 with "Clear filters" · loading: skeleton · error: Template S-20 · not allowed: none (public).
 
@@ -481,7 +481,7 @@ Template M-, API-, E- texts apply unchanged. Placeholders in `{braces}` are fill
 - M-215 (default Smart Grouping name): "Run {n}"
 
 **Discover and retailer details**
-- M-170 (categories): "All" · "Food and drink" · "Entertainment" · "Retail" · "Beauty"
+- M-170 (categories; prototype order, owner's names 2026-11-25): "All" · "Food & drink" · "Retail" · "Beauty" · "Entertainment"
 - M-171: "No programs match that search." · M-171a: "Rewards" · M-171b: "Free birthday rewards from loyalty programs, each checked on the brand's own page." · M-171c: "Back to Rewards"
 - M-172: "Showing rewards available in {state}. {hidden} hidden." · M-172b (a start is already set; applies the filter): "Show only my state" · M-173: "Show all"
 - M-174–M-177 (duration select): "Any length" · "Birthday only" · "Up to a week" · "Up to a month" · M-177a (checkbox beside it): "Can start before my birthday"
@@ -507,7 +507,7 @@ Template M-, API-, E- texts apply unchanged. Placeholders in `{braces}` are fill
 
 **Premium prompt (C-104)**
 - M-130: "{feature} is part of Premium"
-- M-131 Discover filters: "Filter by your state and reward length" · M-132: "The map and route" · M-133: "More than {limit} groups" · M-134: "Up to {limit} rewards per group" · M-135: "Smart Grouping" · M-136: "Group routes" · M-137: "Birthday reminder emails" · M-138: "Premium"
+- M-131 Rewards filters: "Filter by your state and reward length" · M-131a (S-103 tag): "Premium: filter by your state and reward length" · M-132: "The map and route" · M-133: "More than {limit} groups" · M-134: "Up to {limit} rewards per group" · M-135: "Smart Grouping" · M-136: "Group routes" · M-137: "Birthday reminder emails" · M-138: "Premium"
 - M-139 (payments off): "Premium is coming soon. Everything else in the app stays free."
 - M-140 (payments on): "Upgrade to unlock it. You can cancel any time from Settings."
 - M-141: "Upgrade to Premium" · M-142: "Opening checkout…" · M-143: "Manage subscription"

@@ -69,8 +69,17 @@ export function HeaderNav({ account }: { account: Account | null }) {
     );
   }
 
+  // Signed in, the links sit next to the name and the account's round initial goes far right
+  // (decision 0016 prototype).
   return (
-    <nav aria-label="Account" className="flex shrink-0 items-center gap-2">
+    <nav
+      aria-label="Account"
+      className={
+        account
+          ? "ml-1 flex min-w-0 flex-1 items-center gap-1"
+          : "flex shrink-0 items-center gap-2"
+      }
+    >
       {/* C-101's first app link (M-101). Signed out it looks like the pills beside it, and it's
           left out on Rewards itself, as in the prototype. */}
       {path !== "/onboarding" &&
@@ -123,7 +132,9 @@ export function HeaderNav({ account }: { account: Account | null }) {
         </Button>
       )}
       {account ? (
-        <AccountMenu {...account} />
+        <div className="ml-auto">
+          <AccountMenu {...account} />
+        </div>
       ) : (
         // Signed out: one "Get started" → sign up; the card there has a "Sign in" tab (owner).
         <Button asChild size="lg">

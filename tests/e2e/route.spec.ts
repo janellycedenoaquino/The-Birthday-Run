@@ -247,7 +247,7 @@ test("Discover state filter: set a start → only that state; Show all clears; n
   await expect(inNy).toBeVisible();
 
   // Category links keep the filter (memory, not the URL).
-  await page.getByRole("link", { name: "Food and drink" }).click();
+  await page.getByRole("link", { name: /^Food & drink/ }).click();
   await expect(page).toHaveURL(/category=food_drink/);
   await expect(
     page.getByText(/^Showing rewards available in NY/),

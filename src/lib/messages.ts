@@ -205,6 +205,8 @@ export const M = {
   "M-177a": "Can start before my birthday",
   "M-130": "{feature} is part of Premium",
   "M-131": "Filter by your state and reward length",
+  // C-104 as a tag (S-103, decision 0016 prototype).
+  "M-131a": "Premium: filter by your state and reward length",
   "M-132": "The map and route",
   "M-133": "More than {limit} groups",
   "M-134": "Up to {limit} rewards per group",

@@ -1,8 +1,6 @@
 "use client";
 
-import { ChevronDown } from "lucide-react";
 import Link from "next/link";
-import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -19,22 +17,26 @@ export type Account = {
   signOut: () => Promise<void>;
 };
 
-// C-1's account menu (SPEC §3.2). The trigger always shows the signed-in email, so someone signed
-// into another account by a crafted link notices (D24.9). Every value is rendered as text.
+// C-1's account menu (SPEC §3.2). The trigger is a round initial (decision 0016 prototype; owner,
+// 2026-11-25, decision 0022). D24.9 wanted the email always visible, so someone signed into
+// another account by a crafted link notices: the initial is of that email, its accessible name
+// and tooltip carry the email, and the open menu shows it first. Every value is rendered as text.
 export function AccountMenu({ email, displayName, signOut }: Account) {
   return (
     // Not modal: Radix's modal mode locks scrolling with an injected <style> that carries no
     // nonce, which the CSP blocks (D5; BUILD F-3). A small menu doesn't need the page frozen.
     <DropdownMenu modal={false}>
       <DropdownMenuTrigger asChild>
-        <Button
-          variant="outline"
-          size="lg"
-          className="max-w-[55vw] sm:max-w-72"
+        <button
+          type="button"
+          title={email}
+          aria-label={`Account: ${email}`}
+          className="grid size-10 shrink-0 place-items-center rounded-full bg-[#ffd6e5] font-extrabold text-[var(--navy)] uppercase shadow-[0_0_0_1.5px_var(--navy)] outline-none focus-visible:ring-3 focus-visible:ring-ring/50"
         >
-          <span className="truncate">{email}</span>
-          <ChevronDown aria-hidden="true" className="opacity-60" />
-        </Button>
+          <span aria-hidden="true">
+            {(displayName || email).trim().charAt(0)}
+          </span>
+        </button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-64">
         <DropdownMenuLabel>

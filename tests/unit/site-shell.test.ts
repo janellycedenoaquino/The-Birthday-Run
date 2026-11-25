@@ -107,7 +107,11 @@ describe("C-1 site header, signed in", () => {
       ["/plan", "Plan"],
       ["/history", "History"],
     ]);
-    expect(html).toMatch(/<button[^>]*>.*someone@example\.com.*<\/button>/);
+    // A round initial; the email is its name and tooltip (decision 0022, D24.9).
+    expect(html).toMatch(
+      /<button[^>]*aria-label="Account: someone@example\.com"[^>]*>.*>S<\/span><\/button>/,
+    );
+    expect(html).toContain('title="someone@example.com"');
     expect(html).not.toContain(">Sign in<");
   });
 

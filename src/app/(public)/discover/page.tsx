@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { Search as SearchIcon } from "lucide-react";
 import { z } from "zod";
 import {
   RetailerCard,
@@ -154,6 +155,39 @@ export default async function DiscoverPage({
 
   return (
     <Shell
+      compact
+      side={
+        // A search button inside the field, for phones without an Enter key (owner, 2026-11-25).
+        <form
+          method="get"
+          role="search"
+          className="relative w-full sm:w-[300px]"
+        >
+          {filters.category ? (
+            <input type="hidden" name="category" value={filters.category} />
+          ) : null}
+          <label htmlFor="discover-q" className="sr-only">
+            Search by name
+          </label>
+          <input
+            id="discover-q"
+            name="q"
+            type="search"
+            enterKeyHint="search"
+            defaultValue={filters.q ?? ""}
+            placeholder="Search by name"
+            maxLength={100}
+            className="h-12 w-full rounded-xl border-0 bg-white pr-12 pl-3.5 text-base text-[var(--navy)] shadow-[inset_0_0_0_1.5px_var(--border)] outline-none focus-visible:shadow-[inset_0_0_0_2px_var(--navy),0_0_0_4px_color-mix(in_srgb,var(--primary)_45%,transparent)]"
+          />
+          <button
+            type="submit"
+            aria-label="Search"
+            className="absolute top-1/2 right-1.5 grid size-9 -translate-y-1/2 place-items-center rounded-lg bg-primary text-[var(--navy)] shadow-[0_0_0_1.5px_var(--navy)] outline-none focus-visible:ring-3 focus-visible:ring-ring/50"
+          >
+            <SearchIcon aria-hidden="true" className="size-4" />
+          </button>
+        </form>
+      }
       title={msg("M-294")}
       block={msg("M-294b")}
       lead={
@@ -170,31 +204,49 @@ export default async function DiscoverPage({
         )
       }
     >
-      <form
-        method="get"
-        className="mx-auto mt-6 flex max-w-xl flex-wrap justify-center gap-2"
-        role="search"
-      >
-        {filters.category ? (
-          <input type="hidden" name="category" value={filters.category} />
-        ) : null}
-        <label htmlFor="discover-q" className="sr-only">
-          Search by name
-        </label>
-        <input
-          id="discover-q"
-          name="q"
-          type="search"
-          defaultValue={filters.q ?? ""}
-          placeholder="Search by name"
-          maxLength={100}
-          className="h-11 w-full max-w-sm rounded-xl border-0 bg-white px-3.5 text-base text-[var(--navy)] shadow-[inset_0_0_0_1.5px_var(--border)] outline-none focus-visible:shadow-[inset_0_0_0_2px_var(--navy),0_0_0_4px_color-mix(in_srgb,var(--primary)_45%,transparent)]"
-        />
-        <Button type="submit" size="lg" variant="outline">
-          Search
-        </Button>
-        {premium ? (
-          <>
+      <nav aria-label="Categories" className="mt-5">
+        <ul className="flex flex-wrap gap-2 text-sm">
+          {[undefined, ...CATEGORIES].map((c) => {
+            const current = filters.category === c;
+            const n = c
+              ? rows.filter((r) => r.category === c).length
+              : rows.length;
+            return (
+              <li key={c ?? "all"}>
+                <Link
+                  href={href(c)}
+                  aria-current={current ? "page" : undefined}
+                  style={
+                    c
+                      ? ({
+                          "--chip": `var(--cat-${c})`,
+                        } as React.CSSProperties)
+                      : undefined
+                  }
+                  className={`inline-flex h-9 items-center gap-1 rounded-[10px] bg-[var(--chip,#fff)] px-3.5 font-bold text-[var(--navy)] ${current ? "shadow-[inset_0_0_0_2px_var(--navy),2px_2px_0_var(--navy)]" : "shadow-[inset_0_0_0_1.5px_var(--border)]"}`}
+                >
+                  {c ? CATEGORY_LABELS[c] : "All"}
+                  {/* The brand count per tab (decision 0016 prototype). */}
+                  <small className="font-semibold text-[#4c557d]">{n}</small>
+                </Link>
+              </li>
+            );
+          })}
+        </ul>
+      </nav>
+      {premium ? (
+        <>
+          <form
+            method="get"
+            className="mt-4 flex flex-wrap items-center gap-2"
+            aria-label="Premium filters"
+          >
+            {filters.q ? (
+              <input type="hidden" name="q" value={filters.q} />
+            ) : null}
+            {filters.category ? (
+              <input type="hidden" name="category" value={filters.category} />
+            ) : null}
             <label htmlFor="discover-length" className="sr-only">
               Length
             </label>
@@ -219,54 +271,25 @@ export default async function DiscoverPage({
               />
               {msg("M-177a")}
             </label>
-          </>
-        ) : null}
-      </form>
-      {premium ? (
-        <section aria-label="Your state" className="mt-4">
-          <StateFilter lookupZip={lookupZip} rows={stateRows} />
-        </section>
+            <Button type="submit" size="lg" variant="outline">
+              Apply
+            </Button>
+          </form>
+          <section aria-label="Your state" className="mt-4">
+            <StateFilter lookupZip={lookupZip} rows={stateRows} />
+          </section>
+          <StateCount rows={stateRows} total={total} />
+        </>
       ) : (
-        <div className="mt-4">
-          <UpgradePrompt supabase={supabase} feature="M-131" compact />
+        // "Showing" on the left, the Premium tag on the right (decision 0016 prototype).
+        <div className="mt-3 flex flex-wrap items-center justify-between gap-2">
+          <p className="text-sm text-muted-foreground" aria-live="polite">
+            {msg("M-178")
+              .replace("{shown}", String(shown.length))
+              .replace("{total}", String(total))}
+          </p>
+          <UpgradePrompt supabase={supabase} feature="M-131" tag />
         </div>
-      )}
-      <nav aria-label="Categories" className="mt-5">
-        <ul className="flex flex-wrap justify-center gap-2 text-sm">
-          {[undefined, ...CATEGORIES].map((c) => {
-            const current = filters.category === c;
-            return (
-              <li key={c ?? "all"}>
-                <Link
-                  href={href(c)}
-                  aria-current={current ? "page" : undefined}
-                  style={
-                    c
-                      ? ({
-                          "--chip": `var(--cat-${c})`,
-                        } as React.CSSProperties)
-                      : undefined
-                  }
-                  className={`inline-flex h-9 items-center rounded-[10px] bg-[var(--chip,#fff)] px-3.5 font-bold text-[var(--navy)] ${current ? "shadow-[inset_0_0_0_2px_var(--navy),2px_2px_0_var(--navy)]" : "shadow-[inset_0_0_0_1.5px_var(--border)]"}`}
-                >
-                  {c ? CATEGORY_LABELS[c] : "All"}
-                </Link>
-              </li>
-            );
-          })}
-        </ul>
-      </nav>
-      {premium ? (
-        <StateCount rows={stateRows} total={total} />
-      ) : (
-        <p
-          className="mt-4 text-center text-sm text-muted-foreground"
-          aria-live="polite"
-        >
-          {msg("M-178")
-            .replace("{shown}", String(shown.length))
-            .replace("{total}", String(total))}
-        </p>
       )}
       {shown.length === 0 ? (
         <div className="mt-6 rounded-lg border border-border/70 p-6">
@@ -308,13 +331,16 @@ const GRID =
   "mt-6 grid grid-cols-2 gap-3 sm:grid-cols-[repeat(auto-fill,minmax(220px,1fr))] sm:gap-[18px]";
 
 // Decision 0016: a big centred headline with the tilted block, the lead and (signed out) the
-// brand count; the glow background comes from the root layout.
+// brand count; the glow background comes from the root layout. `compact` (signed in, as in the
+// prototype): the headline on the left and `side` (the search) on the right.
 function Shell({
   title,
   block,
   lead,
   count,
   action,
+  compact = false,
+  side,
   children,
 }: {
   title: string;
@@ -322,24 +348,42 @@ function Shell({
   lead: string;
   count?: string;
   action?: React.ReactNode;
+  compact?: boolean;
+  side?: React.ReactNode;
   children: React.ReactNode;
 }) {
+  const heading = (
+    <h1
+      className={`headline ${compact ? "text-[34px] sm:text-[44px]" : "text-[40px] sm:text-[clamp(40px,5.5vw,60px)]"}`}
+    >
+      {title} <span className="headline-block">{block}</span>
+    </h1>
+  );
   return (
     <div className="mx-auto w-full max-w-[1180px] px-4 pt-6 pb-12 sm:px-6">
-      <header className="text-center">
-        <h1 className="headline text-[40px] sm:text-[clamp(40px,5.5vw,60px)]">
-          {title} <span className="headline-block">{block}</span>
-        </h1>
-        <p className="mx-auto mt-4 max-w-2xl text-base leading-relaxed whitespace-pre-line text-muted-foreground sm:text-lg">
-          {lead}
-        </p>
-        {action}
-        {count ? (
-          <p className="mt-3.5 text-[13px] font-bold tracking-[0.12em] text-muted-foreground uppercase">
-            {count}
+      {compact ? (
+        <header className="flex flex-wrap items-end justify-between gap-[18px] pt-3">
+          <div>
+            {heading}
+            <p className="mt-2 text-muted-foreground">{lead}</p>
+            {action}
+          </div>
+          {side}
+        </header>
+      ) : (
+        <header className="text-center">
+          {heading}
+          <p className="mx-auto mt-4 max-w-2xl text-base leading-relaxed whitespace-pre-line text-muted-foreground sm:text-lg">
+            {lead}
           </p>
-        ) : null}
-      </header>
+          {action}
+          {count ? (
+            <p className="mt-3.5 text-[13px] font-bold tracking-[0.12em] text-muted-foreground uppercase">
+              {count}
+            </p>
+          ) : null}
+        </header>
+      )}
       {children}
     </div>
   );

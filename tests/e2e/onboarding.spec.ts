@@ -73,7 +73,7 @@ test("a new user: onboarding, Discover, then Settings (FR-3, FR-6, FR-7, FR-8, F
     page.getByText(/We'll count down each one to your birthday, Feb 2[89]\.$/),
   ).toBeVisible();
   await page.getByLabel("Search by name").fill("cream");
-  await page.getByRole("button", { name: "Search" }).click();
+  await page.getByRole("button", { name: "Search", exact: true }).click();
   await expect(page).toHaveURL(/q=cream/);
   await page.getByRole("link", { name: "Beauty" }).click();
   await expect(page.getByText("Nothing matches these filters.")).toBeVisible();

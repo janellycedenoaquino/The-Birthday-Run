@@ -211,6 +211,7 @@ describe("message catalogue", () => {
       "BR-17",
       "M-130",
       "M-131",
+      "M-131a",
       "M-132",
       "M-133",
       "M-134",
