@@ -124,7 +124,7 @@ export default async function RewardsPage({
 
   return (
     <div className="mx-auto w-full max-w-3xl px-4 py-12 sm:px-6">
-      <h1 className="text-2xl font-semibold">{heading}</h1>
+      <h1 className="headline text-[34px] sm:text-[42px]">{heading}</h1>
       {w.dayNumber < 0 ? (
         <p className="mt-1 text-muted-foreground">
           {w.daysUntilBirthday === 1
@@ -140,13 +140,14 @@ export default async function RewardsPage({
         <Notice text={msg("M-211")} />
       ) : r.view === "outside" ? (
         <Notice
+          start={w.planning.start}
           text={msg("M-207").replace(
             "{date}",
             formatDate(w.planning.start, "long"),
           )}
         />
       ) : r.view === "done" ? (
-        <p className="mt-8 rounded-lg border border-border/70 p-6">
+        <p className="mt-8 rounded-[22px] bg-[#effaf2] p-6 font-bold text-[var(--navy)] shadow-[inset_0_0_0_2px_var(--spring)]">
           {msg("M-212")}
         </p>
       ) : (
@@ -166,29 +167,43 @@ export default async function RewardsPage({
                 type="search"
                 defaultValue={filters.q ?? ""}
                 maxLength={100}
-                className="h-11 w-56 rounded-md border border-input bg-background px-3 text-base"
+                className="h-11 w-56 rounded-xl border-0 bg-white px-3.5 text-base text-[var(--navy)] shadow-[inset_0_0_0_1.5px_var(--border)] outline-none focus-visible:shadow-[inset_0_0_0_2px_var(--navy),0_0_0_4px_color-mix(in_srgb,var(--primary)_45%,transparent)]"
               />
             </div>
-            <div className="grid gap-1">
-              <label htmlFor="rewards-within" className="text-sm">
-                Ends within
-              </label>
-              <select
-                id="rewards-within"
-                name="within"
-                defaultValue={filters.within ?? ""}
-                className="h-11 rounded-md border border-input bg-background px-3 text-base"
-              >
-                <option value="">Any time</option>
-                <option value="1">Within 1 day</option>
-                <option value="7">Within 7 days</option>
-                <option value="14">Within 14 days</option>
-              </select>
-            </div>
+            {filters.within ? (
+              <input type="hidden" name="within" value={filters.within} />
+            ) : null}
             <Button type="submit" size="lg" variant="outline">
-              Apply
+              {msg("M-302e")}
             </Button>
           </form>
+          {/* Decision 0016: "Ends within" as chips (links, so they work without JS). */}
+          <nav aria-label={msg("M-302")} className="mt-4">
+            <p className="mb-2 text-sm font-bold">{msg("M-302")}</p>
+            <ul className="flex flex-wrap gap-2 text-sm">
+              {(
+                [
+                  [undefined, "M-302a"],
+                  ["1", "M-302b"],
+                  ["7", "M-302c"],
+                  ["14", "M-302d"],
+                ] as const
+              ).map(([value, label]) => {
+                const current = filters.within === value;
+                return (
+                  <li key={label}>
+                    <Link
+                      href={query({ within: value, page: undefined })}
+                      aria-current={current ? "page" : undefined}
+                      className={`inline-flex h-9 items-center rounded-[10px] px-3.5 font-bold ${current ? "bg-[var(--bubblegum)] text-[var(--navy)] shadow-[inset_0_0_0_2px_var(--navy),2px_2px_0_var(--navy)]" : "bg-white text-[var(--navy)] shadow-[inset_0_0_0_1.5px_var(--border)] dark:bg-white/90"}`}
+                    >
+                      {msg(label)}
+                    </Link>
+                  </li>
+                );
+              })}
+            </ul>
+          </nav>
           <p className="mt-4 text-sm text-muted-foreground" aria-live="polite">
             {msg("M-178")
               .replace("{shown}", String(r.matched))
@@ -257,7 +272,14 @@ export default async function RewardsPage({
                 lookupZip={lookupZip}
               />
             ) : (
-              <UpgradePrompt supabase={supabase} feature="M-132" />
+              // Decision 0016: the upgrade card over a blurred, made-up route picture (no real
+              // stores or location), so people see what Premium adds.
+              <div className="relative grid min-h-[240px] place-items-center overflow-hidden rounded-[22px] shadow-[0_0_0_1.5px_var(--border)]">
+                <RoutePreview />
+                <div className="relative z-[1] m-4 rounded-2xl bg-background/90 p-4 backdrop-blur-sm sm:m-8">
+                  <UpgradePrompt supabase={supabase} feature="M-132" />
+                </div>
+              </div>
             )}
           </section>
         </>
@@ -269,20 +291,97 @@ export default async function RewardsPage({
 const latest = (a: LocalDate, b: LocalDate) =>
   compareDates(a, b) >= 0 ? a : b;
 
-/** FR-15 / FR-16: a message with the way forward: Discover and Plan. */
-function Notice({ text }: { text: string }) {
+/** FR-15 / FR-16: a message with the way forward: Discover and Plan. Outside the window
+ *  (decision 0016): a calendar tile with the start date and "Your next run starts {date}". */
+function Notice({ text, start }: { text: string; start?: LocalDate }) {
   return (
-    <div className="mt-8 grid gap-4 rounded-lg border border-border/70 p-6">
-      <p>{text}</p>
-      <div>
-        <Button asChild size="lg">
-          <Link href="/discover">Browse Discover</Link>
-        </Button>
-        <Button asChild size="lg" variant="outline" className="ml-2">
-          <Link href="/plan">Start planning</Link>
-        </Button>
+    <div className="frosted mt-8 grid gap-4 rounded-[22px] p-6 sm:grid-cols-[auto_1fr] sm:items-center">
+      {start ? (
+        <div
+          aria-hidden="true"
+          className="grid w-24 overflow-hidden rounded-2xl bg-white text-center text-[var(--navy)] shadow-[0_0_0_1.5px_var(--navy)]"
+        >
+          <span className="bg-[var(--bubblegum)] py-1 text-xs font-extrabold tracking-[0.12em] uppercase">
+            {formatDate(start, "short").split(" ")[0]}
+          </span>
+          <span className="py-2 text-4xl font-extrabold">
+            {formatDate(start, "short").split(" ")[1]}
+          </span>
+        </div>
+      ) : null}
+      <div className="grid gap-4">
+        {start ? (
+          <h2 className="text-xl font-extrabold">
+            {msg("M-303").replace("{date}", formatDate(start, "long"))}
+          </h2>
+        ) : null}
+        <p>{text}</p>
+        <div>
+          <Button asChild size="lg">
+            <Link href="/discover">Browse Discover</Link>
+          </Button>
+          <Button asChild size="lg" variant="outline" className="ml-2">
+            <Link href="/plan">Start planning</Link>
+          </Button>
+        </div>
       </div>
     </div>
+  );
+}
+
+/** A made-up route for the free preview: pastel streets, a pink line and numbered pins. */
+function RoutePreview() {
+  return (
+    <svg
+      aria-hidden="true"
+      viewBox="0 0 600 260"
+      preserveAspectRatio="xMidYMid slice"
+      className="absolute inset-0 h-full w-full blur-[3px]"
+    >
+      <rect width="600" height="260" className="fill-[var(--cream)]" />
+      <path
+        d="M0 190 C120 160 200 230 330 200 S520 140 600 170 V260 H0Z"
+        className="fill-[var(--glow-blue)]"
+      />
+      <circle cx="470" cy="70" r="46" className="fill-[var(--glow-mint)]" />
+      <g stroke="#ffffff" strokeWidth="10" fill="none">
+        <path d="M-10 60 H610 M-10 130 H610 M120 -10 V270 M300 -10 V270 M450 -10 V270" />
+      </g>
+      <path
+        d="M80 150 L180 90 L320 120 L430 60 L520 120"
+        className="stroke-[var(--bubblegum)]"
+        strokeWidth="6"
+        fill="none"
+        strokeLinecap="round"
+      />
+      {[
+        [180, 90, 1],
+        [320, 120, 2],
+        [430, 60, 3],
+        [520, 120, 4],
+      ].map(([x, y, n]) => (
+        <g key={n}>
+          <circle
+            cx={x}
+            cy={y}
+            r="15"
+            fill="#fff"
+            className="stroke-[var(--navy)]"
+            strokeWidth="2"
+          />
+          <text
+            x={x}
+            y={y + 5}
+            textAnchor="middle"
+            fontSize="14"
+            fontWeight="800"
+            className="fill-[var(--navy)]"
+          >
+            {n}
+          </text>
+        </g>
+      ))}
+    </svg>
   );
 }
 
@@ -298,10 +397,10 @@ function RewardCard({
   range: { min: string; max: string };
 }) {
   return (
-    <li className="flex gap-4 rounded-lg border border-border/70 p-4">
-      <RetailerLogo name={item.name} logoFile={item.logo_file} />
+    <li className="flex gap-4 rounded-[20px] bg-white/80 p-4 shadow-[0_0_0_1.5px_var(--border)] dark:bg-white/5">
+      <RetailerLogo name={item.name} logoFile={item.logo_file} size={56} />
       <div className="grid min-w-0 gap-1">
-        <h2 className="font-semibold">
+        <h2 className="font-extrabold">
           <Link
             href={`/discover/${item.id}`}
             className="underline-offset-4 hover:underline"
@@ -309,7 +408,9 @@ function RewardCard({
             {item.name}
           </Link>
         </h2>
-        <p>{item.reward_description}</p>
+        <p className="text-lg leading-snug font-bold">
+          {item.reward_description}
+        </p>
         <p className="text-sm text-muted-foreground">
           {timingLabel(timingOf(item))}
         </p>

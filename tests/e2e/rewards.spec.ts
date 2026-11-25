@@ -91,8 +91,10 @@ test("My Rewards: the list, filters, pages, and the other views (FR-12–FR-16, 
   await expect(page.getByRole("link", { name: "Show more" })).toHaveCount(0);
 
   // "Ends within 1 day" keeps only the 1-day reward; filters and the count combine (FR-13).
-  await page.getByLabel("Ends within").selectOption("1");
-  await page.getByRole("button", { name: "Apply" }).click();
+  await page
+    .getByRole("navigation", { name: "Ends within" })
+    .getByRole("link", { name: "1 day" })
+    .click();
   await expect(page.getByText("Showing 1 of 22")).toBeVisible();
   await expect(cards).toHaveCount(1);
 

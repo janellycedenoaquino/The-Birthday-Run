@@ -358,6 +358,14 @@ export const M = {
   "M-301": "Which programs",
   "M-301b": "are you in?",
   "M-301c": "Pick the ones you've joined. You can add more later on Discover.",
+  // S-105 look (decision 0016).
+  "M-302": "Ends within",
+  "M-302a": "Any time",
+  "M-302b": "1 day",
+  "M-302c": "7 days",
+  "M-302d": "14 days",
+  "M-302e": "Search",
+  "M-303": "Your next run starts {date}",
   "BR-12": "We don't recognise that ZIP code.",
   "BR-13":
     "We couldn't look up stores right now, so these stops have no map pin. Try again later.",
