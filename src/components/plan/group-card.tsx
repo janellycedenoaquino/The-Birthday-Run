@@ -31,6 +31,7 @@ import { toast } from "sonner";
 import { ConfirmCancel, ConfirmDialog, EditDialog } from "@/components/dialogs";
 import { Button } from "@/components/ui/button";
 import type { ActionResult } from "@/lib/action-result";
+import { formatDate, type LocalDate } from "@/lib/birthday/timing";
 import { msg, type MessageId } from "@/lib/messages";
 import { GroupFields, PlanForm } from "./plan-rewards";
 
@@ -49,6 +50,9 @@ export type GroupCardData = {
   outside: boolean; // FR-9 flag (M-235)
   items: GroupItem[];
 };
+
+// Decision 0016: the theme's red is about 3.5:1 on the pink ticket; this one is about 6:1 (WCAG AA).
+const TICKET_ALERT = "font-bold text-[#a3001b] dark:text-destructive";
 
 // One S-106 group (SPEC §3.3: FR-27). The rewards reorder by drag, or by keyboard on the handle
 // (Space to lift, arrows to move, Space to drop) with M-237's announcements; without JS each row
@@ -121,14 +125,19 @@ export function GroupCard({
   };
 
   return (
-    <li className="grid gap-3 rounded-lg border border-border/70 p-4">
+    // Decision 0016: a pink ticket: a white date stamp, the name and pickup, a dashed tear line,
+    // then the numbered stops.
+    <li className="grid gap-3 rounded-[22px] bg-[var(--glow-pink)] p-4 text-[var(--navy)] shadow-[0_0_0_1.5px_var(--navy)] sm:p-5 dark:bg-[#4a3438] dark:text-foreground">
       <div className="flex flex-wrap items-start justify-between gap-3">
-        <div>
-          <h3 className="font-semibold">{group.name}</h3>
-          <p className="text-sm text-muted-foreground">{group.pickupLabel}</p>
-          {group.outside ? (
-            <p className="text-sm text-destructive">{msg("M-235")}</p>
-          ) : null}
+        <div className="flex items-start gap-3.5">
+          <DateStamp date={group.pickupDate as LocalDate} />
+          <div>
+            <h3 className="text-lg font-extrabold">{group.name}</h3>
+            <p className="text-sm text-muted-foreground">{group.pickupLabel}</p>
+            {group.outside ? (
+              <p className={`text-sm ${TICKET_ALERT}`}>{msg("M-235")}</p>
+            ) : null}
+          </div>
         </div>
         <div className="flex gap-2">
           <EditGroup
@@ -148,7 +157,7 @@ export function GroupCard({
       {conflict ? (
         <div
           role="alert"
-          className="flex flex-wrap items-center gap-2 text-sm text-destructive"
+          className={`flex flex-wrap items-center gap-2 text-sm ${TICKET_ALERT}`}
         >
           {msg("BR-17")}
           <Button
@@ -163,6 +172,10 @@ export function GroupCard({
           </Button>
         </div>
       ) : null}
+      <hr
+        aria-hidden="true"
+        className="border-0 border-t-2 border-dashed border-[color-mix(in_srgb,var(--navy)_35%,transparent)]"
+      />
       {order.length === 0 ? (
         <p className="text-sm text-muted-foreground">{msg("M-241")}</p>
       ) : (
@@ -180,6 +193,7 @@ export function GroupCard({
               {order.map((item, index) => (
                 <SortableRow
                   key={item.id}
+                  n={index + 1}
                   item={item}
                   groupId={group.id}
                   current={order}
@@ -202,6 +216,7 @@ export function GroupCard({
 }
 
 function SortableRow({
+  n,
   item,
   groupId,
   current,
@@ -209,6 +224,7 @@ function SortableRow({
   down,
   actions,
 }: {
+  n: number;
   item: GroupItem;
   groupId: string;
   current: GroupItem[];
@@ -228,7 +244,7 @@ function SortableRow({
     <li
       ref={setNodeRef}
       style={{ transform: CSS.Transform.toString(transform), transition }}
-      className="flex items-center gap-2 rounded-md border border-border/70 bg-background p-2"
+      className="flex items-center gap-2 rounded-xl bg-white/90 p-2 text-[var(--navy)] shadow-[0_0_0_1.5px_var(--border)]"
     >
       <button
         type="button"
@@ -236,11 +252,17 @@ function SortableRow({
         {...attributes}
         {...listeners}
         aria-label={msg("M-236").replace("{retailer}", item.name)}
-        className="flex size-9 items-center justify-center rounded-md hover:bg-muted"
+        className="flex size-9 items-center justify-center rounded-md hover:bg-[var(--glow-pink)]"
       >
         <GripVertical aria-hidden="true" className="size-4" />
       </button>
-      <span className="min-w-0 flex-1">{item.name}</span>
+      <i
+        aria-hidden="true"
+        className="grid size-7 not-italic shrink-0 place-items-center rounded-full bg-[var(--bubblegum)] text-sm font-extrabold shadow-[0_0_0_1.5px_var(--navy)]"
+      >
+        {n}
+      </i>
+      <span className="min-w-0 flex-1 font-bold">{item.name}</span>
       <MoveForm
         groupId={groupId}
         current={current}
@@ -453,5 +475,21 @@ function DeleteGroup({
         </PlanForm>
       </ConfirmDialog>
     </>
+  );
+}
+
+/** The ticket's date stamp: month over day, white on the pink ticket. */
+function DateStamp({ date }: { date: LocalDate }) {
+  const [month, day] = formatDate(date, "short").split(" ");
+  return (
+    <span
+      aria-hidden="true"
+      className="grid w-14 shrink-0 overflow-hidden rounded-xl bg-white text-center text-[var(--navy)] shadow-[0_0_0_1.5px_var(--navy)]"
+    >
+      <span className="pt-1 text-[11px] font-extrabold tracking-[0.12em] uppercase">
+        {month}
+      </span>
+      <span className="pb-1 text-2xl leading-tight font-extrabold">{day}</span>
+    </span>
   );
 }

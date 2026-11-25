@@ -130,8 +130,8 @@ export default async function PlanPage({ searchParams }: PageProps<"/plan">) {
     : undefined;
 
   return (
-    <div className="mx-auto w-full max-w-3xl px-4 py-12 sm:px-6">
-      <h1 className="text-2xl font-semibold">{msg("M-220")}</h1>
+    <div className="mx-auto w-full max-w-6xl px-4 py-12 sm:px-6">
+      <h1 className="headline text-[34px] sm:text-[42px]">{msg("M-220")}</h1>
       <p className="mt-1 text-muted-foreground">
         {msg("M-221")
           .replace("{start}", formatDate(range.min, "long"))
@@ -184,93 +184,103 @@ export default async function PlanPage({ searchParams }: PageProps<"/plan">) {
         </section>
       ) : null}
 
-      {rows.length === 0 ? (
-        <div className="mt-8 grid gap-4 rounded-lg border border-border/70 p-6">
-          <p>{msg("M-239")}</p>
-          <div>
-            <Button asChild size="lg">
-              <Link href="/discover">{msg("M-102")}</Link>
-            </Button>
-          </div>
-        </div>
-      ) : (
-        <PlanRewards
-          rows={rows}
-          groups={groups.map((g) => ({ id: g.id, name: g.name }))}
-          defaultDate={start.date}
-          defaultTime={start.time}
-          range={{ min: range.min, max: range.max }}
-          createGroup={createGroup}
-          addToGroup={addToGroup}
-        />
-      )}
-
-      <section aria-labelledby="smart-grouping" className="mt-10 grid gap-3">
-        <h2 id="smart-grouping" className="text-lg font-semibold">
-          {msg("M-135")}
-        </h2>
-        {!premium ? (
-          <UpgradePrompt supabase={supabase} feature="M-135" compact />
-        ) : ungrouped >= SMART_GROUPING_MIN ? (
-          <div>
-            <SmartGrouping
+      {/* Decision 0016: side by side on wide screens, "Rewards to plan" staying in view. */}
+      <div className="mt-8 grid gap-10 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.15fr)] lg:items-start">
+        {/* Fits the screen and scrolls on its own, so no reward is out of reach while the groups scroll. */}
+        <div className="lg:sticky lg:top-20 lg:-m-1 lg:max-h-[calc(100vh-6rem)] lg:overflow-y-auto lg:overscroll-contain lg:p-1">
+          {rows.length === 0 ? (
+            <div className="frosted grid gap-4 rounded-[22px] p-6">
+              <p>{msg("M-239")}</p>
+              <div>
+                <Button asChild size="lg">
+                  <Link href="/discover">{msg("M-102")}</Link>
+                </Button>
+              </div>
+            </div>
+          ) : (
+            <PlanRewards
+              rows={rows}
+              groups={groups.map((g) => ({ id: g.id, name: g.name }))}
+              defaultDate={start.date}
+              defaultTime={start.time}
               range={{ min: range.min, max: range.max }}
-              suggestGroups={suggestGroups}
-              applySuggestions={applySuggestions}
-              lookupZip={lookupZip}
+              createGroup={createGroup}
+              addToGroup={addToGroup}
             />
-          </div>
-        ) : (
-          <p className="text-sm text-muted-foreground">
-            {msg("M-230").replace("{needed}", String(SMART_GROUPING_MIN))}
-          </p>
-        )}
-      </section>
+          )}
+        </div>
+        <div>
+          <section
+            aria-labelledby="smart-grouping"
+            className="grid gap-3 rounded-[22px] bg-[linear-gradient(90deg,var(--glow-pink),var(--glow-blue))] p-5 text-[var(--navy)] shadow-[0_0_0_1.5px_var(--border)] dark:text-foreground"
+          >
+            <h2 id="smart-grouping" className="text-lg font-extrabold">
+              {msg("M-135")}
+            </h2>
+            {!premium ? (
+              <UpgradePrompt supabase={supabase} feature="M-135" compact />
+            ) : ungrouped >= SMART_GROUPING_MIN ? (
+              <div>
+                <SmartGrouping
+                  range={{ min: range.min, max: range.max }}
+                  suggestGroups={suggestGroups}
+                  applySuggestions={applySuggestions}
+                  lookupZip={lookupZip}
+                />
+              </div>
+            ) : (
+              <p className="text-sm text-muted-foreground">
+                {msg("M-230").replace("{needed}", String(SMART_GROUPING_MIN))}
+              </p>
+            )}
+          </section>
 
-      <section aria-labelledby="plan-groups" className="mt-10">
-        <h2 id="plan-groups" className="text-lg font-semibold">
-          {msg("M-233")}
-        </h2>
-        {cards.length === 0 ? (
-          <p className="mt-2 text-muted-foreground">{msg("M-240")}</p>
-        ) : (
-          <ul className="mt-4 grid gap-4">
-            {cards.map((g) => (
-              <GroupCard
-                key={`${g.id}:${g.items.map((i) => i.id).join()}`}
-                group={g}
-                range={{ min: range.min, max: range.max }}
-                actions={{
-                  updateGroup,
-                  deleteGroup,
-                  removeFromGroup,
-                  reorderGroupItems,
-                  // FR-28: premium only; free users get no control (metric 2).
-                  duplicateGroup: premium ? duplicateGroup : undefined,
-                }}
-                route={
-                  g.items.length < 2 ? null : premium ? (
-                    <GroupRoute
-                      groupId={g.id}
-                      orderKey={g.items.map((i) => i.id).join()}
-                      getGroupRoute={getGroupRoute}
-                      lookupZip={lookupZip}
-                    />
-                  ) : (
-                    <LockedRoute>
-                      <UpgradePrompt
-                        supabase={supabase}
-                        feature="M-136"
-                        compact
-                      />
-                    </LockedRoute>
-                  )
-                }
-              />
-            ))}
-          </ul>
-        )}
-      </section>
+          <section aria-labelledby="plan-groups" className="mt-8">
+            <h2 id="plan-groups" className="text-xl font-extrabold">
+              {msg("M-233")}
+            </h2>
+            {cards.length === 0 ? (
+              <p className="mt-2 text-muted-foreground">{msg("M-240")}</p>
+            ) : (
+              <ul className="mt-4 grid gap-4">
+                {cards.map((g) => (
+                  <GroupCard
+                    key={`${g.id}:${g.items.map((i) => i.id).join()}`}
+                    group={g}
+                    range={{ min: range.min, max: range.max }}
+                    actions={{
+                      updateGroup,
+                      deleteGroup,
+                      removeFromGroup,
+                      reorderGroupItems,
+                      // FR-28: premium only; free users get no control (metric 2).
+                      duplicateGroup: premium ? duplicateGroup : undefined,
+                    }}
+                    route={
+                      g.items.length < 2 ? null : premium ? (
+                        <GroupRoute
+                          groupId={g.id}
+                          orderKey={g.items.map((i) => i.id).join()}
+                          getGroupRoute={getGroupRoute}
+                          lookupZip={lookupZip}
+                        />
+                      ) : (
+                        <LockedRoute>
+                          <UpgradePrompt
+                            supabase={supabase}
+                            feature="M-136"
+                            compact
+                          />
+                        </LockedRoute>
+                      )
+                    }
+                  />
+                ))}
+              </ul>
+            )}
+          </section>
+        </div>
+      </div>
     </div>
   );
 }
