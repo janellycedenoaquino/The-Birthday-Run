@@ -19,8 +19,8 @@ Two launches (ROADMAP): **v1** after phase 4 and **v2 sign-off** after phase 7 (
 - [ ] Threat items marked "before launch" done (DESIGN §4.2)
 - [x] Privacy policy and terms filled in and linked in the footer, including the app's additions: OpenFreeMap and Google Maps links, Stripe as processor, store-data licences (DESIGN §4.3, §4.4)
 - [x] Privacy policy lists the Template's service providers and says deleted data can stay in backups up to the backup retention (Template list)
-- [ ] Supabase auth audit log after deletion decided and stated (Template decisions/0017)
-- [ ] Lost-authenticator rule in the support notes (Template list)
+- [x] Supabase auth audit log after deletion decided and stated (Template decisions/0017): decisions/0024
+- [x] Lost-authenticator rule in the support notes (Template list): README "Operations"
 - [ ] `GOOGLE_CLIENT_SECRET` and `TURNSTILE_SECRET_KEY` not on Vercel; only `main` deploys (`vercel.json` `git.deploymentEnabled`; CI builds and tests every PR instead), and previews stay behind Vercel Authentication if ever turned on
 - [ ] `Permissions-Policy` sends `geolocation=(self)` and nothing broader (decisions/0002)
 
@@ -54,7 +54,7 @@ Two launches (ROADMAP): **v1** after phase 4 and **v2 sign-off** after phase 7 (
 - [ ] The Hermes checker holds a GitHub credential for this repo only and no database, Supabase, Vercel or Stripe key; record its first three runs (BUILD F-13 checker contract, NFR-11)
 - [ ] Reminder emails: a doubled run sends once; one-click turn-off works from Gmail's button; send budget respected (D15)
 - [ ] In Gmail's "Show original" of a real reminder, Resend's DKIM signature covers `List-Unsubscribe` and `List-Unsubscribe-Post` (RFC 8058; BUILD F-12 "Unverified")
-- [ ] **Reminder emails and CAN-SPAM:** decide the postal-address question (DESIGN §4.4) before any reminder reaches someone outside the family
+- [x] **Reminder emails and CAN-SPAM:** decide the postal-address question (DESIGN §4.4) before any reminder reaches someone outside the family: decisions/0024
 - [ ] Report heartbeat check fails loudly when the reminder cron is stopped (D16)
 - [ ] **Sign-in links ask "Is this you?" first** (decision 0022, T22): opening a sign-in or confirm link shows the masked email of the account it signs into, and nothing signs in until the visitor confirms
 - [ ] The checker's GitHub token has only the scopes in D16, and expires within a year
