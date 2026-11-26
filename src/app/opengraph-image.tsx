@@ -5,11 +5,11 @@ import { appConfig } from "@/config/app";
 import { msg } from "@/lib/messages";
 import { fitInside, logoSize } from "@/lib/og/logo-size";
 import { SHARE_BRANDS } from "@/lib/og/share-brands";
-import { getSiteUrl } from "@/server/site-url";
 
 // /opengraph-image (BUILD F-3, FR-24): the link preview, 1200×630, in the landing page's look
 // (decision 0016; owner's pick "A", 2026-11-26): the headline with its pink block on the pastel
-// glow, a tilted wall of well-known brands' logo cards, and the doll mark with the name and domain.
+// glow, centred top to bottom, and a tilted wall of well-known brands' logo cards. No name line or
+// picture: messaging apps already show the title and domain under the image (owner, 2026-11-26).
 // Built once at build time. next/og draws inline styles only (flexbox, no CSS classes).
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
@@ -17,7 +17,6 @@ export const alt = `${appConfig.name}: ${msg("M-282").replace(/\n/g, " ")} ${msg
 
 // Decision 0016's colours (globals.css): navy text, bubblegum block, cream page, three glows.
 const NAVY = appConfig.brand.primaryForeground;
-const MUTED = "#4c557d";
 const BUBBLEGUM = "#ff9ec4";
 const CREAM = "#fffcf7";
 // Each glow fades to its own colour at alpha 0: next/og fades "transparent" through black (grey).
@@ -35,12 +34,8 @@ const LOGO_BOX = { width: CARD.width - 40, height: CARD.height - 36 };
 // Every path is a fixed folder under the project (Next's "local assets" pattern), so the build
 // traces only those folders, not the whole project.
 export default async function OpengraphImage() {
-  const [bold, semi, doll, logos] = await Promise.all([
+  const [bold, logos] = await Promise.all([
     readFile(join(process.cwd(), "assets/fonts/plus-jakarta-sans-800.woff")),
-    readFile(join(process.cwd(), "assets/fonts/plus-jakarta-sans-600.woff")),
-    readFile(join(process.cwd(), "public/brand/doll-head.png"), "base64").then(
-      (b64) => `data:image/png;base64,${b64}`,
-    ),
     Promise.all(
       SHARE_BRANDS.map(async ({ logoFile }) => {
         const bytes = await readFile(
@@ -54,7 +49,6 @@ export default async function OpengraphImage() {
       }),
     ),
   ]);
-  const domain = new URL(getSiteUrl()).host.replace(/^www\./, "");
   const columns = [logos.slice(0, 7), logos.slice(7)];
 
   return new ImageResponse(
@@ -76,15 +70,13 @@ export default async function OpengraphImage() {
           width: 690,
           display: "flex",
           flexDirection: "column",
-          justifyContent: "space-between",
+          justifyContent: "center",
         }}
       >
         <div
           style={{
             display: "flex",
             flexDirection: "column",
-            // Lower than the frame's top (owner, 2026-11-26): even space above it and down to the mark.
-            marginTop: 70,
             fontSize: 74,
             fontWeight: 800,
             lineHeight: 1.06,
@@ -104,30 +96,6 @@ export default async function OpengraphImage() {
               }}
             >
               {msg("M-282b").replace(/\n/g, " ")}
-            </div>
-          </div>
-        </div>
-        <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
-          <div
-            style={{
-              width: 64,
-              height: 64,
-              borderRadius: 32,
-              background: "#ffd6e5",
-              display: "flex",
-              alignItems: "flex-end",
-              justifyContent: "center",
-              overflow: "hidden",
-            }}
-          >
-            <img src={doll} width={60} height={60} alt="" />
-          </div>
-          <div style={{ display: "flex", flexDirection: "column" }}>
-            <div style={{ fontSize: 30, fontWeight: 800 }}>
-              {appConfig.name}
-            </div>
-            <div style={{ fontSize: 22, fontWeight: 600, color: MUTED }}>
-              {domain}
             </div>
           </div>
         </div>
@@ -186,10 +154,7 @@ export default async function OpengraphImage() {
     </div>,
     {
       ...size,
-      fonts: [
-        { name: "Jakarta", data: bold, weight: 800, style: "normal" },
-        { name: "Jakarta", data: semi, weight: 600, style: "normal" },
-      ],
+      fonts: [{ name: "Jakarta", data: bold, weight: 800, style: "normal" }],
     },
   );
 }
