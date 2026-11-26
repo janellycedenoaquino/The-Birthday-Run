@@ -83,6 +83,8 @@ export default async function OpengraphImage() {
           style={{
             display: "flex",
             flexDirection: "column",
+            // Lower than the frame's top (owner, 2026-11-26): even space above it and down to the mark.
+            marginTop: 70,
             fontSize: 74,
             fontWeight: 800,
             lineHeight: 1.06,
