@@ -12,7 +12,7 @@ import { rateLimit } from "@/server/security/rate-limit";
 // Enrollment actions (BUILD F-3: FR-7, FR-8). Public endpoints: each validates and guards itself
 // (rule 4). `onboarded` level: without a birthday they refuse with BR-1.
 
-const PAGES = ["/discover", "/rewards", "/plan", "/dashboard"];
+const PAGES = ["/discover", "/rewards", "/plan"];
 
 /** Join a program. Twice is fine (one row); a retired or unknown retailer → BR-3. */
 export async function enroll(

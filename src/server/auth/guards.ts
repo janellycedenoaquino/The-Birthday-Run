@@ -77,7 +77,7 @@ const PAGE_TARGETS: Record<GuardFailure, string> = {
   reauth_required: "/auth/reauthenticate",
   not_onboarded: "/onboarding",
   // Pages never call requirePremium (they render C-104 instead); a page that did lands home.
-  not_premium: "/dashboard",
+  not_premium: "/rewards",
 };
 
 /** Throws GuardError in refuse mode; otherwise redirects the page per §0.2. */
@@ -93,7 +93,7 @@ export async function fail(code: GuardFailure): Promise<never> {
       notice ? withNotice(PAGE_TARGETS[code], notice) : PAGE_TARGETS[code],
     );
   }
-  const next = safeRedirectPath(here, "/dashboard");
+  const next = safeRedirectPath(here, "/rewards");
   redirect(`${PAGE_TARGETS[code]}?next=${encodeURIComponent(next)}`);
 }
 

@@ -12,6 +12,8 @@ import {
 export type HistoryPickup = {
   id: string;
   retailer: string;
+  /** The retailer's reward, shown under its name (decision 0016). */
+  reward: string;
   date: LocalDate;
   note: string | null;
   locationLabel: string | null;

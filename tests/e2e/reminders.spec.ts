@@ -39,7 +39,7 @@ const remindersOn = async (id: string) =>
   )[0]!.on;
 const signIn = async (page: Page, email: string) => {
   await passwordSignIn(page, email, PASSWORD);
-  await expect(page).toHaveURL(/\/dashboard$/);
+  await expect(page).toHaveURL(/\/rewards$/);
 };
 
 test("Settings: the reminders switch turns off and on and stays; free users get C-104 (FR-42, FR-39)", async ({

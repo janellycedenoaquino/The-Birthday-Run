@@ -1,5 +1,5 @@
 import { existsSync, readFileSync, rmSync } from "node:fs";
-import { expect, type Page } from "@playwright/test";
+import { expect, type Locator, type Page } from "@playwright/test";
 
 // Shared e2e helpers (BUILD CI "Test suites"): the mailbox adapter (§0.8's e2e seam), Turnstile,
 // sign-in, and the CSP-console watcher.
@@ -123,7 +123,16 @@ export async function completeOnboarding(page: Page) {
     page.getByRole("heading", { name: "Which programs are you in?" }),
   ).toBeVisible();
   await page.getByRole("button", { name: "Skip for now" }).click();
-  await expect(page).toHaveURL(/\/dashboard$/);
+  // The finish card (owner, 2026-11-25), then on to My Rewards (decision 0018).
+  await expect(page).toHaveURL(/\/onboarding\?done=1$/);
+  await expect(
+    page.getByRole("heading", { name: "You're all set!" }),
+  ).toBeVisible();
+  await expect(
+    page.getByText("No programs yet. Add them any time from Rewards."),
+  ).toBeVisible();
+  await page.getByRole("link", { name: "Go to My Rewards" }).click();
+  await expect(page).toHaveURL(/\/rewards$/);
 }
 
 /**
@@ -162,4 +171,46 @@ export async function mailHeaders(
   id: string,
 ): Promise<Record<string, string[]>> {
   return (await fetch(`${MAILPIT}/api/v1/message/${id}/headers`)).json();
+}
+
+/** S-10: enter a two-step code and verify; signed in, the user lands on My Rewards. */
+export async function verifyTwoStep(page: Page, code: string) {
+  await page.getByLabel("6-digit code").fill(code);
+  await page.getByRole("button", { name: "Verify" }).click();
+  await expect(page).toHaveURL(/\/rewards$/);
+}
+
+/** S-108: turn two-step sign-in off; `code` runs after `beforeCode` (a wait for a fresh step). */
+export async function turnOffTwoStep(
+  page: Page,
+  code: () => string,
+  beforeCode: () => Promise<void> = async () => {},
+) {
+  await page.goto("/settings#two-step");
+  await page.getByRole("button", { name: "Turn off two-step sign-in" }).click();
+  await beforeCode();
+  await page.getByLabel("Enter a current code to turn it off").fill(code());
+  await page.getByRole("button", { name: "Turn off", exact: true }).click();
+  await expect(
+    page.getByText("Two-step sign-in is off.", { exact: false }).first(),
+  ).toBeVisible();
+}
+
+/** S-108 "Download my data" (FR-15): the download it starts. */
+export async function downloadMyData(page: Page) {
+  await page.goto("/settings#your-data");
+  const [download] = await Promise.all([
+    page.waitForEvent("download"),
+    page.getByRole("link", { name: "Download my data" }).click(),
+  ]);
+  return download;
+}
+
+/** Opens a "⋯" menu (decision 0016; a <details>, so it's found by its label, not as a button). */
+export async function openMore(scope: Page | Locator, label: string) {
+  const summary = scope.getByLabel(label, { exact: true });
+  const open = await summary.evaluate(
+    (el) => (el.parentElement as HTMLDetailsElement).open,
+  );
+  if (!open) await summary.click();
 }

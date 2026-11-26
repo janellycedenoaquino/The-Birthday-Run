@@ -23,7 +23,7 @@ test("signed out: every non-retired retailer, the sign-up prompt, and a 404 for 
   await page.goto("/discover");
   await expect(
     page.getByRole("heading", {
-      name: "Every birthday treat, in one place.",
+      name: "Every birthday reward, in one place.",
       level: 1,
     }),
   ).toBeVisible();
@@ -46,16 +46,19 @@ test("signed out: every non-retired retailer, the sign-up prompt, and a 404 for 
   await expect(
     page.getByRole("heading", { name: notPopular!.name, level: 1 }),
   ).toBeVisible();
-  // Decision 0016: breadcrumb back to Discover, sign-up in place of the toggle, blurred sample
-  // dates (aria-hidden) with M-280, and the visitor band.
+  // Decision 0016 (owner, 2026-11-25): a back arrow on wide screens (the breadcrumb is for
+  // phones), no sign-up button beside the website link, blurred sample dates (aria-hidden)
+  // with M-280, the visitor band, and no "What you need" for visitors.
   await expect(
-    page.getByRole("navigation", { name: "Breadcrumb" }).getByRole("link", {
-      name: "Discover",
-    }),
+    page.getByRole("link", { name: "Back to Rewards" }),
   ).toBeVisible();
   await expect(
-    page.getByRole("link", { name: "Sign up free to track it" }),
-  ).toBeVisible();
+    page.getByRole("navigation", { name: "Breadcrumb" }),
+  ).toBeHidden();
+  await expect(page.getByRole("link", { name: /^Sign up free/ })).toHaveCount(
+    1,
+  );
+  await expect(page.getByText("What you need")).toHaveCount(0);
   await expect(
     page.getByRole("link", { name: "Sign up to see your dates" }),
   ).toBeVisible();
@@ -70,6 +73,9 @@ test("signed out: every non-retired retailer, the sign-up prompt, and a 404 for 
   const sheet = page.getByRole("dialog", { name: "Starbucks" });
   await expect(sheet).toBeVisible();
   await expect(sheet.getByText("Your birthday gift")).toBeVisible();
+  // The first pop-up on this device hints that it scrolls (owner, 2026-11-25).
+  const hint = sheet.getByText("More below");
+  await expect(hint).toHaveCSS("opacity", "1");
   await page.keyboard.press("Escape");
   await expect(page).toHaveURL(/\/discover$/);
   await expect(sheet).toBeHidden();

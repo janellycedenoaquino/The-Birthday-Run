@@ -93,7 +93,7 @@ export function PlanRewards({
           {msg("M-223")}
         </label>
       </div>
-      <ul className="mt-4 grid gap-2">
+      <ul className={`mt-4 grid gap-2 ${selected.size > 0 ? "pb-24" : ""}`}>
         {shown.map((r) => (
           <li key={r.id}>
             <label
@@ -127,9 +127,20 @@ export function PlanRewards({
         ))}
       </ul>
       {selected.size > 0 ? (
-        <div className="sticky bottom-4 mt-4 flex items-center justify-between gap-4 rounded-lg border border-border bg-background p-4 shadow-sm">
-          <span>{msg("M-226").replace("{count}", String(selected.size))}</span>
-          <Button size="lg" onClick={() => setOpen(true)}>
+        // Decision 0016: a navy bar "N selected · Clear · Add to group", floating at the bottom of
+        // the screen so it's always in view; on phones just above the tab bar (C-101).
+        <div className="fixed inset-x-3 bottom-[calc(80px+env(safe-area-inset-bottom))] z-40 flex items-center gap-3 rounded-2xl bg-[var(--navy)] py-2.5 pr-2.5 pl-4 text-white shadow-[0_8px_24px_rgb(0_0_0/20%)] sm:inset-x-auto sm:bottom-6 sm:left-1/2 sm:w-[min(36rem,calc(100%-3rem))] sm:-translate-x-1/2 dark:bg-[#4a3438] dark:shadow-[0_0_0_1.5px_var(--border),0_8px_24px_rgb(0_0_0/40%)]">
+          <span role="status" className="font-extrabold">
+            {msg("M-226").replace("{count}", String(selected.size))}
+          </span>
+          <button
+            type="button"
+            onClick={clear}
+            className="rounded-lg px-2 py-1 text-sm font-bold text-white/85 underline-offset-4 outline-none hover:underline focus-visible:ring-3 focus-visible:ring-white/60"
+          >
+            {msg("M-309")}
+          </button>
+          <Button size="lg" className="ml-auto" onClick={() => setOpen(true)}>
             {msg("M-228")}
           </Button>
         </div>

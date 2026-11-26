@@ -20,6 +20,12 @@ type Action = (
 
 // S-4's two tabs (SPEC §3.3, BUILD F-7): Password (FR-3) and Email link (FR-4). Radix unmounts the
 // inactive tab, so only the active one renders its C-4. No autofocus (SPEC S-4).
+// The Password / Email link switch, styled like the card's own tabs (decision 0016 prototype).
+const SWITCH =
+  "grid w-full grid-cols-2 group-data-horizontal/tabs:h-auto gap-1 rounded-xl bg-white/60 p-1 shadow-[inset_0_0_0_1.5px_var(--border)] dark:bg-white/10";
+const SWITCH_TAB =
+  "h-auto rounded-[9px] py-2.5 text-sm font-bold data-active:bg-white data-active:text-[var(--navy)] data-active:shadow-[0_0_0_1.5px_var(--navy)]! dark:data-active:bg-white dark:data-active:text-[var(--navy)]";
+
 export function SignInForms({
   signIn,
   requestMagicLink,
@@ -33,9 +39,13 @@ export function SignInForms({
 }) {
   return (
     <Tabs defaultValue="password" className="gap-6">
-      <TabsList className="grid w-full grid-cols-2">
-        <TabsTrigger value="password">Password</TabsTrigger>
-        <TabsTrigger value="link">Email link</TabsTrigger>
+      <TabsList className={SWITCH}>
+        <TabsTrigger value="password" className={SWITCH_TAB}>
+          Password
+        </TabsTrigger>
+        <TabsTrigger value="link" className={SWITCH_TAB}>
+          Email link
+        </TabsTrigger>
       </TabsList>
       <TabsContent value="password">
         <PasswordTab signIn={signIn} next={next} nonce={nonce} />

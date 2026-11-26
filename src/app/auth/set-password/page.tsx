@@ -28,12 +28,12 @@ export default async function SetPasswordPage({
     throw new Error("S-9: could not read the profile", {
       cause: error ?? "profile row missing",
     });
-  if (profile.password_set_at || !emailOnly) redirect("/dashboard");
+  if (profile.password_set_at || !emailOnly) redirect("/rewards");
 
   const { next } = await searchParams;
   const target = safeRedirectPath(
     typeof next === "string" ? next : undefined,
-    "/dashboard",
+    "/rewards",
   );
 
   return (

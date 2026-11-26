@@ -41,7 +41,7 @@ export default async function HistoryPage({
     supabase
       .from("pickups")
       .select(
-        "id, picked_up_on, note, location_label, retailer:retailers(name)",
+        "id, picked_up_on, note, location_label, retailer:retailers(name, reward_description)",
       ),
   ]);
   if (pError)
@@ -54,6 +54,7 @@ export default async function HistoryPage({
     pickups: pickups.map((p) => ({
       id: p.id,
       retailer: p.retailer.name,
+      reward: p.retailer.reward_description,
       date: p.picked_up_on as LocalDate,
       note: p.note,
       locationLabel: p.location_label,
@@ -100,7 +101,7 @@ export default async function HistoryPage({
                   <Link
                     href={`/history?year=${s.year}`}
                     aria-current={current ? "page" : undefined}
-                    className={`inline-flex h-10 items-center rounded-xl px-4 font-extrabold text-[var(--navy)] ${current ? "bg-[var(--bubblegum)] shadow-[inset_0_0_0_2px_var(--navy),2px_2px_0_var(--navy)]" : "bg-white shadow-[inset_0_0_0_1.5px_var(--border)]"}`}
+                    className={`inline-flex h-10 items-center rounded-xl px-4 font-extrabold text-[var(--navy)] ${current ? "bg-[var(--bubblegum)] shadow-[inset_0_0_0_2px_var(--navy),2px_2px_0_var(--navy)]" : "bg-white shadow-[inset_0_0_0_1.5px_var(--border)] dark:bg-white/10 dark:text-foreground"}`}
                   >
                     {s.year}
                   </Link>
@@ -137,17 +138,19 @@ export default async function HistoryPage({
                 {section.items.map((p) => (
                   <li
                     key={p.id}
-                    className="relative flex flex-wrap items-start justify-between gap-3 rounded-[20px] bg-white/85 p-4 shadow-[0_0_0_1.5px_var(--border)] before:absolute before:top-6 before:-left-[25px] before:size-3.5 before:rounded-full before:bg-[var(--bubblegum)] before:shadow-[0_0_0_1.5px_var(--navy)] dark:bg-white/5"
+                    className="relative flex items-start justify-between gap-3 rounded-[20px] bg-white/85 p-4 shadow-[0_0_0_1.5px_var(--border)] before:absolute before:top-6 before:-left-[25px] before:size-3.5 before:rounded-full before:bg-[var(--bubblegum)] before:shadow-[0_0_0_1.5px_var(--navy)] dark:bg-white/5"
                   >
-                    <div className="flex items-start gap-3.5">
+                    <div className="flex min-w-0 flex-1 items-start gap-3.5">
                       <DateBlock date={p.date} />
-                      <div className="grid gap-1">
+                      <div className="grid min-w-0 gap-1">
                         <p className="font-extrabold">{p.retailer}</p>
+                        {/* The date is in the block; its full form for screen readers. */}
+                        <p className="sr-only">{formatDate(p.date, "long")}</p>
                         <p className="text-sm text-muted-foreground">
-                          {formatDate(p.date, "long")}
+                          {p.reward}
                         </p>
                         {p.note ? (
-                          <p className="w-fit rounded-md bg-[#fff4c2] px-1.5 text-sm text-[var(--navy)]">
+                          <p className="w-fit rounded-md bg-[#fff4c2] px-1.5 text-sm whitespace-pre-line text-[var(--navy)]">
                             {p.note}
                           </p>
                         ) : null}

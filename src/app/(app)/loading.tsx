@@ -10,7 +10,7 @@ export default function Loading() {
       aria-busy="true"
       role="status"
     >
-      <span className="sr-only">{msg("M-305")}</span>
+      <span className="sr-only">{msg("M-315")}</span>
       <span aria-hidden="true" className="flex gap-1.5">
         {["var(--bubblegum)", "var(--primary)", "var(--spring)"].map(
           (color, i) => (

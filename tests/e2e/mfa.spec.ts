@@ -1,6 +1,11 @@
 import { existsSync } from "node:fs";
 import { expect, test, type Page } from "@playwright/test";
-import { ownIp } from "./support";
+import {
+  ownIp,
+  passwordSignIn as signInWith,
+  turnOffTwoStep,
+  verifyTwoStep,
+} from "./support";
 
 // Its own client IP, so sign-ins don't share one per-IP budget (support.ts ownIp).
 test.use(ownIp(13));
@@ -12,16 +17,7 @@ const { createUser, PASSWORD } = await import("../rls/helpers");
 const { totp } = await import("../rls/totp");
 
 async function passwordSignIn(page: Page, email: string) {
-  await page.goto("/sign-in");
-  await page.getByLabel("Email", { exact: true }).fill(email);
-  await page.locator('input[name="password"]').fill(PASSWORD);
-  await expect(page.locator('input[name="cf-turnstile-response"]')).toHaveValue(
-    /.+/,
-    {
-      timeout: 20_000,
-    },
-  );
-  await page.getByRole("button", { name: "Sign in", exact: true }).click();
+  await signInWith(page, email, PASSWORD);
 }
 
 /** A code for the next 30 s step if the current one is about to end (avoids a boundary flake). */
@@ -36,7 +32,7 @@ test("turn on → sign in needs the code → turn off (FR-57, FR-58, FR-59)", as
   test.setTimeout(90_000); // includes waiting out one 30 s code step
   const user = await createUser("e2e-mfa");
   await passwordSignIn(page, user.email);
-  await expect(page).toHaveURL(/\/dashboard$/);
+  await expect(page).toHaveURL(/\/rewards$/);
 
   // Set up (a fresh sign-in is recent, so no gate).
   await page.goto("/settings#two-step");
@@ -70,21 +66,16 @@ test("turn on → sign in needs the code → turn off (FR-57, FR-58, FR-59)", as
   await page.goto("/dashboard");
   await expect(page).toHaveURL(/\/auth\/mfa\?next=%2Fdashboard/);
 
-  await page.getByLabel("6-digit code").fill(freshCode(secret));
-  await page.getByRole("button", { name: "Verify" }).click();
-  await expect(page).toHaveURL(/\/dashboard$/);
+  await verifyTwoStep(page, freshCode(secret));
 
-  // Turn off with a current code.
-  await page.goto("/settings#two-step");
-  await page.getByRole("button", { name: "Turn off two-step sign-in" }).click();
-  // The same 30 s step's code was just used: wait for the next step so Supabase accepts it.
-  const wait = (30 - (Math.floor(Date.now() / 1000) % 30) + 1) * 1000;
-  await page.waitForTimeout(wait);
-  await page
-    .getByLabel("Enter a current code to turn it off")
-    .fill(totp(secret));
-  await page.getByRole("button", { name: "Turn off", exact: true }).click();
-  await expect(
-    page.getByText("Two-step sign-in is off.", { exact: false }).first(),
-  ).toBeVisible();
+  // Turn off with a current code. The same 30 s step's code was just used: wait for the next
+  // step so Supabase accepts it.
+  await turnOffTwoStep(
+    page,
+    () => totp(secret),
+    () =>
+      page.waitForTimeout(
+        (30 - (Math.floor(Date.now() / 1000) % 30) + 1) * 1000,
+      ),
+  );
 });

@@ -1,6 +1,6 @@
 import { Analytics } from "@vercel/analytics/next";
 import type { Metadata } from "next";
-import { Plus_Jakarta_Sans } from "next/font/google";
+import { Caveat, Plus_Jakarta_Sans } from "next/font/google";
 import { Suspense } from "react";
 import { headers } from "next/headers";
 import "./globals.css";
@@ -25,6 +25,13 @@ const jakarta = Plus_Jakarta_Sans({
   subsets: ["latin"],
   display: "swap",
   variable: "--font-jakarta",
+});
+// The handwriting on the pickup sticky note (decision 0023), self-hosted the same way.
+const caveat = Caveat({
+  subsets: ["latin"],
+  weight: ["500", "700"],
+  display: "swap",
+  variable: "--font-caveat",
 });
 
 export const metadata: Metadata = {
@@ -52,7 +59,7 @@ export default async function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html
       lang="en"
-      className={`scroll-pt-16 ${jakarta.variable}`}
+      className={`${jakarta.variable} ${caveat.variable}`}
       suppressHydrationWarning
     >
       <head>

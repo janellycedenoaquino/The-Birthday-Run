@@ -202,7 +202,7 @@ describe("setInitialPassword (S-9)", () => {
 
   it("an unsafe next falls back to the dashboard", async () => {
     expect(await run(setInitialPassword, valid("//evil.example"))).toEqual({
-      redirect: "/dashboard?notice=password_set",
+      redirect: "/rewards?notice=password_set",
     });
   });
 
@@ -277,7 +277,7 @@ describe("setInitialPassword, #13 review", () => {
 
   it("next pointing back at a step page goes to the dashboard, keeping the notice", async () => {
     expect(await run(setInitialPassword, valid("/auth/set-password"))).toEqual({
-      redirect: "/dashboard?notice=password_set",
+      redirect: "/rewards?notice=password_set",
     });
   });
 });

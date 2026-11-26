@@ -66,14 +66,15 @@ const LOOK: Record<string, { Icon: LucideIcon; tone: string }> = {
   },
 };
 
-function SectionIcon({ id }: { id: string }) {
+function SectionIcon({ id, onBand = false }: { id: string; onBand?: boolean }) {
   const look = LOOK[id];
   if (!look) return null;
   return (
     <span
       aria-hidden="true"
-      style={{ background: look.tone }}
-      className="grid size-7 shrink-0 place-items-center rounded-lg text-[var(--navy)] dark:text-foreground"
+      // On the card's band (already this colour) the tile is white, so it still shows.
+      style={onBand ? undefined : { background: look.tone }}
+      className={`grid size-7 shrink-0 place-items-center rounded-lg text-[var(--navy)] dark:text-foreground ${onBand ? "bg-white/85 dark:bg-white/10" : ""}`}
     >
       <look.Icon className="size-4" />
     </span>
@@ -101,7 +102,7 @@ function Card({
         style={{ background: LOOK[id]?.tone }}
         className="flex items-center gap-2.5 px-6 py-3 text-[var(--navy)] dark:text-foreground"
       >
-        <SectionIcon id={id} />
+        <SectionIcon id={id} onBand />
         <h2 id={`${id}-title`} className="text-lg font-extrabold">
           {title}
         </h2>
@@ -168,12 +169,16 @@ export default async function SettingsPage({
     await loadSettings();
   const exportState = exportError.parse((await searchParams).export);
   const hasPassword = Boolean(profile.password_set_at);
-  const sections = [
-    { id: "profile", title: "Profile" },
+  // Decision 0016's order: the app's own sections, a divider, then the account ones.
+  const appSections = [
     { id: "birthday", title: "Birthday" },
+    { id: "reminders", title: "Reminders" },
+    { id: "premium", title: "Premium" },
+  ];
+  const accountSections = [
+    { id: "profile", title: "Profile" },
     ...(hasPassword ? [{ id: "password", title: "Password" }] : []),
     { id: "two-step", title: "Two-step sign-in" },
-    { id: "premium", title: "Premium" },
     { id: "your-data", title: "Your data" },
     { id: "delete-account", title: "Delete account" },
   ];
@@ -186,33 +191,31 @@ export default async function SettingsPage({
           aria-label="Settings sections"
           className="mt-4 md:sticky md:top-24"
         >
-          <ul className="flex flex-wrap gap-x-2 gap-y-2 text-sm md:flex-col md:gap-1">
-            {sections.map((s) => (
-              <li key={s.id}>
-                <a
-                  href={`#${s.id}`}
-                  className="flex items-center gap-2.5 rounded-xl px-2 py-1.5 font-bold outline-none hover:bg-white/70 focus-visible:ring-3 focus-visible:ring-ring/50"
-                >
-                  <SectionIcon id={s.id} />
-                  {s.title}
-                </a>
-              </li>
-            ))}
+          <ul className="-mx-4 flex gap-2 overflow-x-auto px-4 pb-1 text-sm md:mx-0 md:flex-col md:gap-1 md:overflow-visible md:px-0">
+            {[...appSections, null, ...accountSections].map((s) =>
+              s === null ? (
+                <li
+                  key="divider"
+                  role="separator"
+                  aria-hidden="true"
+                  className="my-1 w-px shrink-0 self-stretch bg-border md:mx-2 md:h-px md:w-auto"
+                />
+              ) : (
+                <li key={s.id}>
+                  <a
+                    href={`#${s.id}`}
+                    className="flex items-center gap-2.5 rounded-xl px-2 py-1.5 font-bold whitespace-nowrap outline-none hover:bg-white/70 dark:hover:bg-white/10 focus-visible:ring-3 focus-visible:ring-ring/50"
+                  >
+                    <SectionIcon id={s.id} />
+                    {s.title}
+                  </a>
+                </li>
+              ),
+            )}
           </ul>
         </nav>
       </div>
       <div className="mt-8 max-w-3xl space-y-6 md:mt-0">
-        <Card id="profile" title="Profile">
-          <p className="text-sm text-muted-foreground">Email</p>
-          <p className="mb-1 font-medium break-all">{user.email}</p>
-          <p className="mb-6 text-sm text-muted-foreground">
-            <SupportLinkText text="To change your email, contact support." />
-          </p>
-          <ProfileForm
-            updateDisplayName={updateDisplayName}
-            displayName={profile.display_name}
-          />
-        </Card>
         <Card id="birthday" title="Birthday">
           <BirthdayCard
             updateBirthday={updateBirthday}
@@ -232,6 +235,24 @@ export default async function SettingsPage({
           ) : (
             <UpgradePrompt supabase={supabase} feature="M-137" />
           )}
+        </Card>
+        <Card id="premium" title="Premium">
+          <PremiumStatus
+            supabase={supabase}
+            premium={premium}
+            timeZone={profile.time_zone}
+          />
+        </Card>
+        <Card id="profile" title="Profile">
+          <p className="text-sm text-muted-foreground">Email</p>
+          <p className="mb-1 font-medium break-all">{user.email}</p>
+          <p className="mb-6 text-sm text-muted-foreground">
+            <SupportLinkText text="To change your email, contact support." />
+          </p>
+          <ProfileForm
+            updateDisplayName={updateDisplayName}
+            displayName={profile.display_name}
+          />
         </Card>
         {hasPassword && (
           <Card id="password" title="Password">
@@ -260,13 +281,6 @@ export default async function SettingsPage({
               <ReauthGate />
             </div>
           )}
-        </Card>
-        <Card id="premium" title="Premium">
-          <PremiumStatus
-            supabase={supabase}
-            premium={premium}
-            timeZone={profile.time_zone}
-          />
         </Card>
         <Card id="your-data" title="Your data">
           <p className="mb-4">

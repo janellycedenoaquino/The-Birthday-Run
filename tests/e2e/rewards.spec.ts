@@ -1,6 +1,12 @@
 import { existsSync } from "node:fs";
 import { expect, test } from "@playwright/test";
-import { confirmDelete, monthDayIn, ownIp, passwordSignIn } from "./support";
+import {
+  confirmDelete,
+  monthDayIn,
+  openMore,
+  ownIp,
+  passwordSignIn,
+} from "./support";
 
 // Its own client IP, so sign-ins don't share one per-IP budget (support.ts ownIp).
 test.use(ownIp(17));
@@ -60,16 +66,27 @@ test("My Rewards: the list, filters, pages, and the other views (FR-12–FR-16, 
   if (error) throw new Error(error.message);
 
   await passwordSignIn(page, user.email, PASSWORD);
-  await expect(page).toHaveURL(/\/dashboard$/);
+  await expect(page).toHaveURL(/\/rewards$/);
 
-  // S-102: no pickups yet, and the link cards (FR-21).
+  // Decision 0018: sign-in lands on My Rewards; its header holds FR-21 (no pickups yet), and
+  // the two cards show the run's progress and what's open.
   await expect(
     page.getByText("No pickups yet this Birthday Run."),
   ).toBeVisible();
-  await page
-    .getByRole("link", { name: /My Rewards See what's open now/ })
-    .click();
+  await expect(page.getByText("0/22")).toBeVisible();
+  await expect(page.getByText("22 still to get this run")).toBeVisible();
+  // The big card says how many end soon (the 1-day reward ends today).
+  await expect(page.getByText("1 ends in the next 3 days")).toBeVisible();
+  // The old dashboard address goes here too.
+  await page.goto("/dashboard");
   await expect(page).toHaveURL(/\/rewards$/);
+
+  // Signed in, the landing page sends you to My Rewards, and so does the name (decision 0018).
+  await page.goto("/");
+  await expect(page).toHaveURL(/\/rewards$/);
+  await expect(
+    page.getByRole("banner").getByRole("link", { name: "The Birthday Run" }),
+  ).toHaveAttribute("href", "/rewards");
 
   // Birthday today: the header, the counts, 20 per page, the 1-day reward first (FR-12, FR-14).
   await expect(
@@ -78,7 +95,7 @@ test("My Rewards: the list, filters, pages, and the other views (FR-12–FR-16, 
   await expect(page.getByText("Showing 22 of 22")).toBeVisible();
   const cards = page
     .getByRole("listitem")
-    .filter({ has: page.getByRole("heading", { level: 2 }) });
+    .filter({ has: page.getByRole("heading", { level: 3 }) });
   await expect(cards).toHaveCount(20);
   await expect(cards.first()).toContainText(oneDay[0]!.name);
   await expect(cards.first()).toContainText("Last day");
@@ -102,15 +119,15 @@ test("My Rewards: the list, filters, pages, and the other views (FR-12–FR-16, 
   await page.goto("/rewards");
   const target = cards.nth(1);
   const name = (
-    await target.getByRole("heading", { level: 2 }).innerText()
+    await target.getByRole("heading", { level: 3 }).innerText()
   ).trim();
   await target.getByRole("button", { name: "Mark picked up" }).click();
   const dialog = page.getByRole("dialog");
   await expect(
-    dialog.getByRole("heading", { name: `Mark ${name} picked up` }),
+    dialog.getByRole("heading", { name: `Got your ${name} treat!` }),
   ).toBeVisible();
-  await dialog.getByLabel("Note (optional)").fill("Free cupcake");
-  await dialog.getByLabel("Where (optional)").fill("Main St");
+  await dialog.getByLabel("Anything else?").fill("Free cupcake");
+  await dialog.getByLabel("Where?").fill("Main St");
   await dialog.getByRole("button", { name: "Mark picked up" }).click();
   await expect(page.getByText(`${name} picked up.`)).toBeVisible();
   await expect(page.getByText("Showing 21 of 21")).toBeVisible();
@@ -120,24 +137,35 @@ test("My Rewards: the list, filters, pages, and the other views (FR-12–FR-16, 
 
   // Again, then History shows it with note and place under this year's Birthday Run (FR-19).
   await page
-    .getByRole("heading", { name, level: 2 })
+    .getByRole("heading", { name, level: 3 })
     .locator("xpath=ancestor::li")
     .getByRole("button", { name: "Mark picked up" })
     .click();
+  // A "How did it go?" tap goes into the note's first line (decision 0023).
   await page
     .getByRole("dialog")
-    .getByLabel("Note (optional)")
-    .fill("Free cupcake");
+    .getByRole("button", { name: "Easy", exact: true })
+    .click();
+  await page.getByRole("dialog").getByLabel("Anything else?").press("End");
+  await page
+    .getByRole("dialog")
+    .getByLabel("Anything else?")
+    .pressSequentially("\nFree cupcake");
+  await expect(
+    page.getByRole("dialog").getByLabel("Anything else?"),
+  ).toHaveValue("Easy\nFree cupcake");
   await page
     .getByRole("dialog")
     .getByRole("button", { name: "Mark picked up" })
     .click();
   await expect(page.getByText(`${name} picked up.`)).toBeVisible();
   // A second pickup of the same reward isn't possible: it's no longer in the list.
-  await expect(page.getByRole("heading", { name, level: 2 })).toHaveCount(0);
+  await expect(page.getByRole("heading", { name, level: 3 })).toHaveCount(0);
 
-  await page.goto("/dashboard");
-  await expect(page.getByText("1 picked up this Birthday Run")).toBeVisible();
+  await page.goto("/rewards");
+  await expect(
+    page.getByText(/^1 picked up this Birthday Run · /),
+  ).toBeVisible();
   await page.goto("/history");
   await expect(
     page.getByRole("heading", { name: /^\d{4} Birthday Run$/ }).first(),
@@ -146,7 +174,10 @@ test("My Rewards: the list, filters, pages, and the other views (FR-12–FR-16, 
   await expect(entry).toContainText("Free cupcake");
 
   // Edit the note (FR-20).
-  await entry.getByRole("button", { name: `Edit ${name} pickup` }).click();
+  await openMore(entry, `More for ${name} pickup`);
+  await entry
+    .getByRole("button", { name: `Edit note and place for ${name}` })
+    .click();
   await page
     .getByRole("dialog")
     .getByLabel("Note (optional)")
@@ -203,13 +234,17 @@ test("My Rewards: the list, filters, pages, and the other views (FR-12–FR-16, 
   await expect(page.getByText(/days until your birthday$/)).toBeVisible();
   await expect(page.getByLabel("Search rewards")).toHaveCount(0);
 
-  // No programs: M-211, in the window too (FR-16).
+  // No programs (FR-16, decision 0018): the count stays, plus "No programs yet" with 4 popular
+  // brands to add right here; adding one brings the list back.
   await admin.from("enrollments").delete().eq("user_id", user.id);
   await setBirthday(todayIn(ZONE));
   await page.goto("/rewards");
-  await expect(
-    page.getByText(/^You haven't added any programs yet\./),
-  ).toBeVisible();
+  const none = page.getByRole("region", { name: "No programs yet" });
+  await expect(none).toBeVisible();
+  await expect(none.getByRole("listitem")).toHaveCount(4);
+  await expect(page.getByText("open now")).toBeVisible();
+  await none.getByRole("button", { name: /^Add / }).first().click();
+  await expect(page.getByRole("heading", { name: /^Open now/ })).toBeVisible();
 
   expect(
     await page.evaluate(

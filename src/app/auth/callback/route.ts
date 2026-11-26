@@ -56,5 +56,5 @@ export async function GET(request: NextRequest) {
   await sendWelcomeIfFirst(supabase, data.user);
 
   // MFA users are sent to S-10 by the destination's guard.
-  return to(request, safeRedirectPath(next, "/dashboard"));
+  return to(request, safeRedirectPath(next, "/rewards"));
 }

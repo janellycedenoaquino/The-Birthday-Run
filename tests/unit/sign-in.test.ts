@@ -109,7 +109,7 @@ describe("signIn (S-4 Password)", () => {
       error: null,
     });
     expect(await run(signIn, valid())).toEqual({
-      redirect: "/auth/mfa?next=%2Fdashboard",
+      redirect: "/auth/mfa?next=%2Frewards",
     });
   });
 
@@ -142,7 +142,7 @@ describe("signIn (S-4 Password)", () => {
       password: "x",
       "cf-turnstile-response": "t",
     });
-    expect(await run(signIn, short)).toEqual({ redirect: "/dashboard" });
+    expect(await run(signIn, short)).toEqual({ redirect: "/rewards" });
     const empty = form({
       email: "a@b.co",
       password: "",
@@ -196,7 +196,7 @@ describe("requestMagicLink (S-4 Email link)", () => {
   it("an unsafe next is stored as the dashboard, never as given", async () => {
     auth.signInWithOtp.mockResolvedValue({ error: null });
     await run(requestMagicLink, valid("https://evil.example"));
-    expect(cookieJar.get("auth_next")?.value).toBe("/dashboard");
+    expect(cookieJar.get("auth_next")?.value).toBe("/rewards");
   });
 
   it.each([
@@ -296,7 +296,7 @@ describe("GET /auth/callback", () => {
     expect(where(await get("?code=abc")).location).toBe("/settings");
     expect(cookieJar.has("auth_next")).toBe(false);
     expect(sendWelcomeIfFirst).toHaveBeenCalledTimes(1);
-    expect(where(await get("?code=abc")).location).toBe("/dashboard");
+    expect(where(await get("?code=abc")).location).toBe("/rewards");
   });
 
   it("rate limited → S-8 rate_limited", async () => {
