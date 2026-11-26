@@ -527,7 +527,8 @@ describe("headerState (FR-14)", () => {
 
   it("covers all four states", () => {
     expect(state("2026-06-15", true)).toBe("birthday");
-    expect(state("2026-06-20", true)).toBe("birth_month");
+    expect(state("2026-06-20", false)).toBe("birth_month");
+    expect(state("2026-06-20", true)).toBe("window_open");
     expect(state("2026-07-02", true)).toBe("window_open");
     expect(state("2026-07-02", false)).toBe("other");
     expect(state("2026-08-01", true)).toBe("other");
@@ -535,13 +536,26 @@ describe("headerState (FR-14)", () => {
 
   // Owner report 2026-11-26: a December 2 birthday showed "Your birthday's passed" on
   // November 26, because a reward opening a week early put that day in the window.
+  const DEC2: Birthday = { month: 12, day: 2 };
+  const early: Timing = { type: "around_birthday", before: 7, after: 7 };
+  const dec2 = (on: string, anyAvailable: boolean) =>
+    headerState(windowFor(DEC2, [early], d(on)), anyAvailable);
+
   it("never says the birthday passed before it comes", () => {
-    const DEC2: Birthday = { month: 12, day: 2 };
-    const early: Timing = { type: "around_birthday", before: 7, after: 7 };
-    const on = (s: string) => headerState(windowFor(DEC2, [early], d(s)), true);
-    expect(on("2026-11-26")).toBe("other");
-    expect(on("2026-12-02")).toBe("birthday");
-    expect(on("2026-12-05")).toBe("birth_month");
+    expect(dec2("2026-11-26", true)).toBe("other");
+    expect(dec2("2026-12-01", true)).toBe("birth_month");
+    expect(dec2("2026-12-02", true)).toBe("birthday");
+  });
+
+  // The owner's rule: born December 2, on December 3 a reward lasting to the month's end is
+  // still open, so the birthday has passed but the rewards haven't, birth month or not.
+  it("says the rewards are still open once the birthday has passed", () => {
+    const monthEnd: Timing = { type: "to_month_end" };
+    expect(
+      headerState(windowFor(DEC2, [monthEnd], d("2026-12-03")), true),
+    ).toBe("window_open");
+    expect(dec2("2026-12-05", true)).toBe("window_open");
+    expect(dec2("2026-12-05", false)).toBe("birth_month");
   });
 });
 

@@ -166,7 +166,8 @@ describe("header state (FR-14)", () => {
   ];
   it.each([
     ["2026-06-15", "birthday"],
-    ["2026-06-20", "birth_month"],
+    ["2026-06-01", "birth_month"], // before the birthday: the reward is open, nothing passed
+    ["2026-06-20", "window_open"], // birthday passed, the month's reward still open (owner rule)
     ["2026-07-02", "other"], // birth-month reward closed; no other open
     ["2026-09-01", "other"],
   ])("%s → %s", (today, state) => {

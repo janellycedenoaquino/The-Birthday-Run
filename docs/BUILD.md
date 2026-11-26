@@ -641,7 +641,7 @@ stateDiagram-v2
 | In window: only available rewards, sorted by days left; expired and picked-up hidden; last day shows M-120 | e2e (birthday set to today's date) | S-105 | FR-12 |
 | C-103 text + icon + word per band, never colour alone | unit + e2e (axe) | C-103 component | FR-12, NFR-6 |
 | `q` + `within` combine; count M-178; "Show more" loads the next page without JS | e2e | S-105 | FR-13 |
-| Header state for birthday, birth month, later window day, outside (four seeded users) | e2e | S-105 | FR-14 |
+| Header state for birthday, birth month, after the birthday with rewards open, outside (four seeded users) | e2e | S-105 | FR-14 |
 | Outside the window: M-207 with the right date and links; no list in the HTML | e2e (birthday 3 months ahead) | S-105 | FR-15 |
 | No enrollments: M-211 in and out of the window | e2e | S-105 | FR-16 |
 | S-105 header count equals S-107's current-cycle count, incl. a Dec 20 birthday seen on Jan 5; `/dashboard` redirects to `/rewards` | unit + e2e | `cycleFor` / `windowFor`; S-105 vs S-107 | FR-21, FR-19 |

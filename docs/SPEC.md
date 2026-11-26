@@ -97,7 +97,7 @@ All priorities are **must**.
 | FR-11 | **[v1]** Each reward has a status: available, expired or picked up. | Each retailer has one of five timing types (decision 0007): **from the birthday for N days** (1 = the birthday only, 7 = days 0–6; changed: old counted one day extra), **the whole birth month** (the 1st to the last day of the calendar month; Feb 29 birthdays use February), **N days before to M days after** the birthday, **from the 1st of the birth month for N days** (it can run into the next month), or **from the birthday to the end of the birth month**. Available inside its days, expired after, not yet open before. Unit tests per type, including a birth-month reward for a birthday on the 25th (ends on the 31st, not 30 days later; the old data got this wrong). Picked up = a pickup exists in the current cycle (FR-17). Outside the window nothing is expired. | must |
 | FR-12 | **[v1]** In the window, My Rewards lists every available reward with its days left. | Expired and picked-up rewards are hidden. Each shows logo, reward description, timing label (FR-4) and days left, with the last day shown as such (changed: old showed blank). Urgency: under 4 days red, 4–10 yellow, over 10 green (NFR-6). | must |
 | FR-13 | **[v1]** My Rewards can be searched by name and filtered to rewards expiring within 1, 7 or 14 days. | Filters combine; shows matches out of total; long lists load in pages. | must |
-| FR-14 | **[v1]** My Rewards has a birthday header: days until the next birthday and one of four states (birthday today, birth month, later window day with rewards open, otherwise). | Each state has its own message (SPEC §3) and uses the display name when set. | must |
+| FR-14 | **[v1]** My Rewards has a birthday header: days until the next birthday and one of four states (birthday today; after the birthday with rewards still open, birth month included; birth month; otherwise). | Each state has its own message (SPEC §3) and uses the display name when set. | must |
 | FR-15 | **[v1]** Outside the window, My Rewards shows a "rewards open soon" message with the date the first one opens, with links to Discover and Plan instead of the list. | No reward list shows outside the window. | must |
 | FR-16 | **[v1]** With no enrollments, My Rewards shows an empty state pointing to Discover and Plan. | In or out of the window. | must |
 
@@ -481,7 +481,7 @@ Template M-, API-, E- texts apply unchanged. Placeholders in `{braces}` are fill
 - M-129a–d: retired with S-102 (decision 0018).
 - M-201 (header, birthday): "Happy birthday, {name}" / M-201b "Happy birthday"
 - M-202 (birth month): "Happy birth month, {name}" / M-202b "Happy birth month"
-- M-203 (later window day, rewards open): "Your birthday's passed, but your rewards haven't."
+- M-203 (after the birthday, rewards still open, birth month included): "Your birthday's passed, but your rewards haven't."
 - M-204 (otherwise): "Your birthday rewards"
 - M-205: "{days} days until your birthday" · M-206: "1 day until your birthday" (before day 0 only)
 - M-213: "{days} days left in your birthday window" · M-214: "Last day of your birthday window" (from day 0 to the window's end, instead of M-205/M-206)
