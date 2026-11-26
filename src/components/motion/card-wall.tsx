@@ -47,6 +47,9 @@ export function CardWall({ retailers }: { retailers: WallRetailer[] }) {
                   alt=""
                   width={126}
                   height={48}
+                  // Eager, as in the landing tunnel: cards slide into view all the time, and
+                  // lazy loading left each one blank until its logo arrived.
+                  loading="eager"
                   className="max-h-12 w-auto object-contain"
                 />
                 <span className="max-w-full truncate text-[11px] font-bold text-[#4c557d]">
