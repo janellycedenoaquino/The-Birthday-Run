@@ -349,7 +349,13 @@ export function headerState(
   if (w.today === w.current.birthday) return "birthday";
   if (w.inWindow && w.today.slice(0, 7) === w.current.birthday.slice(0, 7))
     return "birth_month";
-  if (w.inWindow && anyAvailable) return "window_open";
+  // "Later window day" (FR-14): after the birthday only. A reward can open before it.
+  if (
+    w.inWindow &&
+    anyAvailable &&
+    compareDates(w.today, w.current.birthday) > 0
+  )
+    return "window_open";
   return "other";
 }
 

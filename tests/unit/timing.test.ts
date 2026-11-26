@@ -532,6 +532,17 @@ describe("headerState (FR-14)", () => {
     expect(state("2026-07-02", false)).toBe("other");
     expect(state("2026-08-01", true)).toBe("other");
   });
+
+  // Owner report 2026-11-26: a December 2 birthday showed "Your birthday's passed" on
+  // November 26, because a reward opening a week early put that day in the window.
+  it("never says the birthday passed before it comes", () => {
+    const DEC2: Birthday = { month: 12, day: 2 };
+    const early: Timing = { type: "around_birthday", before: 7, after: 7 };
+    const on = (s: string) => headerState(windowFor(DEC2, [early], d(s)), true);
+    expect(on("2026-11-26")).toBe("other");
+    expect(on("2026-12-02")).toBe("birthday");
+    expect(on("2026-12-05")).toBe("birth_month");
+  });
 });
 
 describe("pickupDateRange (FR-17) and planRange (FR-23)", () => {
