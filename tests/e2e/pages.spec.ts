@@ -58,14 +58,14 @@ for (const [path, status] of PAGES) {
   });
 }
 
-test("S-2 and S-3 show the placeholder banner; privacy lists the providers and retention (FR-17)", async ({
+test("S-2 and S-3 have the app's text, no placeholder banner; privacy lists the providers and retention (FR-17)", async ({
   page,
 }) => {
   for (const path of ["/privacy", "/terms"]) {
     await page.goto(path);
     await expect(
       page.getByText("Placeholder text. Replace this page before launch."),
-    ).toBeVisible();
+    ).toHaveCount(0);
   }
   await page.goto("/privacy");
   for (const provider of [
@@ -75,6 +75,9 @@ test("S-2 and S-3 show the placeholder banner; privacy lists the providers and r
     "Cloudflare Turnstile",
     "Sentry",
     "Google",
+    "OpenFreeMap",
+    "GitHub",
+    "Stripe",
   ])
     await expect(
       page.getByRole("main").getByText(provider, { exact: false }).first(),
@@ -85,6 +88,17 @@ test("S-2 and S-3 show the placeholder banner; privacy lists the providers and r
   await expect(
     page.getByText("keeps a security log of account activity"),
   ).toBeVisible();
+  await expect(page.getByText("We don't store your location.")).toBeVisible();
+  await page.goto("/terms");
+  for (const text of [
+    "The brand's own terms always win.",
+    "Data from OpenStreetMap contributors",
+    "All The Places (CC0)",
+    "CDLA Permissive 2.0",
+  ])
+    await expect(
+      page.getByRole("main").getByText(text, { exact: false }),
+    ).toBeVisible();
 });
 
 test("titles follow '{Page} · {name}' (FR-24)", async ({ page }) => {
