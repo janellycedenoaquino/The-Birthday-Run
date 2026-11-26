@@ -35,6 +35,9 @@ export function LogoTunnel({ retailers }: { retailers: TunnelRetailer[] }) {
               alt=""
               width={122}
               height={56}
+              // Eager: lazy loading waits until each moving card is near the screen, so the
+              // cards showed blank and their logos popped in late (owner report 2026-11-26).
+              loading="eager"
               className="max-h-14 w-auto object-contain"
             />
             <span className="pointer-events-none absolute bottom-[calc(100%+10px)] left-1/2 w-max max-w-60 -translate-x-1/2 rounded-[10px] bg-white px-3 py-2 text-left text-[13px] leading-snug text-[var(--navy)] opacity-0 shadow-[0_0_0_2px_var(--spring),0_10px_24px_-10px_rgb(0_0_0/25%)] transition-opacity group-hover:opacity-100">

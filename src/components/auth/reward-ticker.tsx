@@ -29,6 +29,8 @@ export function RewardTicker({ retailers }: { retailers: TickerRetailer[] }) {
   // Modulo: the list can change length on a refresh while the index stays.
   const r = retailers.length ? retailers[index % retailers.length] : undefined;
   if (!r) return null;
+  // The next logo loads while this one shows, so the swap never shows an empty box.
+  const next = retailers[(index + 1) % retailers.length];
   return (
     <div
       aria-hidden="true"
@@ -42,6 +44,16 @@ export function RewardTicker({ retailers }: { retailers: TickerRetailer[] }) {
           height={40}
           className="h-10 w-16 flex-none object-contain"
         />
+        {next.id !== r.id && (
+          <Image
+            src={`/retailers/${next.logoFile}`}
+            alt=""
+            width={64}
+            height={40}
+            loading="eager"
+            className="hidden"
+          />
+        )}
         <div
           key={r.id}
           className="min-w-0 motion-safe:animate-in motion-safe:fade-in motion-safe:slide-in-from-bottom-2"

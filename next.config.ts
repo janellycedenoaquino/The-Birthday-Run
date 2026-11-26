@@ -11,7 +11,21 @@ if (!env.success) throw new Error(formatEnvError(env.error));
 const nextConfig: NextConfig = {
   poweredByHeader: false, // no "x-powered-by: Next.js" (securityheaders.com note, sign-off)
   async headers() {
-    return [{ source: "/:path*", headers: [...SECURITY_HEADERS] }];
+    return [
+      { source: "/:path*", headers: [...SECURITY_HEADERS] },
+      // Retailer logos (public/retailers/): browsers keep them a day instead of re-checking all
+      // of them on every page (they were max-age=0). A changed logo shows within a day, sooner
+      // after a refresh; the optimizer's own cache follows the longer of this and its default.
+      {
+        source: "/retailers/:file*",
+        headers: [
+          {
+            key: "Cache-Control",
+            value: "public, max-age=86400, stale-while-revalidate=604800",
+          },
+        ],
+      },
+    ];
   },
 };
 
