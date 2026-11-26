@@ -4,7 +4,7 @@ Two launches (ROADMAP): **v1** after phase 4 and **v2 sign-off** after phase 7 (
 
 ## v1: Product
 - [ ] Every [v1] FR works end to end on thebirthdayrun.com (SPEC §2.2; metric 1's checklist)
-- [ ] The e2e journey passes against production (`E2E_TARGET=deployed`)
+- [x] The e2e journey passes against production (`E2E_TARGET=deployed`) *(2026-11-26: passed in 3.7 min against www.thebirthdayrun.com with Turnstile test keys for the run, then the real keys were put back and the live scripts checked for the real site key. The first try failed at the confirm link because it had been clicked by mistake, which confirmed the account; so the passing run signed in through a magic link, and the `type=signup` confirm link was not exercised by it)*
 - [ ] Google sign-in tried by hand: new account, existing account, cancel
 - [ ] Tested on a real phone (iPhone and Android if possible) and one desktop browser
 - [ ] Empty, error and loading states look right (SPEC §3.3)
