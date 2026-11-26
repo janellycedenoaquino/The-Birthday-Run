@@ -52,7 +52,7 @@ async function expectBrandedAndVerifying(
 ) {
   expect(mail.Subject).toBe(subject);
   expect(mail.HTML).toContain(appConfig.brand.primary);
-  expect(mail.HTML).toMatch(/\/brand\/logo\.png/);
+  expect(mail.HTML).toContain(appConfig.logo.png);
   expect(mail.HTML).toContain(`mailto:${appConfig.supportEmail}`);
   const link = confirmLink(mail.HTML);
   expect(link.path).toBe("/auth/confirm");
