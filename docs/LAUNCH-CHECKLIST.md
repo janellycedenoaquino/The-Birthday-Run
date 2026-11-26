@@ -31,7 +31,7 @@ Two launches (ROADMAP): **v1** after phase 4 and **v2 sign-off** after phase 7 (
 - [ ] Production env vars set (BUILD §0.6), no test keys; `PAYMENTS_ENABLED` off
 - [x] `supabase config push` with the `[remotes.production]` block filled in; SMTP still set afterwards
 - [ ] Not paused, and the keep-alive in DESIGN §5.2 is running
-- [ ] Retailer import Action ran on `main` and the counts match the CSV (D2)
+- [x] Retailer import Action ran on `main` and the counts match the CSV (D2) *(2026-11-26: last run 2026-11-24, manual dispatch with `--allow-retire=86` after the push runs for PRs #40 and #41 stopped at the 5-retire limit (A-22) and wrote nothing: inserted 0 / updated 85 / unchanged 15 / retired 86, so 100 active, matching the 100 rows of `data/retailers.csv`; the CSV hasn't changed since, and signed-out `/discover` lists the same 100 IDs)*
 
 ## v1: Domain, email, SEO
 - [x] thebirthdayrun.com on this repo's Vercel project, with HTTPS *(2026-11-26: www primary, bare domain 308 → www; decision 0025)*
