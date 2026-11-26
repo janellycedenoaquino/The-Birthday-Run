@@ -23,7 +23,7 @@ export function LoadingPicture() {
     setName(PICTURES[Math.floor(Math.random() * PICTURES.length)]!);
   }, []);
   return name ? (
-    <div className="w-64 max-w-[70vw]">
+    <div className="w-80 max-w-[80vw] sm:w-[32rem]">
       <Illustration name={name} eager />
     </div>
   ) : null;

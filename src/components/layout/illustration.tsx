@@ -30,7 +30,7 @@ export function Illustration({
       height={art.h}
       alt=""
       loading={eager ? "eager" : "lazy"}
-      sizes="(max-width: 480px) 90vw, 400px"
+      sizes="(max-width: 640px) 90vw, 640px"
       className={`h-auto w-full rounded-2xl object-contain ${className}`}
     />
   );

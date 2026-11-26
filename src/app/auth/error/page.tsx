@@ -20,7 +20,9 @@ export default async function AuthErrorPage({
   const reason = reasonSchema.parse((await searchParams).reason);
 
   return (
-    <div className="small-page frosted">
+    <div
+      className={`small-page frosted ${reason === "link" ? "with-art" : ""}`}
+    >
       {reason === "rate_limited" && (
         <>
           <h1 className="text-2xl font-semibold">Please wait a moment</h1>

@@ -7,7 +7,7 @@ import { msg } from "@/lib/messages";
 // three girls running (decision 0016).
 export default function NotFound() {
   return (
-    <div className="small-page frosted">
+    <div className="small-page with-art frosted">
       <Illustration name="girlsRunning" eager className="mb-6" />
       <h1 className="text-2xl font-semibold">Page not found</h1>
       <p className="mt-2 mb-8">{msg("M-38")}</p>

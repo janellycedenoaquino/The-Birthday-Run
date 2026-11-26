@@ -113,7 +113,7 @@ export default async function HistoryPage({
         </nav>
       ) : null}
       {sections.length === 0 ? (
-        <div className="frosted mt-8 grid max-w-md gap-4 rounded-[22px] p-6">
+        <div className="frosted mt-8 grid max-w-2xl gap-4 rounded-[22px] p-6">
           {/* Decision 0016: no pickups ever → the three girls above M-253. */}
           <Illustration name="girlsRunning" />
           <p>{msg("M-253")}</p>
