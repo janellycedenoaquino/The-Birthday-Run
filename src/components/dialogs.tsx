@@ -28,19 +28,24 @@ export function EditDialog({
   label,
   title,
   description,
+  text = "Edit",
+  variant = "outline",
   children,
 }: {
   label: string;
   title: string;
   description: string;
+  /** The trigger's visible text (a ⋯ menu item says more than "Edit"). */
+  text?: string;
+  variant?: "outline" | "ghost";
   children: (close: () => void) => React.ReactNode;
 }) {
   const [open, setOpen] = useState(false);
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button size="sm" variant="outline" aria-label={label}>
-          Edit
+        <Button size="sm" variant={variant} aria-label={label}>
+          {text}
         </Button>
       </DialogTrigger>
       <DialogContent>

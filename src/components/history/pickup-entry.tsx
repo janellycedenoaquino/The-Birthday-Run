@@ -7,6 +7,7 @@ import { TextField, useDialogForm } from "@/components/rewards/pickup-dialog";
 import { toast } from "sonner";
 import { useSuccessToast } from "@/components/settings/use-success-toast";
 import { ConfirmCancel, ConfirmDialog, EditDialog } from "@/components/dialogs";
+import { MoreMenu } from "@/components/more-menu";
 import { Button } from "@/components/ui/button";
 import type { ActionResult } from "@/lib/action-result";
 import { msg, type MessageId } from "@/lib/messages";
@@ -36,11 +37,14 @@ export function PickupActions({
 }) {
   const [confirming, setConfirming] = useState(false);
   return (
-    <div className="flex gap-2">
+    // Decision 0016: a ⋯ menu with "Edit note and place" and "Delete" (asks first).
+    <MoreMenu label={`More for ${retailer} pickup`}>
       <EditDialog
-        label={`Edit ${retailer} pickup`}
+        label={`Edit note and place for ${retailer}`}
         title={retailer}
         description="Edit the note and place."
+        text="Edit note and place"
+        variant="ghost"
       >
         {(close) => (
           <EditForm
@@ -84,7 +88,7 @@ export function PickupActions({
           </div>
         </DeleteForm>
       </ConfirmDialog>
-    </div>
+    </MoreMenu>
   );
 }
 

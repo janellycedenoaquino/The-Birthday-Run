@@ -68,7 +68,7 @@ Why these colours: research on colour and emotion finds that brightness and satu
 - **Special states:** outside the window, a card with a calendar tile showing the start date, "Your next run starts {date}", and the S-105 links. With everything picked up, M-212 with confetti and links to History and Discover.
 
 **Plan (S-106):**
-- **Layout:** side by side on wide screens: "Rewards to plan" on the left (stays in view), "Your groups" on the right. On phones and narrow tablets (up to 860 px) the two become tabs, "To plan" and "My groups (N)", so neither list is a long scroll away.
+- **Layout:** side by side on wide screens: "Rewards to plan" on the left (stays in view), "Your groups" on the right. On phones and narrow tablets (up to 860 px) the two become tabs, "Plan" and "Groups (N)" (owner, 2026-11-25; first written as "To plan" / "My groups (N)"), so neither list is a long scroll away.
 - **Groups:** pink tickets: a white date stamp (month and day), the name, "Pickup: {date} at {time}", a dashed tear line, then numbered stops in pink circles with a drag handle (keyboard: Space, arrows, Space) and a remove ×. The ⋯ menu holds Edit, Duplicate (premium) and Delete (C-108). Premium groups with 2+ stops get "Show route" with a small map.
 - **Adding:** tick rewards (picked-up ones are greyed and can't be ticked), then a navy bar "N selected · Clear · Add to group" sits above the tab bar; the dialog has "New group" / "Existing group" tabs and warns when a reward ends before the pickup. Free users see their limits ("2 of 3 groups", "3 of 5 rewards"); Smart Grouping shows as a pink-blue banner, or its upgrade text for free users.
 

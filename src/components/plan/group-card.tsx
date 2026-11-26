@@ -29,6 +29,7 @@ import {
 } from "react";
 import { toast } from "sonner";
 import { ConfirmCancel, ConfirmDialog, EditDialog } from "@/components/dialogs";
+import { MoreMenu } from "@/components/more-menu";
 import { Button } from "@/components/ui/button";
 import type { ActionResult } from "@/lib/action-result";
 import { formatDate, type LocalDate } from "@/lib/birthday/timing";
@@ -62,8 +63,11 @@ export function GroupCard({
   range,
   actions,
   route,
+  itemLimit,
 }: {
   group: GroupCardData;
+  /** Free users see the per-group limit ("3 of 5 rewards", decision 0016); premium gets none. */
+  itemLimit?: number;
   range: { min: string; max: string };
   /** S-106's route slot (FR-33): the group route for premium, C-104 for free; none under 2. */
   route?: ReactNode;
@@ -127,19 +131,27 @@ export function GroupCard({
   return (
     // Decision 0016: a pink ticket: a white date stamp, the name and pickup, a dashed tear line,
     // then the numbered stops.
-    <li className="grid gap-3 rounded-[22px] bg-[var(--glow-pink)] p-4 text-[var(--navy)] shadow-[0_0_0_1.5px_var(--navy)] sm:p-5 dark:bg-[#4a3438] dark:text-foreground">
-      <div className="flex flex-wrap items-start justify-between gap-3">
-        <div className="flex items-start gap-3.5">
+    <li className="grid min-w-0 grid-cols-1 gap-3 rounded-[22px] bg-[var(--glow-pink)] p-4 text-[var(--navy)] shadow-[0_0_0_1.5px_var(--navy)] sm:p-5 dark:bg-[#4a3438] dark:text-foreground">
+      <div className="flex items-start justify-between gap-3">
+        <div className="flex min-w-0 items-start gap-3.5">
           <DateStamp date={group.pickupDate as LocalDate} />
           <div>
             <h3 className="text-lg font-extrabold">{group.name}</h3>
             <p className="text-sm text-muted-foreground">{group.pickupLabel}</p>
+            {itemLimit !== undefined ? (
+              <p className="text-sm font-bold">
+                {msg("M-306")
+                  .replace("{count}", String(order.length))
+                  .replace("{limit}", String(itemLimit))}
+              </p>
+            ) : null}
             {group.outside ? (
               <p className={`text-sm ${TICKET_ALERT}`}>{msg("M-235")}</p>
             ) : null}
           </div>
         </div>
-        <div className="flex gap-2">
+        {/* Decision 0016: Edit, Duplicate (premium) and Delete in a ⋯ menu. */}
+        <MoreMenu label={`More for ${group.name}`}>
           <EditGroup
             group={group}
             range={range}
@@ -152,7 +164,7 @@ export function GroupCard({
             />
           ) : null}
           <DeleteGroup group={group} deleteGroup={actions.deleteGroup} />
-        </div>
+        </MoreMenu>
       </div>
       {conflict ? (
         <div
@@ -378,6 +390,7 @@ function EditGroup({
       label={`Edit ${group.name}`}
       title={group.name}
       description="Edit the name, date and time."
+      variant="ghost"
     >
       {(close) => (
         <PlanForm
