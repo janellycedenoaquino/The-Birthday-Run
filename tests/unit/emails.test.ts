@@ -38,7 +38,7 @@ describe.each(auth)("%s", (_id, Template, type, heading, button) => {
 
   it("has the brand: logo, name, colour, support email", async () => {
     const html = await render(createElement(Template));
-    expect(html).toContain('src="{{ .SiteURL }}/brand/logo.png"');
+    expect(html).toContain(`src="{{ .SiteURL }}${appConfig.logo.png}"`);
     expect(html).toContain(escapeHtml(appConfig.name));
     expect(html).toContain(appConfig.brand.primary);
     expect(html).toContain(`mailto:${appConfig.supportEmail}`);
@@ -57,7 +57,7 @@ describe("E-4 welcome", () => {
       createElement(Welcome, { siteUrl: "https://app.example" }),
     );
     expect(html).toContain('href="https://app.example/rewards"');
-    expect(html).toContain('src="https://app.example/brand/logo.png"');
+    expect(html).toContain(`src="https://app.example${appConfig.logo.png}"`);
     expect(html).toContain(escapeHtml(`Welcome to ${appConfig.name}`));
     expect(html).toContain(
       escapeHtml(`Questions? Reply to ${appConfig.supportEmail}.`),
