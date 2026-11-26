@@ -22,7 +22,7 @@ Two launches (ROADMAP): **v1** after phase 4 and **v2 sign-off** after phase 7 (
 - [x] Supabase auth audit log after deletion decided and stated (Template decisions/0017): decisions/0024
 - [x] Lost-authenticator rule in the support notes (Template list): README "Operations"
 - [x] `GOOGLE_CLIENT_SECRET` and `TURNSTILE_SECRET_KEY` not on Vercel; only `main` deploys (`vercel.json` `git.deploymentEnabled`; CI builds and tests every PR instead), and previews stay behind Vercel Authentication if ever turned on
-- [ ] `Permissions-Policy` sends `geolocation=(self)` and nothing broader (decisions/0002)
+- [x] `Permissions-Policy` sends `geolocation=(self)` and nothing broader (decisions/0002) *(2026-11-26: checked on www.thebirthdayrun.com `/`, `/sign-in`, `/rewards`, `/plan`: `camera=(), microphone=(), geolocation=(self), payment=(), usb=(), browsing-topics=()`)*
 
 ## v1: Operations
 - [x] Sentry receives a test error and the alert email arrives *(2026-11-26: browser error THEBIRTHDAYRUN-5, alert email arrived)*
