@@ -350,7 +350,7 @@ flowchart TD
 - shadcn `AlertDialog`: title and text per use (M-185/M-186, M-187/M-188), destructive confirm, "Cancel" focused first. Escape cancels.
 
 **C-109 Pickup dialog** (FR-17)
-- Title M-112 with retailer name. Fields: "Date" (date input, defaults to today, `min` = window start, `max` = today; FR-17), "Note (optional)", "Where (optional)" (M-113 helper), both plain text; limits: FR-17 (counter shows `{left}` M-114 near the limit). Button M-115 (pending "Saving…").
+- A pastel blue sticky note (decision 0023). Title M-112 with retailer name. Fields: M-311 (date input, defaults to today, `min` = window start, `max` = today; FR-17), M-312 taps (M-312a–e, written into the note's first line), M-313 the note, M-314 "where" (M-113 helper), both plain text; limits: FR-17 (counter shows `{left}` M-114 near the limit). Button M-115 (pending "Saving…").
 - Success: closes; the card collapses to a row M-116 with button "Undo" for FR-18's period, then leaves the list. Undo → toast BR-21. Errors in the dialog: BR-8 (date field), BR-9, BR-10, M-5, M-7; field errors M-117.
 
 ### 3.3 Screens
@@ -463,7 +463,8 @@ Template M-, API-, E- texts apply unchanged. Placeholders in `{braces}` are fill
 - M-111 (S-103 / S-104 sign-up prompt): "Sign up free to track the rewards you're in, see how long each lasts and plan your run."
 
 **Rewards and pickups**
-- M-112 (C-109 title): "Mark {retailer} picked up"
+- M-112 (C-109 title; owner, 2026-11-25, decision 0023): "Got your {retailer} treat!"
+- M-311–M-314 (C-109 sticky note, decision 0023): "When?" · M-312 "How did it go?" with taps M-312a–e "Easy" / "Had to ask" / "Needed the app" / "Had to buy something" / "They said no" · M-313 "Anything else?" (placeholder M-313a "What you got, what to ask for next time") · M-314 "Where?"
 - M-113: "For example, the store or neighbourhood."
 - M-114: "{left} characters left"
 - M-115: "Mark picked up"
