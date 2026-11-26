@@ -445,8 +445,8 @@ secret = "env(GOOGLE_CLIENT_SECRET)"
 [remotes.production]
 project_id = "mekgzqrswpqfogjivcmq"
 [remotes.production.auth]
-site_url = "https://the-birthday-run-roan.vercel.app"
-additional_redirect_urls = ["https://the-birthday-run-roan.vercel.app/**", "https://*-ella9nell-8133.vercel.app/**"]
+site_url = "https://www.thebirthdayrun.com"
+additional_redirect_urls = ["https://www.thebirthdayrun.com/**"]
 [remotes.production.auth.email.smtp]
 enabled = true
 host = "smtp.resend.com"

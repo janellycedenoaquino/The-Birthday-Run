@@ -492,9 +492,6 @@ say "Fills [remotes.production] in supabase/config.toml, then runs supabase conf
 say "with your real secrets held in memory only (Template decision 0007; README step 6)."
 git checkout -- supabase/config.toml   # start from the committed block on every run
 site_url
-open_url "https://vercel.com/account/settings"
-step "Your Vercel team slug: the part after vercel.com/ in the address bar on the project page."
-prod VERCEL_SCOPE "Vercel team slug:" '^[a-z0-9-]+$' "lowercase letters, digits, hyphens"
 sender
 say ""
 say "From your password manager:"
@@ -503,9 +500,9 @@ prod GOOGLE_ID "Google client ID:" '\.apps\.googleusercontent\.com$'
 prod_secret GOOGLE_SECRET "Google client secret:" '^GOCSPX-' "starts with GOCSPX-"
 prod_secret RESEND_KEY "Resend API key:" '^re_' "starts with re_"
 
-python3 - "$REF" "$SITE_URL" "$VERCEL_SCOPE" "$SENDER_ADDRESS" "$SENDER_NAME" <<'PY'
+python3 - "$REF" "$SITE_URL" "$SENDER_ADDRESS" "$SENDER_NAME" <<'PY'
 import sys
-ref, site, scope, address, name = sys.argv[1:]
+ref, site, address, name = sys.argv[1:]
 path = "supabase/config.toml"
 text = open(path).read()
 start = text.find("# [remotes.production]")
@@ -517,7 +514,7 @@ block = f'''[remotes.production]
 project_id = "{ref}"
 [remotes.production.auth]
 site_url = "{site}"
-additional_redirect_urls = ["{site}/**", "https://*-{scope}.vercel.app/**"]
+additional_redirect_urls = ["{site}/**"]  # no preview wildcard (decision 0025)
 [remotes.production.auth.email.smtp]
 enabled = true
 host = "smtp.resend.com"

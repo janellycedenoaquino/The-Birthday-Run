@@ -28,6 +28,16 @@ const request = (path: string, headers: Record<string, string> = {}) =>
 const nonceOf = (csp: string | null) => csp?.match(/'nonce-([^']+)'/)?.[1];
 
 describe("proxy", () => {
+  it("sends pages on a *.vercel.app host to the site URL with a 308 (decision 0025)", async () => {
+    const response = await proxy(
+      new NextRequest("https://old-app.vercel.app/rewards?x=1"),
+    );
+    expect(response.status).toBe(308);
+    expect(response.headers.get("location")).toBe(
+      "http://localhost:3000/rewards?x=1",
+    );
+  });
+
   it("sets a CSP with a fresh nonce on every response", async () => {
     const a = (await proxy(request("/"))).headers.get(
       "content-security-policy",
