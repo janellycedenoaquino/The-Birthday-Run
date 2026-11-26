@@ -150,7 +150,7 @@ export default async function HistoryPage({
                           {p.reward}
                         </p>
                         {p.note ? (
-                          <p className="w-fit rounded-md bg-[#fff4c2] px-1.5 text-sm text-[var(--navy)]">
+                          <p className="w-fit rounded-md bg-[#fff4c2] px-1.5 text-sm whitespace-pre-line text-[var(--navy)]">
                             {p.note}
                           </p>
                         ) : null}

@@ -124,10 +124,10 @@ test("My Rewards: the list, filters, pages, and the other views (FR-12–FR-16, 
   await target.getByRole("button", { name: "Mark picked up" }).click();
   const dialog = page.getByRole("dialog");
   await expect(
-    dialog.getByRole("heading", { name: `Mark ${name} picked up` }),
+    dialog.getByRole("heading", { name: `Got your ${name} treat!` }),
   ).toBeVisible();
-  await dialog.getByLabel("Note (optional)").fill("Free cupcake");
-  await dialog.getByLabel("Where (optional)").fill("Main St");
+  await dialog.getByLabel("Anything else?").fill("Free cupcake");
+  await dialog.getByLabel("Where?").fill("Main St");
   await dialog.getByRole("button", { name: "Mark picked up" }).click();
   await expect(page.getByText(`${name} picked up.`)).toBeVisible();
   await expect(page.getByText("Showing 21 of 21")).toBeVisible();
@@ -141,10 +141,19 @@ test("My Rewards: the list, filters, pages, and the other views (FR-12–FR-16, 
     .locator("xpath=ancestor::li")
     .getByRole("button", { name: "Mark picked up" })
     .click();
+  // A "How did it go?" tap goes into the note's first line (decision 0023).
   await page
     .getByRole("dialog")
-    .getByLabel("Note (optional)")
-    .fill("Free cupcake");
+    .getByRole("button", { name: "Easy", exact: true })
+    .click();
+  await page.getByRole("dialog").getByLabel("Anything else?").press("End");
+  await page
+    .getByRole("dialog")
+    .getByLabel("Anything else?")
+    .pressSequentially("\nFree cupcake");
+  await expect(
+    page.getByRole("dialog").getByLabel("Anything else?"),
+  ).toHaveValue("Easy\nFree cupcake");
   await page
     .getByRole("dialog")
     .getByRole("button", { name: "Mark picked up" })
