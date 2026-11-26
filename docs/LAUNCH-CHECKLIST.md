@@ -17,8 +17,8 @@ Two launches (ROADMAP): **v1** after phase 4 and **v2 sign-off** after phase 7 (
 - [ ] RLS tests pass, including every app table (metric 5; DESIGN §3)
 - [ ] Metric 2's free-account tests pass (no premium data or action reachable)
 - [ ] Threat items marked "before launch" done (DESIGN §4.2)
-- [ ] Privacy policy and terms filled in and linked in the footer, including the app's additions: OpenFreeMap and Google Maps links, Stripe as processor, store-data licences (DESIGN §4.3, §4.4)
-- [ ] Privacy policy lists the Template's service providers and says deleted data can stay in backups up to the backup retention (Template list)
+- [x] Privacy policy and terms filled in and linked in the footer, including the app's additions: OpenFreeMap and Google Maps links, Stripe as processor, store-data licences (DESIGN §4.3, §4.4)
+- [x] Privacy policy lists the Template's service providers and says deleted data can stay in backups up to the backup retention (Template list)
 - [x] Supabase auth audit log after deletion decided and stated (Template decisions/0017): decisions/0024
 - [x] Lost-authenticator rule in the support notes (Template list): README "Operations"
 - [ ] `GOOGLE_CLIENT_SECRET` and `TURNSTILE_SECRET_KEY` not on Vercel; only `main` deploys (`vercel.json` `git.deploymentEnabled`; CI builds and tests every PR instead), and previews stay behind Vercel Authentication if ever turned on

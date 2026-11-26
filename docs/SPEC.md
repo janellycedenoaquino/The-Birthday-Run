@@ -364,6 +364,10 @@ flowchart TD
 #### Template S-4 Sign in and S-5 Sign up (changed look)
 - **Look:** decision 0016: the tilted wall of retailer cards behind one frosted card with "Create account" / "Sign in" tabs (M-290/M-290b: links between the two routes, keeping `next`; they replace the Template's "New here?" / "Already have an account?" links), a rotating "waiting for you" reward under the tabs (M-293), the h1 M-292/M-292b (S-4) or M-291/M-291b (S-5) with the lead M-292c/M-291c, and a confetti burst with S-5's "Check your email" panel (skipped when motion is paused or reduced). Everything else as Template S-4 and S-5.
 
+#### Template S-2 Privacy policy and S-3 Terms (changed body) · FR-17
+- **Text:** the app's own, in the two pages (legal prose, not catalogue messages). Privacy covers every row of DESIGN §4.3 and the §4.4 provider additions; Terms covers §4.4 "Terms" and the "Attribution" credits (no separate credits page). Minimum age 13 on both. No M-40 banner, since the text is no longer a placeholder.
+- **Headings:** Template S-2's, plus "Cookies and analytics", "Children" and "Changes" on Privacy; Template S-3's, plus "Reward information", "No guarantee" and "Credits" on Terms.
+
 #### S-101 Onboarding (`/onboarding`) · FR-6, FR-7, FR-10
 - **Look (decision 0016):** one frosted card on a still glow (nothing moves on its own, so no pause control), step text M-118. Continue turns the card around (a 3D flip) and its back is step 2; "Change birthday" turns it back. Step 2 is a logo grid with checkboxes; the Save button's count is the only pick feedback. No flip when motion is paused or reduced.
 - **Who:** signed in, no birthday (onboarded users go to S-105).
