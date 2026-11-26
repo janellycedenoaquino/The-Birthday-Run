@@ -21,23 +21,23 @@ Two launches (ROADMAP): **v1** after phase 4 and **v2 sign-off** after phase 7 (
 - [x] Privacy policy lists the Template's service providers and says deleted data can stay in backups up to the backup retention (Template list)
 - [x] Supabase auth audit log after deletion decided and stated (Template decisions/0017): decisions/0024
 - [x] Lost-authenticator rule in the support notes (Template list): README "Operations"
-- [ ] `GOOGLE_CLIENT_SECRET` and `TURNSTILE_SECRET_KEY` not on Vercel; only `main` deploys (`vercel.json` `git.deploymentEnabled`; CI builds and tests every PR instead), and previews stay behind Vercel Authentication if ever turned on
+- [x] `GOOGLE_CLIENT_SECRET` and `TURNSTILE_SECRET_KEY` not on Vercel; only `main` deploys (`vercel.json` `git.deploymentEnabled`; CI builds and tests every PR instead), and previews stay behind Vercel Authentication if ever turned on
 - [ ] `Permissions-Policy` sends `geolocation=(self)` and nothing broader (decisions/0002)
 
 ## v1: Operations
-- [ ] Sentry receives a test error and the alert email arrives
-- [ ] Daily encrypted backup on; first backup restored into a fresh project and the date recorded (DESIGN §5.4)
+- [x] Sentry receives a test error and the alert email arrives *(2026-11-26: browser error THEBIRTHDAYRUN-5, alert email arrived)*
+- [ ] Daily encrypted backup on; first backup restored into a fresh project and the date recorded (DESIGN §5.4) *(2026-11-26: partial, see README "Last tested restore")*
 - [ ] Rollback tried once on a preview deploy (DESIGN §5.5)
 - [ ] Production env vars set (BUILD §0.6), no test keys; `PAYMENTS_ENABLED` off
-- [ ] `supabase config push` with the `[remotes.production]` block filled in; SMTP still set afterwards
+- [x] `supabase config push` with the `[remotes.production]` block filled in; SMTP still set afterwards
 - [ ] Not paused, and the keep-alive in DESIGN §5.2 is running
 - [ ] Retailer import Action ran on `main` and the counts match the CSV (D2)
 
 ## v1: Domain, email, SEO
-- [ ] thebirthdayrun.com on this repo's Vercel project, with HTTPS
+- [x] thebirthdayrun.com on this repo's Vercel project, with HTTPS *(2026-11-26: www primary, bare domain 308 → www; decision 0025)*
 - [ ] This app's own sending domain verified in Resend; `EMAIL_FROM` uses it; sign-up and reset emails arrive
-- [ ] Turnstile widget, Google OAuth client and Supabase redirect URLs list thebirthdayrun.com
-- [ ] Google Branding home page and privacy policy links point to thebirthdayrun.com, and thebirthdayrun.com is an authorized domain (they use the *.vercel.app address until launch)
+- [x] Turnstile widget, Google OAuth client and Supabase redirect URLs list thebirthdayrun.com
+- [x] Google Branding home page and privacy policy links point to thebirthdayrun.com, and thebirthdayrun.com is an authorized domain (they use the *.vercel.app address until launch)
 - [ ] Title, description and share image look right when the link is pasted into a chat
 
 ## v1: Support
@@ -50,7 +50,7 @@ Two launches (ROADMAP): **v1** after phase 4 and **v2 sign-off** after phase 7 (
 - [ ] Map works with tiles blocked (NFR-7); OpenStreetMap credit shows
 - [ ] Vercel Production has `CRON_SECRET` and `REMINDER_UNSUBSCRIBE_SECRET` (Sensitive; `openssl rand -hex 32` each), and Vercel → Cron Jobs lists `/api/cron/reminders` (decision 0015: without them no reminder is sent)
 - [x] Reward reports (F-13, D16): the same new `REPORTS_EXPORT_SECRET` in Vercel Production (Sensitive) and in GitHub → Settings → Secrets → Actions; repo **variable** `SITE_URL` = `https://www.thebirthdayrun.com` (done 2026-11-24)
-- [ ] Once the app replaces the "Back soon" page: `gh workflow enable forward-reports.yml` (disabled 2026-11-24, since every path served the placeholder and the daily run would fail), then, after the reminder cron's first run (14:00 UTC; until then the D16 heartbeat fails the run on purpose), `gh workflow run forward-reports.yml --ref main` and check it succeeds ("0 retailers" with no reports yet)
+- [x] Once the app replaces the "Back soon" page: `gh workflow enable forward-reports.yml` (disabled 2026-11-24, since every path served the placeholder and the daily run would fail), then, after the reminder cron's first run (14:00 UTC; until then the D16 heartbeat fails the run on purpose), `gh workflow run forward-reports.yml --ref main` and check it succeeds ("0 retailers" with no reports yet) *(2026-11-26: enabled; manual run succeeded, "0 retailers, 0 reports acked")*
 - [ ] The Hermes checker holds a GitHub credential for this repo only and no database, Supabase, Vercel or Stripe key; record its first three runs (BUILD F-13 checker contract, NFR-11)
 - [ ] Reminder emails: a doubled run sends once; one-click turn-off works from Gmail's button; send budget respected (D15)
 - [ ] In Gmail's "Show original" of a real reminder, Resend's DKIM signature covers `List-Unsubscribe` and `List-Unsubscribe-Post` (RFC 8058; BUILD F-12 "Unverified")

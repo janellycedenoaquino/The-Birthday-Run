@@ -222,7 +222,7 @@ Every new table gets **row-level security and a test** in the same change, and e
    ```
 5. Sign in as a test user on the restored project, then record the date below.
 
-**Last tested restore:** partial, 2026-09-29: row counts matched on a fresh project; step 5 (sign-in on the restored project) not done, accepted for v1 (decisions/0016).
+**Last tested restore:** partial, 2026-11-26: the 18:31 UTC backup decrypted with the offline key, loaded into a fresh project in one transaction with no errors, and every table's row count matched production (all `public` tables except `retailer_stores`, plus `auth.users`, `auth.identities`, `auth.mfa_factors`). Step 5 failed: a password sign-in on the copy returned `invalid_credentials`, while the same account signs in on production; the copy was deleted before the cause (typo or restore) was found. Retest step 5 next time. Before that: partial, 2026-09-29 (decisions/0016).
 
 **Lost authenticator app** (D24.29): remove the MFA factor in the Supabase dashboard (Auth → Users) only when the request comes from, or is confirmed by, the account's own email address.
 
