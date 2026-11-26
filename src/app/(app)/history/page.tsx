@@ -20,6 +20,8 @@ export const metadata: Metadata = {
 
 const searchSchema = z.object({
   confirm: z.uuid().optional().catch(undefined),
+  // Decision 0016: one Birthday Run at a time; an unknown year shows the newest.
+  year: z.coerce.number().int().min(2000).max(2200).optional().catch(undefined),
 });
 
 /** The no-JS confirm block's action: delete (deletePickup checks everything), then a clean URL. */
@@ -33,13 +35,13 @@ export default async function HistoryPage({
   searchParams,
 }: PageProps<"/history">) {
   const { supabase, profile } = await requireOnboarded();
-  const { confirm } = searchSchema.parse(await searchParams);
+  const { confirm, year } = searchSchema.parse(await searchParams);
   const [timings, { data: pickups, error: pError }] = await Promise.all([
     enrolledTimings(supabase),
     supabase
       .from("pickups")
       .select(
-        "id, picked_up_on, note, location_label, retailer:retailers(name)",
+        "id, picked_up_on, note, location_label, retailer:retailers(name, reward_description)",
       ),
   ]);
   if (pError)
@@ -52,11 +54,13 @@ export default async function HistoryPage({
     pickups: pickups.map((p) => ({
       id: p.id,
       retailer: p.retailer.name,
+      reward: p.retailer.reward_description,
       date: p.picked_up_on as LocalDate,
       note: p.note,
       locationLabel: p.location_label,
     })),
   });
+  const shown = sections.find((s) => s.year === year) ?? sections[0];
   // The no-JS delete confirmation (C-108's text), for one of the user's own pickups only.
   const confirming = confirm
     ? pickups.find((p) => p.id === confirm)
@@ -64,7 +68,7 @@ export default async function HistoryPage({
 
   return (
     <div className="mx-auto w-full max-w-3xl px-4 py-12 sm:px-6">
-      <h1 className="text-2xl font-semibold">{msg("M-250")}</h1>
+      <h1 className="headline text-[34px] sm:text-[42px]">{msg("M-250")}</h1>
       {confirming ? (
         <section
           aria-labelledby="confirm-title"
@@ -87,8 +91,28 @@ export default async function HistoryPage({
           </form>
         </section>
       ) : null}
+      {sections.length > 1 ? (
+        <nav aria-label={msg("M-304")} className="mt-6">
+          <ul className="flex flex-wrap gap-2">
+            {sections.map((s) => {
+              const current = s.year === shown?.year;
+              return (
+                <li key={s.year}>
+                  <Link
+                    href={`/history?year=${s.year}`}
+                    aria-current={current ? "page" : undefined}
+                    className={`inline-flex h-10 items-center rounded-xl px-4 font-extrabold text-[var(--navy)] ${current ? "bg-[var(--bubblegum)] shadow-[inset_0_0_0_2px_var(--navy),2px_2px_0_var(--navy)]" : "bg-white shadow-[inset_0_0_0_1.5px_var(--border)] dark:bg-white/10 dark:text-foreground"}`}
+                  >
+                    {s.year}
+                  </Link>
+                </li>
+              );
+            })}
+          </ul>
+        </nav>
+      ) : null}
       {sections.length === 0 ? (
-        <div className="mt-8 grid gap-4 rounded-lg border border-border/70 p-6">
+        <div className="frosted mt-8 grid gap-4 rounded-[22px] p-6">
           <p>{msg("M-253")}</p>
           <div>
             <Button asChild size="lg">
@@ -97,33 +121,45 @@ export default async function HistoryPage({
           </div>
         </div>
       ) : (
-        sections.map((section) => (
+        [shown!].map((section) => (
           <section
             key={section.year}
             className="mt-8"
             aria-labelledby={`cycle-${section.year}`}
           >
-            <h2 id={`cycle-${section.year}`} className="text-lg font-semibold">
+            <h2 id={`cycle-${section.year}`} className="text-xl font-extrabold">
               {msg("M-251").replace("{year}", String(section.year))}
             </h2>
             {section.items.length === 0 ? (
               <p className="mt-2 text-muted-foreground">{msg("M-252")}</p>
             ) : (
-              <ul className="mt-3 grid gap-3">
+              // Decision 0016: a timeline, a dotted pink line with a pink dot per pickup.
+              <ul className="relative mt-4 grid gap-4 pl-7 before:absolute before:top-2 before:bottom-2 before:left-[9px] before:border-l-[3px] before:border-dotted before:border-[var(--bubblegum)]">
                 {section.items.map((p) => (
                   <li
                     key={p.id}
-                    className="flex flex-wrap items-start justify-between gap-3 rounded-lg border border-border/70 p-4"
+                    className="relative flex flex-col items-stretch gap-3 rounded-[20px] sm:flex-row sm:items-start sm:justify-between bg-white/85 p-4 shadow-[0_0_0_1.5px_var(--border)] before:absolute before:top-6 before:-left-[25px] before:size-3.5 before:rounded-full before:bg-[var(--bubblegum)] before:shadow-[0_0_0_1.5px_var(--navy)] dark:bg-white/5"
                   >
-                    <div className="grid gap-1">
-                      <p className="font-medium">{p.retailer}</p>
-                      <p className="text-sm text-muted-foreground">
-                        {formatDate(p.date, "long")}
-                      </p>
-                      {p.note ? <p className="text-sm">{p.note}</p> : null}
-                      {p.locationLabel ? (
-                        <p className="text-sm">{p.locationLabel}</p>
-                      ) : null}
+                    <div className="flex min-w-0 flex-1 items-start gap-3.5">
+                      <DateBlock date={p.date} />
+                      <div className="grid min-w-0 gap-1">
+                        <p className="font-extrabold">{p.retailer}</p>
+                        {/* The date is in the block; its full form for screen readers. */}
+                        <p className="sr-only">{formatDate(p.date, "long")}</p>
+                        <p className="text-sm text-muted-foreground">
+                          {p.reward}
+                        </p>
+                        {p.note ? (
+                          <p className="w-fit rounded-md bg-[#fff4c2] px-1.5 text-sm text-[var(--navy)]">
+                            {p.note}
+                          </p>
+                        ) : null}
+                        {p.locationLabel ? (
+                          <p className="text-sm text-muted-foreground">
+                            {p.locationLabel}
+                          </p>
+                        ) : null}
+                      </div>
                     </div>
                     <PickupActions
                       pickupId={p.id}
@@ -141,5 +177,25 @@ export default async function HistoryPage({
         ))
       )}
     </div>
+  );
+}
+
+/** Month, day and weekday in a small block (decision 0016). */
+function DateBlock({ date }: { date: LocalDate }) {
+  const [month, day] = formatDate(date, "short").split(" ");
+  const weekday = formatDate(date, "long").split(",")[0];
+  return (
+    <span
+      aria-hidden="true"
+      className="grid w-14 shrink-0 overflow-hidden rounded-xl bg-white text-center text-[var(--navy)] shadow-[0_0_0_1.5px_var(--navy)]"
+    >
+      <span className="bg-[var(--glow-pink)] text-[11px] font-extrabold tracking-[0.12em] uppercase">
+        {month}
+      </span>
+      <span className="text-xl leading-tight font-extrabold">{day}</span>
+      <span className="pb-0.5 text-[10px] font-bold">
+        {weekday?.slice(0, 3)}
+      </span>
+    </span>
   );
 }

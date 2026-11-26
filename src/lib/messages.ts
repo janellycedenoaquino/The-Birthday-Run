@@ -385,6 +385,7 @@ export const M = {
   "M-302d": "14 days",
   "M-302e": "Search",
   "M-303": "Your next run starts {date}",
+  "M-304": "Birthday Runs by year",
   // S-105's cards and sections (decision 0018 + 0016 prototype; owner, 2026-11-25).
   "M-310": "Picked up",
   "M-310a": "{count} still to get this run",
