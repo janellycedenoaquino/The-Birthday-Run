@@ -9,7 +9,7 @@ Two launches (ROADMAP): **v1** after phase 4 and **v2 sign-off** after phase 7 (
 - [ ] Tested on a real phone (iPhone and Android if possible) and one desktop browser
 - [ ] Empty, error and loading states look right (SPEC §3.3)
 - [ ] **F-14 done:** every retailer checked, with source and date; unverifiable ones held back (BUILD F-14); count recorded here: 100 live, 87 held back in `data/retailers-unverified.csv`, 4 removed (Golden Corral, Red Robin, Francesca's, Joann); checked 2026-11-23, PRs #31–#41. Most held-back rows state a reward but not its dates (app check: #21)
-- [ ] Signed-out Discover shows popular retailers only, and the "+N more" count is right (FR-2)
+- [x] Signed-out Discover matches FR-2 (every non-retired retailer since decisions/0017, sign-up prompt at the end, removed retailers unreachable) *(2026-11-26: www.thebirthdayrun.com `/discover` signed out lists 100 retailers, the same 100 IDs as `data/retailers.csv`; the prompt shows; `/discover/` golden-corral, red-robin, francescas and joann return 404)*
 - [ ] Owner and both sisters granted premium on production (metric 4)
 
 ## v1: Security and privacy
@@ -22,7 +22,7 @@ Two launches (ROADMAP): **v1** after phase 4 and **v2 sign-off** after phase 7 (
 - [x] Supabase auth audit log after deletion decided and stated (Template decisions/0017): decisions/0024
 - [x] Lost-authenticator rule in the support notes (Template list): README "Operations"
 - [x] `GOOGLE_CLIENT_SECRET` and `TURNSTILE_SECRET_KEY` not on Vercel; only `main` deploys (`vercel.json` `git.deploymentEnabled`; CI builds and tests every PR instead), and previews stay behind Vercel Authentication if ever turned on
-- [ ] `Permissions-Policy` sends `geolocation=(self)` and nothing broader (decisions/0002)
+- [x] `Permissions-Policy` sends `geolocation=(self)` and nothing broader (decisions/0002) *(2026-11-26: checked on www.thebirthdayrun.com `/`, `/sign-in`, `/rewards`, `/plan`: `camera=(), microphone=(), geolocation=(self), payment=(), usb=(), browsing-topics=()`)*
 
 ## v1: Operations
 - [x] Sentry receives a test error and the alert email arrives *(2026-11-26: browser error THEBIRTHDAYRUN-5, alert email arrived)*
