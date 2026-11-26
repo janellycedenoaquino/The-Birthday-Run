@@ -4,7 +4,7 @@ import { appConfigSchema } from "./schema";
 // public/brand/. Validated at import: a bad value fails the build. The site URL is not here: it
 // comes from NEXT_PUBLIC_SITE_URL through getSiteUrl() (D24.23).
 //
-// Still a placeholder: the logo files in public/brand/ (replaced in the redesign, ROADMAP phase 8).
+// Still a placeholder: logo.svg in public/brand/ (replaced in the redesign, ROADMAP phase 8).
 export const appConfig = Object.freeze(
   appConfigSchema.parse({
     name: "The Birthday Run",
@@ -21,7 +21,9 @@ export const appConfig = Object.freeze(
     },
     logo: {
       svg: "/brand/logo.svg",
-      png: "/brand/logo.png",
+      // The owner's doll alone, transparent (2026-11-26): the emails' header logo. A new file name,
+      // not logo.png, because mail apps cache images by address.
+      png: "/brand/doll-logo.png",
       alt: "The Birthday Run logo",
     },
     legal: { entityName: "The Birthday Run" },

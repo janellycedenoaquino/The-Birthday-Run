@@ -76,11 +76,10 @@ export function EmailLayout({
             }}
           >
             <Img
-              src={`${siteUrl}/brand/logo.png`}
+              src={`${siteUrl}${appConfig.logo.png}`}
               alt={appConfig.logo.alt}
               width={40}
               height={40}
-              style={{ borderRadius: 10 }}
             />
             <Text
               style={{
