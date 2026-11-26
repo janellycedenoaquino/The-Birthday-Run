@@ -27,7 +27,7 @@ Two launches (ROADMAP): **v1** after phase 4 and **v2 sign-off** after phase 7 (
 ## v1: Operations
 - [x] Sentry receives a test error and the alert email arrives *(2026-11-26: browser error THEBIRTHDAYRUN-5, alert email arrived)*
 - [ ] Daily encrypted backup on; first backup restored into a fresh project and the date recorded (DESIGN §5.4) *(2026-11-26: partial, see README "Last tested restore")*
-- [ ] Rollback tried once on a preview deploy (DESIGN §5.5)
+- [x] Rollback tried once on a preview deploy (DESIGN §5.5) *(2026-11-26: done on Production, since preview deploys are off: Instant Rollback to the PR #86 build, www stayed 200 and served the older build; then promoted the current build back, and the build matched the one live before)*
 - [ ] Production env vars set (BUILD §0.6), no test keys; `PAYMENTS_ENABLED` off
 - [x] `supabase config push` with the `[remotes.production]` block filled in; SMTP still set afterwards
 - [ ] Not paused, and the keep-alive in DESIGN §5.2 is running
