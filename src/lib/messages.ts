@@ -417,6 +417,8 @@ export const M = {
   "M-310f": "Open now",
   "M-310g": "days until your birthday",
   "M-310h": "day until your birthday",
+  // C-3 loading, screen readers only (decision 0016).
+  "M-315": "Loading",
   "BR-12": "We don't recognise that ZIP code.",
   "BR-13":
     "We couldn't look up stores right now, so these stops have no map pin. Try again later.",

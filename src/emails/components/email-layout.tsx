@@ -50,7 +50,7 @@ export function EmailLayout({
       <Preview>{preview}</Preview>
       <Body
         style={{
-          backgroundColor: "#f6f7f6",
+          backgroundColor: "#eef0f5",
           fontFamily:
             "system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif",
           margin: 0,
@@ -59,13 +59,22 @@ export function EmailLayout({
       >
         <Container
           style={{
-            backgroundColor: "white",
-            borderRadius: 12,
+            backgroundColor: "#fffcf7",
+            borderRadius: 16,
             maxWidth: 480,
-            padding: "32px 28px",
+            overflow: "hidden",
           }}
         >
-          <Section>
+          {/* Decision 0016: a pastel gradient header (pink, blue, green) with the app name; mail
+              apps without gradients show the pink. */}
+          <Section
+            style={{
+              backgroundColor: "#ffd6e5",
+              backgroundImage:
+                "linear-gradient(90deg, #ffd6e5, #d6ebff, #d3f5e1)",
+              padding: "18px 28px",
+            }}
+          >
             <Img
               src={`${siteUrl}/brand/logo.png`}
               alt={appConfig.logo.alt}
@@ -75,95 +84,101 @@ export function EmailLayout({
             />
             <Text
               style={{
-                color: "#57605c",
-                fontSize: 14,
-                fontWeight: 600,
-                margin: "12px 0 0",
+                color: brand.primaryForeground,
+                fontSize: 15,
+                fontWeight: 800,
+                margin: "10px 0 0",
               }}
             >
               {name}
             </Text>
           </Section>
-          <Heading
-            as="h1"
-            style={{
-              color: "#1a1f1d",
-              fontSize: 22,
-              fontWeight: 600,
-              margin: "24px 0 12px",
-            }}
-          >
-            {heading}
-          </Heading>
-          <Text
-            style={{
-              color: "#2c3330",
-              fontSize: 16,
-              lineHeight: "24px",
-              margin: "0 0 24px",
-            }}
-          >
-            {intro}
-          </Text>
-          {children}
-          <Button
-            href={url}
-            style={{
-              backgroundColor: brand.primary,
-              borderRadius: 8,
-              color: brand.primaryForeground,
-              fontSize: 16,
-              fontWeight: 600,
-              padding: "12px 20px",
-            }}
-          >
-            {buttonLabel}
-          </Button>
-          <Text
-            style={{
-              color: "#57605c",
-              fontSize: 13,
-              lineHeight: "20px",
-              margin: "24px 0 0",
-              wordBreak: "break-all",
-            }}
-          >
-            Or open this link:{" "}
-            <Link href={url} style={{ color: "#57605c" }}>
-              {url}
-            </Link>
-          </Text>
-          {footnote ? (
-            <Text
+          <Section style={{ padding: "4px 28px 32px" }}>
+            <Heading
+              as="h1"
               style={{
-                color: "#57605c",
-                fontSize: 14,
-                lineHeight: "22px",
-                margin: "16px 0 0",
+                color: brand.primaryForeground,
+                fontSize: 22,
+                fontWeight: 800,
+                margin: "24px 0 12px",
               }}
             >
-              {footnote}
-            </Text>
-          ) : null}
-          <Hr style={{ borderColor: "#e5e8e6", margin: "28px 0 16px" }} />
-          {footer ? (
+              {heading}
+            </Heading>
             <Text
               style={{
-                color: "#6b7470",
-                fontSize: 12,
-                lineHeight: "18px",
-                margin: "0 0 8px",
+                color: "#4c557d",
+                fontSize: 16,
+                lineHeight: "24px",
+                margin: "0 0 24px",
               }}
             >
-              {footer}
+              {intro}
             </Text>
-          ) : null}
-          <Text style={{ color: "#6b7470", fontSize: 12, margin: 0 }}>
-            {name} ·{" "}
-            <Link href={`mailto:${supportEmail}`} style={{ color: "#6b7470" }}>
-              {supportEmail}
-            </Link>
-          </Text>
+            {children}
+            <Button
+              href={url}
+              style={{
+                backgroundColor: brand.primary,
+                border: `1.5px solid ${brand.primaryForeground}`,
+                borderRadius: 12,
+                color: brand.primaryForeground,
+                fontSize: 16,
+                fontWeight: 800,
+                padding: "12px 18px",
+              }}
+            >
+              {buttonLabel}
+            </Button>
+            <Text
+              style={{
+                color: "#4c557d",
+                fontSize: 13,
+                lineHeight: "20px",
+                margin: "24px 0 0",
+                wordBreak: "break-all",
+              }}
+            >
+              Or open this link:{" "}
+              <Link href={url} style={{ color: "#4c557d" }}>
+                {url}
+              </Link>
+            </Text>
+            {footnote ? (
+              <Text
+                style={{
+                  color: "#4c557d",
+                  fontSize: 14,
+                  lineHeight: "22px",
+                  margin: "16px 0 0",
+                }}
+              >
+                {footnote}
+              </Text>
+            ) : null}
+            <Hr style={{ borderColor: "#e5e8e6", margin: "28px 0 16px" }} />
+            {footer ? (
+              <Text
+                style={{
+                  color: "#6b7470",
+                  fontSize: 12,
+                  lineHeight: "18px",
+                  margin: "0 0 8px",
+                }}
+              >
+                {footer}
+              </Text>
+            ) : null}
+            <Text style={{ color: "#6b7470", fontSize: 12, margin: 0 }}>
+              {name} ·{" "}
+              <Link
+                href={`mailto:${supportEmail}`}
+                style={{ color: "#6b7470" }}
+              >
+                {supportEmail}
+              </Link>
+            </Text>
+          </Section>
         </Container>
       </Body>
     </Html>

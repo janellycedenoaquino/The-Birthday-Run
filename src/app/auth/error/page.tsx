@@ -19,7 +19,7 @@ export default async function AuthErrorPage({
   const reason = reasonSchema.parse((await searchParams).reason);
 
   return (
-    <div className="mx-auto w-full max-w-md px-4 py-12 sm:px-6">
+    <div className="small-page frosted">
       {reason === "rate_limited" && (
         <>
           <h1 className="text-2xl font-semibold">Please wait a moment</h1>

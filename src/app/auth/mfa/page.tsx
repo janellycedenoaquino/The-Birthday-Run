@@ -26,7 +26,7 @@ export default async function MfaPage({
   if (claims.aal === "aal2" || !hasFactor) redirect(target);
 
   return (
-    <div className="mx-auto w-full max-w-md px-4 py-12 sm:px-6">
+    <div className="small-page frosted">
       <h1 className="text-2xl font-semibold">Enter your code</h1>
       <p className="mt-2 mb-8">
         Open your authenticator app and enter the 6-digit code for{" "}

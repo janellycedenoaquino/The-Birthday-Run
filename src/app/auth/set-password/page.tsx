@@ -37,7 +37,7 @@ export default async function SetPasswordPage({
   );
 
   return (
-    <div className="mx-auto w-full max-w-md px-4 py-12 sm:px-6">
+    <div className="small-page frosted">
       <p className="text-sm text-muted-foreground">Step 2 of 2</p>
       <h1 className="mt-1 text-2xl font-semibold">Choose a password</h1>
       <p className="mt-2 mb-8">
