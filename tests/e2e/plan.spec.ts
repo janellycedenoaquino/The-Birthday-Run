@@ -1,6 +1,12 @@
 import { existsSync } from "node:fs";
 import { expect, test } from "@playwright/test";
-import { confirmDelete, monthDayIn, ownIp, passwordSignIn } from "./support";
+import {
+  confirmDelete,
+  monthDayIn,
+  openMore,
+  ownIp,
+  passwordSignIn,
+} from "./support";
 
 // Plan in a real browser (BUILD F-6 "Tests": FR-22–FR-27, NFR-6). One user, one sign-in; the
 // birthday is today (New York) and the programs are set straight in the local database.
@@ -114,6 +120,7 @@ test("Plan: groups, keyboard reorder, edits, the limit, and pickups (FR-22–FR-
   await expect.poll(order).toEqual([second, third, first]);
 
   // Rename and remove (FR-27).
+  await openMore(card, "More for Plan A");
   await card.getByRole("button", { name: "Edit Plan A" }).click();
   await page.getByRole("dialog").getByLabel("Name").fill("Saturday run");
   await page.getByRole("dialog").getByRole("button", { name: "Save" }).click();
@@ -174,6 +181,7 @@ test("Plan: groups, keyboard reorder, edits, the limit, and pickups (FR-22–FR-
   const planC = page
     .getByRole("listitem")
     .filter({ has: page.getByRole("heading", { name: "Plan C", level: 3 }) });
+  await openMore(planC, "More for Plan C");
   await planC.getByRole("link", { name: "Delete Plan C" }).click();
   await confirmDelete(page, "Delete Plan C?");
   await expect(
@@ -207,10 +215,12 @@ test("Duplicate: premium gets (Copy) then (Copy 2) in the same order; free gets 
       page
         .getByRole("listitem")
         .filter({ has: page.getByRole("heading", { name, exact: true }) });
+    await openMore(card("Dup run"), "More for Dup run");
     await card("Dup run")
       .getByRole("button", { name: "Duplicate Dup run" })
       .click();
     await expect(card("Dup run (Copy)")).toBeVisible();
+    await openMore(card("Dup run"), "More for Dup run");
     await card("Dup run")
       .getByRole("button", { name: "Duplicate Dup run" })
       .click();

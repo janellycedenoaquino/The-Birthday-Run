@@ -1,5 +1,5 @@
 import { existsSync, readFileSync, rmSync } from "node:fs";
-import { expect, type Page } from "@playwright/test";
+import { expect, type Locator, type Page } from "@playwright/test";
 
 // Shared e2e helpers (BUILD CI "Test suites"): the mailbox adapter (§0.8's e2e seam), Turnstile,
 // sign-in, and the CSP-console watcher.
@@ -204,4 +204,13 @@ export async function downloadMyData(page: Page) {
     page.getByRole("link", { name: "Download my data" }).click(),
   ]);
   return download;
+}
+
+/** Opens a "⋯" menu (decision 0016; a <details>, so it's found by its label, not as a button). */
+export async function openMore(scope: Page | Locator, label: string) {
+  const summary = scope.getByLabel(label, { exact: true });
+  const open = await summary.evaluate(
+    (el) => (el.parentElement as HTMLDetailsElement).open,
+  );
+  if (!open) await summary.click();
 }

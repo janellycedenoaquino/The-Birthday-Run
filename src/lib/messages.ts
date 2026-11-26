@@ -386,6 +386,12 @@ export const M = {
   "M-302e": "Search",
   "M-303": "Your next run starts {date}",
   "M-304": "Birthday Runs by year",
+  // Plan's free counters, phone tabs and selection bar (decision 0016).
+  "M-305": "{count} of {limit} groups",
+  "M-306": "{count} of {limit} rewards",
+  "M-307": "Plan",
+  "M-308": "Groups ({count})",
+  "M-309": "Clear",
   // S-105's cards and sections (decision 0018 + 0016 prototype; owner, 2026-11-25).
   "M-310": "Picked up",
   "M-310a": "{count} still to get this run",

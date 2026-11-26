@@ -138,7 +138,7 @@ export default async function HistoryPage({
                 {section.items.map((p) => (
                   <li
                     key={p.id}
-                    className="relative flex flex-col items-stretch gap-3 rounded-[20px] sm:flex-row sm:items-start sm:justify-between bg-white/85 p-4 shadow-[0_0_0_1.5px_var(--border)] before:absolute before:top-6 before:-left-[25px] before:size-3.5 before:rounded-full before:bg-[var(--bubblegum)] before:shadow-[0_0_0_1.5px_var(--navy)] dark:bg-white/5"
+                    className="relative flex items-start justify-between gap-3 rounded-[20px] bg-white/85 p-4 shadow-[0_0_0_1.5px_var(--border)] before:absolute before:top-6 before:-left-[25px] before:size-3.5 before:rounded-full before:bg-[var(--bubblegum)] before:shadow-[0_0_0_1.5px_var(--navy)] dark:bg-white/5"
                   >
                     <div className="flex min-w-0 flex-1 items-start gap-3.5">
                       <DateBlock date={p.date} />

@@ -1,6 +1,12 @@
 import { existsSync } from "node:fs";
 import { expect, test } from "@playwright/test";
-import { confirmDelete, monthDayIn, ownIp, passwordSignIn } from "./support";
+import {
+  confirmDelete,
+  monthDayIn,
+  openMore,
+  ownIp,
+  passwordSignIn,
+} from "./support";
 
 // Its own client IP, so sign-ins don't share one per-IP budget (support.ts ownIp).
 test.use(ownIp(17));
@@ -159,7 +165,10 @@ test("My Rewards: the list, filters, pages, and the other views (FR-12–FR-16, 
   await expect(entry).toContainText("Free cupcake");
 
   // Edit the note (FR-20).
-  await entry.getByRole("button", { name: `Edit ${name} pickup` }).click();
+  await openMore(entry, `More for ${name} pickup`);
+  await entry
+    .getByRole("button", { name: `Edit note and place for ${name}` })
+    .click();
   await page
     .getByRole("dialog")
     .getByLabel("Note (optional)")
