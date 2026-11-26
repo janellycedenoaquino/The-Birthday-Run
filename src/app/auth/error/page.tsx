@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { z } from "zod";
+import { Illustration } from "@/components/layout/illustration";
 import { Button } from "@/components/ui/button";
 import { msg } from "@/lib/messages";
 
@@ -19,7 +20,9 @@ export default async function AuthErrorPage({
   const reason = reasonSchema.parse((await searchParams).reason);
 
   return (
-    <div className="small-page frosted">
+    <div
+      className={`small-page frosted ${reason === "link" ? "with-art" : ""}`}
+    >
       {reason === "rate_limited" && (
         <>
           <h1 className="text-2xl font-semibold">Please wait a moment</h1>
@@ -31,6 +34,8 @@ export default async function AuthErrorPage({
       )}
       {reason === "link" && (
         <>
+          {/* Decision 0016: the girls over a map, on this page only. */}
+          <Illustration name="girlsMap" eager className="mb-6" />
           <h1 className="text-2xl font-semibold">That link didn&apos;t work</h1>
           <p className="mt-2 mb-8">{msg("M-11")}</p>
           <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap">

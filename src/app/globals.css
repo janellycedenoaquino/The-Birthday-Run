@@ -315,6 +315,10 @@
   border-radius: 28px;
   padding: 2rem 1.75rem;
 }
+/* With a picture (decision 0016: S-8, S-19), the card is wider on web so the picture reads. */
+.small-page.with-art {
+  max-width: 40rem;
+}
 .small-page h1 {
   font-weight: 800;
   font-size: 1.875rem;

@@ -3,6 +3,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { z } from "zod";
 import { PickupActions } from "@/components/history/pickup-entry";
+import { Illustration } from "@/components/layout/illustration";
 import { Button } from "@/components/ui/button";
 import { formatDate, today, type LocalDate } from "@/lib/birthday/timing";
 import { msg } from "@/lib/messages";
@@ -112,7 +113,9 @@ export default async function HistoryPage({
         </nav>
       ) : null}
       {sections.length === 0 ? (
-        <div className="frosted mt-8 grid gap-4 rounded-[22px] p-6">
+        <div className="frosted mt-8 grid max-w-2xl gap-4 rounded-[22px] p-6">
+          {/* Decision 0016: no pickups ever → the three girls above M-253. */}
+          <Illustration name="girlsRunning" />
           <p>{msg("M-253")}</p>
           <div>
             <Button asChild size="lg">
