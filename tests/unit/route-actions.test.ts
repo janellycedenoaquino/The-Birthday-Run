@@ -75,6 +75,7 @@ const retailer = (
   timing_type: "from_birthday",
   days_before: null,
   days_after: 7,
+  logo_file: null,
   store_finder_url: `https://${id}.example/stores`,
   website_url: `https://${id}.example`,
   ...extra,
@@ -215,7 +216,7 @@ describe("findStops (FR-31, FR-32, FR-34)", () => {
     db.tables.enrollments = {
       data: [
         { retailer: retailer("a", "Alpha") },
-        { retailer: retailer("b", "Bravo") },
+        { retailer: retailer("b", "Bravo", { logo_file: "bravo.png" }) },
         // Ended before today: a 3-day reward from Jun 1 is over by Jun 15.
         {
           retailer: retailer("old", "Old", {
@@ -251,6 +252,8 @@ describe("findStops (FR-31, FR-32, FR-34)", () => {
       [1, "Bravo"],
       [2, "Alpha"],
     ]);
+    // The map pin's logo (decision 0016); a brand without one gets initials.
+    expect(route.stops.map((s) => s.logoFile)).toEqual(["bravo.png", null]);
     expect(route.stops[0]!.milesFromPrevious).toBeGreaterThan(0);
     expect(route.noPin).toEqual([
       {

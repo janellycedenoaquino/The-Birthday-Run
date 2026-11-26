@@ -5,6 +5,8 @@ export type RouteStop = {
   n: number;
   retailerId: string;
   retailerName: string;
+  /** The logo in public/retailers/, for the map pin (decision 0016). */
+  logoFile: string | null;
   storeName: string;
   address: string | null;
   lat: number;

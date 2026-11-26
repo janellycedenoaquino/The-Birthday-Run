@@ -92,7 +92,12 @@ async function premiumOnly<T>(
   }
 }
 
-type Brand = { id: string; name: string; finderUrl: string | null };
+type Brand = {
+  id: string;
+  name: string;
+  logoFile: string | null;
+  finderUrl: string | null;
+};
 
 /** Stops, the no-pin list and the legs for brands in order (BUILD F-10 flow steps 7–9). */
 async function buildRoute(
@@ -120,7 +125,7 @@ async function buildRoute(
     { ordered },
   );
   const path = ordered ? chosen : orderStops(chosen, at);
-  const stops = toStops(path, at, (id) => byId.get(id)!.name);
+  const stops = toStops(path, at, (id) => byId.get(id)!);
   const legs = googleLegs(
     stops,
     start.kind === "zip" ? { kind: "zip", zip: start.zip } : { kind: "coords" },
@@ -141,16 +146,18 @@ async function buildRoute(
 function toStops(
   path: StoreCandidate[],
   at: LatLng,
-  nameOf: (retailerId: string) => string,
+  infoOf: (retailerId: string) => { name: string; logoFile: string | null },
 ): RouteStop[] {
   let prev = at;
   return path.map((s, i) => {
     const miles = toMiles(haversineMeters(prev, s));
     prev = s;
+    const info = infoOf(s.retailerId);
     return {
       n: i + 1,
       retailerId: s.retailerId,
-      retailerName: nameOf(s.retailerId),
+      retailerName: info.name,
+      logoFile: info.logoFile,
       storeName: s.storeName,
       address: s.address,
       lat: s.lat,
@@ -219,7 +226,7 @@ export async function findStops(
       const { data, error } = await supabase
         .from("enrollments")
         .select(
-          "retailer:retailers!inner(id, name, timing_type, days_before, days_after, store_finder_url, website_url)",
+          "retailer:retailers!inner(id, name, logo_file, timing_type, days_before, days_after, store_finder_url, website_url)",
         )
         .is("retailer.retired_at", null);
       if (error)
@@ -249,7 +256,12 @@ export async function findStops(
       const wanted = new Set(retailerIds);
       const brands = open
         .filter((r) => wanted.has(r.id))
-        .map((r) => ({ id: r.id, name: r.name, finderUrl: finder(r) }));
+        .map((r) => ({
+          id: r.id,
+          name: r.name,
+          logoFile: r.logo_file,
+          finderUrl: finder(r),
+        }));
       return buildRoute(supabase, start, resolved.at, brands, false);
     }),
   );
@@ -293,7 +305,7 @@ export async function getGroupRoute(
       const { data: retailers, error: rError } = order.length
         ? await supabase
             .from("retailers")
-            .select("id, name, store_finder_url, website_url")
+            .select("id, name, logo_file, store_finder_url, website_url")
             .is("retired_at", null) // as findStops: retired brands drop out
             .in("id", order)
         : { data: [], error: null };
@@ -304,7 +316,16 @@ export async function getGroupRoute(
       const info = new Map(retailers.map((r) => [r.id, r]));
       const brands = order.flatMap((id) => {
         const r = info.get(id);
-        return r ? [{ id, name: r.name, finderUrl: finder(r) }] : [];
+        return r
+          ? [
+              {
+                id,
+                name: r.name,
+                logoFile: r.logo_file,
+                finderUrl: finder(r),
+              },
+            ]
+          : [];
       });
       return buildRoute(supabase, start, resolved.at, brands, true);
     }),
@@ -351,9 +372,11 @@ export async function suggestGroups(
 
       const resolved = await resolveStart(supabase, start);
       if (!resolved) return unknownZip;
-      const names = new Map(eligible.map((r) => [r.id, r.name]));
+      const info = new Map(
+        eligible.map((r) => [r.id, { name: r.name, logoFile: r.logo_file }]),
+      );
       const nearby = await findNearbyStores(supabase, resolved.at, [
-        ...names.keys(),
+        ...info.keys(),
       ]);
       if (nearby.failed && nearby.notPremium)
         return { ok: false, error: "BR-2" };
@@ -372,7 +395,7 @@ export async function suggestGroups(
 
       const { groups, leftOut } = cluster(chosen, GROUPING);
       const pickup = suggestionPickup(ctx.window, ctx.nowTime);
-      const nameOf = (id: string) => names.get(id)!;
+      const infoOf = (id: string) => info.get(id)!;
       return {
         ok: true,
         data: {
@@ -381,7 +404,7 @@ export async function suggestGroups(
             const stops = toStops(
               orderStops(g, resolved.at),
               resolved.at,
-              nameOf,
+              infoOf,
             );
             return {
               retailerIds: stops.map((s) => s.retailerId),
@@ -393,7 +416,7 @@ export async function suggestGroups(
           leftOut: [...noPin, ...leftOut.map((s) => s.retailerId)].map(
             (id) => ({
               retailerId: id,
-              retailerName: nameOf(id),
+              retailerName: infoOf(id).name,
             }),
           ),
         },
