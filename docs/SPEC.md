@@ -337,7 +337,7 @@ flowchart TD
 - Needs C-105 first; until set, only C-105 shows.
 - Order on the page: (1) map, (2) stop list, (3) "no map pin" list, (4) Google Maps links. (2)–(4) are plain HTML from the route action's result (BUILD F-10) and work without the map.
 - **Map:** loaded only for premium users after the stop list; numbered pins match the list numbers; start marked M-160; OpenStreetMap credit from the map config (D11). Wrapper `role="img"` with `aria-label` M-161; the list is the accessible version. Tiles fail: the map area shows M-162; everything else stays.
-- **Stop list** (`<ol>`): number, retailer, store name, address, M-163 (distance from the previous stop, or from the start for stop 1).
+- **Stop list** (`<ol>`): number, retailer, store name, address, M-163 (distance from the previous stop, or from the start for stop 1). Each row is a toggle button (`aria-pressed`): picking a row, or clicking its pin, centres the map on that stop and marks both (look: decision 0016).
 - **No map pin** (heading M-164): retailer + M-165, linking to the store finder (website if none; new tab, `rel="noopener noreferrer"`). BR-13: every stop appears here, with BR-13's message above.
 - **Google Maps links:** one link M-167 when the route fits the device's limit; otherwise one numbered link per leg, M-168 (FR-34). Open in a new tab.
 - Loading: M-169 with list skeleton. Errors: M-5, M-7, BR-2.

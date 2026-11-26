@@ -126,6 +126,11 @@ test("premium: ZIP start → map, numbered stops, no-pin row and one Google link
   await expect(
     r.getByRole("link", { name: "© OpenStreetMap contributors" }),
   ).toBeVisible();
+  // Decision 0016: a start pin and one numbered pin per stop; picking a row marks it.
+  await expect(page.locator(".maplibregl-marker")).toHaveCount(3);
+  const first = stops.first().getByRole("button");
+  await first.click();
+  await expect(first).toHaveAttribute("aria-pressed", "true");
   expect(csp).toEqual([]);
   // NFR-6: the route view with its map has no serious or critical axe issues.
   const axe = await new AxeBuilder({ page })

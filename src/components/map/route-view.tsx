@@ -34,6 +34,10 @@ export function RouteView({
     result: ActionResult<RouteResult>;
   } | null>(null);
   const [pending, startTransition] = useTransition();
+  // The stop picked in the list or on the map (decision 0016: either shows it on the other).
+  const [selected, setSelected] = useState<{ key: string; n: number } | null>(
+    null,
+  );
   const key = start ? `${JSON.stringify(start)}|${runKey}` : null;
 
   useEffect(() => {
@@ -71,36 +75,49 @@ export function RouteView({
       </p>
     );
   const route = result.data!;
+  const picked = selected?.key === key ? selected.n : null;
+  const pick = (n: number) => setSelected({ key: key!, n });
   return (
     <div className="grid gap-4">
       {result.message ? <p role="status">{errorText(result.message)}</p> : null}
-      {route.stops.length ? <RouteMap route={route} /> : null}
+      {route.stops.length ? (
+        <RouteMap route={route} selected={picked} onSelect={pick} />
+      ) : null}
       {route.stops.length ? (
         <ol className="grid gap-3">
           {route.stops.map((s) => (
-            <li key={s.retailerId} className="flex gap-3">
-              <span
-                aria-hidden="true"
-                className="grid size-7 shrink-0 place-items-center rounded-full bg-primary text-xs font-semibold text-primary-foreground"
+            <li key={s.retailerId}>
+              <button
+                type="button"
+                aria-pressed={picked === s.n}
+                onClick={() => pick(s.n)}
+                className="flex w-full gap-3 rounded-lg p-2 text-left transition-colors hover:bg-muted aria-pressed:bg-secondary"
               >
-                {s.n}
-              </span>
-              <div className="grid gap-0.5">
-                <p className="font-medium">
-                  <span className="sr-only">{s.n}. </span>
-                  {s.retailerName}
-                </p>
-                <p className="text-sm">{s.storeName}</p>
-                {s.address ? (
-                  <p className="text-sm text-muted-foreground">{s.address}</p>
-                ) : null}
-                <p className="text-sm text-muted-foreground">
-                  {msg(s.n === 1 ? "M-163b" : "M-163").replace(
-                    "{distance}",
-                    s.milesFromPrevious.toFixed(1),
-                  )}
-                </p>
-              </div>
+                <span
+                  aria-hidden="true"
+                  className="grid size-7 shrink-0 place-items-center rounded-full bg-[var(--bubblegum)] text-xs font-bold text-[var(--navy)]"
+                >
+                  {s.n}
+                </span>
+                <span className="grid gap-0.5">
+                  <span className="block font-medium">
+                    <span className="sr-only">{s.n}. </span>
+                    {s.retailerName}
+                  </span>
+                  <span className="block text-sm">{s.storeName}</span>
+                  {s.address ? (
+                    <span className="block text-sm text-muted-foreground">
+                      {s.address}
+                    </span>
+                  ) : null}
+                  <span className="block text-sm text-muted-foreground">
+                    {msg(s.n === 1 ? "M-163b" : "M-163").replace(
+                      "{distance}",
+                      s.milesFromPrevious.toFixed(1),
+                    )}
+                  </span>
+                </span>
+              </button>
             </li>
           ))}
         </ol>
