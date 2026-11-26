@@ -179,6 +179,7 @@ Extends Template BUILD §0.6; same kinds, parts and rules (placeholder `.env.exa
 - **Payments flag:** `paymentsEnabled()` in `server/billing/flag.ts`, read by the billing actions and by server components deciding FR-39's variant.
 - **Timing:** every "today", window, status and cycle question goes through `src/lib/birthday/timing.ts` with the profile's month, day and time zone and an injected `now` (D4).
 - **Email:** `sendEmail` (Template) gains optional `headers` for `List-Unsubscribe` / `List-Unsubscribe-Post` (D15).
+- **Canonical host** (decision 0025): the proxy first 308-redirects GET/HEAD page requests on a `*.vercel.app` host to `NEXT_PUBLIC_SITE_URL`, keeping path and query (`src/lib/security/canonical-host.ts`); `/api/*` and posts are served where they land.
 - **Cron routes** return `Cache-Control: private, no-store` (Template §0.7) and a JSON count summary, never personal data.
 - **Nothing user-written goes to GitHub** (D16): the report summary is built from the `reason` enum and counts only, and the Action writes issue text from a fixed template (NFR-11).
 

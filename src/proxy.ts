@@ -2,6 +2,7 @@ import { createServerClient } from "@supabase/ssr";
 import { isAuthRetryableFetchError } from "@supabase/supabase-js";
 import { NextResponse, type NextRequest } from "next/server";
 import { publicEnv } from "@/lib/env/public";
+import { canonicalHostRedirect } from "@/lib/security/canonical-host";
 import { sessionCookieOptions } from "@/lib/supabase/cookie-options";
 import { logError } from "@/server/errors";
 import { buildCsp, newNonce } from "@/server/security/csp";
@@ -31,6 +32,13 @@ const isProtected = (pathname: string) =>
   );
 
 export async function proxy(request: NextRequest) {
+  const canonical = canonicalHostRedirect(
+    request.nextUrl,
+    request.method,
+    publicEnv.NEXT_PUBLIC_SITE_URL,
+  );
+  if (canonical) return NextResponse.redirect(canonical, 308);
+
   const nonce = newNonce();
   const csp = buildCsp({
     nonce,
