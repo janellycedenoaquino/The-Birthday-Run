@@ -1,6 +1,6 @@
 import { existsSync } from "node:fs";
 import { expect, test, type Page } from "@playwright/test";
-import { ownIp } from "./support";
+import { openEmailLink, ownIp } from "./support";
 
 // Its own client IP, so sign-ins don't share one per-IP budget (support.ts ownIp).
 test.use(ownIp(19));
@@ -117,11 +117,38 @@ test("magic link: signs in once; the same link again → S-8 (FR-4)", async ({
   ).toBeVisible();
 
   const link = await confirmPath(user.email);
-  await page.goto(link);
+  await openEmailLink(page, link, user.email);
   await expect(page).toHaveURL(/\/rewards$/);
   await expect(page.getByRole("button", { name: user.email })).toBeVisible();
 
   await page.goto(link);
+  await expect(page).toHaveURL(/\/auth\/error\?reason=link/);
+});
+
+test("'Is this you?' → No: nothing signs in, and the page can't be answered again (decision 0026, T-118)", async ({
+  page,
+}) => {
+  const user = await createUser("e2e-not-me");
+  await page.goto("/sign-in");
+  await page.getByRole("tab", { name: "Email link" }).click();
+  await page.getByLabel("Email", { exact: true }).fill(user.email);
+  await waitForTurnstile(page);
+  await page.getByRole("button", { name: "Email me a link" }).click();
+  await expect(
+    page.getByRole("heading", { name: "Check your email" }),
+  ).toBeVisible();
+
+  await openEmailLink(page, await confirmPath(user.email), user.email, "no");
+  await expect(page).toHaveURL(/\/auth\/is-this-you\?declined=1$/);
+  await expect(
+    page.getByRole("heading", { name: "You're not signed in" }),
+  ).toBeVisible();
+
+  // No session: a protected page sends the visitor to sign in.
+  await page.goto("/rewards");
+  await expect(page).toHaveURL(/\/sign-in/);
+  // The held session is gone: the question isn't shown again.
+  await page.goto("/auth/is-this-you");
   await expect(page).toHaveURL(/\/auth\/error\?reason=link/);
 });
 

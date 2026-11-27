@@ -1,6 +1,6 @@
 import { existsSync } from "node:fs";
 import { expect, test, type Page } from "@playwright/test";
-import { ownIp } from "./support";
+import { openEmailLink, ownIp } from "./support";
 
 // Its own client IP, so sign-ins don't share one per-IP budget (support.ts ownIp).
 test.use(ownIp(16));
@@ -73,7 +73,7 @@ test("reset: new password works, the old one doesn't, other sessions end (FR-7, 
   const deviceA = await (await browser.newContext()).newPage();
   await requestReset(deviceA, user.email);
   const link = await confirmPath(user.email);
-  await deviceA.goto(link);
+  await openEmailLink(deviceA, link, user.email);
   await expect(deviceA).toHaveURL(/\/reset-password$/);
   await expect(
     deviceA.getByRole("heading", { name: "Choose a new password" }),

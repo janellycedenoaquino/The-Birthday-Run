@@ -32,3 +32,16 @@ export async function createClient() {
     },
   );
 }
+
+/**
+ * A publishable-key client that never reads or writes the browser's cookies (decision 0026):
+ * /auth/confirm verifies an email link with it, so the new session lands in `auth_pending`
+ * until the visitor answers "Is this you?", and signs that session out on "no".
+ */
+export function createDetachedClient() {
+  return createServerClient<Database>(
+    env.NEXT_PUBLIC_SUPABASE_URL,
+    env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY,
+    { cookies: { getAll: () => [], setAll: () => {} } },
+  );
+}
