@@ -4,7 +4,10 @@ import { z } from "zod";
 import { safeRedirectPath } from "@/lib/security/safe-redirect";
 import {
   clearPending,
+  heldIdSchema,
   readPending,
+  revokeHeld,
+  sameId,
   setPending,
 } from "@/server/auth/pending-sign-in";
 import { setRecoveryMarker } from "@/server/auth/recovery";
@@ -26,8 +29,8 @@ const query = z.object({
   type: z.enum(["signup", "magiclink", "recovery"]),
 });
 
-// Not strict: only `choice` decides the path.
-const answer = z.object({ choice: z.enum(["yes", "no"]) });
+// Not strict: only these decide the path. `held` is the ID of the sign-in the page showed.
+const answer = z.object({ choice: z.enum(["yes", "no"]), held: heldIdSchema });
 
 // A link that's expired, already used or wrong: the user's problem to retry, not ours to log.
 const EXPECTED_LINK_ERRORS = new Set(["otp_expired", "otp_disabled"]);
@@ -60,22 +63,43 @@ export async function GET(request: NextRequest) {
       logError(error, { op: "authConfirm" });
     return to(request, "/auth/error?reason=link");
   }
-  await setPending({
+
+  // 4. A sign-in already held here (an earlier link, never answered) is replaced: end it first.
+  await revokeHeld(await readPending(), "authConfirmReplace");
+  const held = await setPending({
     accessToken: data.session.access_token,
     refreshToken: data.session.refresh_token,
     type,
     email: data.user.email,
     issuedAt: Date.now(),
   });
+  if (!held) {
+    // Too big for a cookie: say so in Sentry (no token or email), end it, and fail visibly.
+    logError(new Error("auth_pending too large for a cookie"), {
+      op: "authConfirm",
+    });
+    await clearPending();
+    await createDetachedClient().auth.admin.signOut(
+      data.session.access_token,
+      "local",
+    );
+    return to(request, "/auth/error?reason=link");
+  }
   return to(request, "/auth/is-this-you");
 }
 
 export async function POST(request: NextRequest) {
-  // 1. Rate limit (IP), a key of its own so the GET's count doesn't use it up.
+  // 1. Same-origin forms only: another site's POST could otherwise clear the held sign-in and
+  // `auth_next` (it can't answer: its request carries no `auth_pending`).
+  const site = request.headers.get("sec-fetch-site");
+  if (site && site !== "same-origin")
+    return to(request, "/auth/error?reason=link");
+
+  // 2. Rate limit (IP), a key of its own so the GET's count doesn't use it up.
   if (!(await rateLimit("authConfirmAnswer")).ok)
     return to(request, "/auth/error?reason=rate_limited");
 
-  // 2. The form.
+  // 3. The form.
   let form: Record<string, string> = {};
   try {
     const fd = await request.formData();
@@ -88,26 +112,28 @@ export async function POST(request: NextRequest) {
   const parsed = answer.safeParse(form);
   if (!parsed.success) return to(request, "/auth/error?reason=link");
 
-  // 3. The held session: read once and cleared on every path, like `auth_next`. Missing,
-  // altered or older than its window → the link has to be opened again.
-  const pending = await readPending();
+  // 4. The held sign-in: read once and cleared on every path, like `auth_next`.
+  const held = await readPending();
   await clearPending();
   const cookieStore = await cookies();
   const next = cookieStore.get("auth_next")?.value;
   cookieStore.delete({ name: "auth_next", path: "/auth" });
-  if (!pending) return to(request, "/auth/error?reason=link");
 
-  // 4. "No": end that session on the server, so its tokens are worth nothing.
+  // 5. Only the sign-in the page showed, inside its window. Anything else (expired, or replaced
+  // by a later link in another tab) is ended, and the link has to be opened again.
+  if (!held || !held.fresh || !sameId(held.id, parsed.data.held)) {
+    await revokeHeld(held, "authConfirmStale");
+    return to(request, "/auth/error?reason=link");
+  }
+  const pending = held.payload;
+
+  // 6. "No": end that session on the server (its refresh token stops working).
   if (parsed.data.choice === "no") {
-    const { error } = await createDetachedClient().auth.admin.signOut(
-      pending.accessToken,
-      "local",
-    );
-    if (error) logError(error, { op: "authConfirmDecline" });
+    await revokeHeld(held, "authConfirmDecline");
     return to(request, "/auth/is-this-you?declined=1");
   }
 
-  // 5. "Yes": the session moves into the sign-in cookies.
+  // 7. "Yes": the session moves into the sign-in cookies.
   const supabase = await createClient();
   const { data, error } = await supabase.auth.setSession({
     access_token: pending.accessToken,
@@ -115,13 +141,14 @@ export async function POST(request: NextRequest) {
   });
   if (error || !data.user) {
     if (error) logError(error, { op: "authConfirmAccept" });
+    await revokeHeld(held, "authConfirmAccept");
     return to(request, "/auth/error?reason=link");
   }
 
-  // 6. The welcome email, once per account, for every link type (F-5). Never fails the sign-in.
+  // 8. The welcome email, once per account, for every link type (F-5). Never fails the sign-in.
   await sendWelcomeIfFirst(supabase, data.user);
 
-  // 7. Where to: a reset goes to S-7; otherwise where the user was headed, then the guards take
+  // 9. Where to: a reset goes to S-7; otherwise where the user was headed, then the guards take
   // over (password-unset → S-9, MFA → S-10).
   if (pending.type === "recovery") {
     // GoTrue records a reset as amr "otp" (week-1 check 5): mark this session, signed

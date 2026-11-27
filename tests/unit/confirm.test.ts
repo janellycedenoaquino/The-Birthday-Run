@@ -42,40 +42,61 @@ vi.mock("@/server/errors", async (importOriginal) => ({
 }));
 
 const { maskEmail } = await import("@/lib/security/mask-email");
-const { PENDING_COOKIE, WINDOW_MS, signPending, verifyPending } =
-  await import("@/server/auth/pending-sign-in");
+const {
+  PENDING_COOKIE,
+  WINDOW_MS,
+  MAX_VALUE_LENGTH,
+  signPending,
+  verifyPending,
+} = await import("@/server/auth/pending-sign-in");
 const { GET, POST } = await import("@/app/auth/confirm/route");
 
 const NOW = Date.parse("2026-11-26T12:00:00Z");
-const payload = (over: Partial<Parameters<typeof signPending>[0]> = {}) => ({
+type Payload = Parameters<typeof signPending>[0];
+const payload = (over: Partial<Payload> = {}): Payload => ({
   accessToken: "access.jwt.token",
   refreshToken: "refresh-token",
-  type: "magiclink" as const,
+  type: "magiclink",
   email: "mia@example.com",
   issuedAt: NOW,
   ...over,
 });
+const idOf = (value: string) => value.split(".")[1];
 
 const get = (query: string) =>
   GET(new NextRequest(`https://app.example/auth/confirm?${query}`));
-const post = (choice: string) => {
+const post = (
+  fields: Record<string, string>,
+  headers: Record<string, string> = { "sec-fetch-site": "same-origin" },
+) => {
   const body = new FormData();
-  body.set("choice", choice);
+  for (const [k, v] of Object.entries(fields)) body.set(k, v);
   return POST(
     new NextRequest("https://app.example/auth/confirm", {
       method: "POST",
       body,
+      headers,
     }),
   );
 };
-const location = (response: Response) =>
-  new URL(response.headers.get("location") ?? "").pathname +
-  new URL(response.headers.get("location") ?? "").search;
+const location = (response: Response) => {
+  const url = new URL(response.headers.get("location") ?? "");
+  return url.pathname + url.search;
+};
+const verified = (email = "mia@example.com", token = "acc") =>
+  detached.verifyOtp.mockResolvedValue({
+    data: {
+      user: { id: "u1", email },
+      session: { access_token: token, refresh_token: "ref" },
+    },
+    error: null,
+  });
 
 beforeEach(() => {
   vi.clearAllMocks();
   cookieJar.clear();
   rateLimit.mockResolvedValue({ ok: true });
+  detached.admin.signOut.mockResolvedValue({ error: null });
 });
 
 describe("maskEmail", () => {
@@ -94,42 +115,43 @@ describe("maskEmail", () => {
 });
 
 describe("the signed auth_pending cookie", () => {
-  it("round-trips within the window", () => {
+  it("round-trips, fresh within the window, with its signature as the ID", () => {
     const value = signPending(payload());
-    expect(verifyPending(value, NOW + WINDOW_MS)).toEqual(payload());
+    expect(verifyPending(value, NOW + WINDOW_MS)).toEqual({
+      payload: payload(),
+      id: idOf(value),
+      fresh: true,
+    });
   });
 
   it.each([
-    ["expired", (v: string) => v, NOW + WINDOW_MS + 1],
-    ["from the future", (v: string) => v, NOW - 1],
-    ["missing", () => "", NOW],
-    ["unsigned", (v: string) => v.split(".")[0], NOW],
+    ["after the window", NOW + WINDOW_MS + 1],
+    ["before it was issued", NOW - 1],
+  ])("is authentic but not fresh %s", (_name, now) => {
+    expect(verifyPending(signPending(payload()), now)?.fresh).toBe(false);
+  });
+
+  it.each([
+    ["missing", () => ""],
+    ["unsigned", (v: string) => v.split(".")[0]],
     [
-      "with another payload under the old signature",
+      "another payload under the old signature",
       (v: string) =>
-        `${Buffer.from(JSON.stringify(payload({ email: "eve@example.com" }))).toString("base64url")}.${v.split(".")[1]}`,
-      NOW,
+        `${Buffer.from(JSON.stringify(payload({ email: "eve@example.com" }))).toString("base64url")}.${idOf(v)}`,
     ],
     [
-      "with a changed signature",
+      "a changed signature",
       (v: string) => `${v.slice(0, -1)}${v.endsWith("A") ? "B" : "A"}`,
-      NOW,
     ],
-  ])("refuses a value that is %s", (_name, change, now) => {
-    const value = change(signPending(payload()));
-    expect(verifyPending(value, now)).toBeNull();
+    ["longer than a cookie can hold", () => "a".repeat(MAX_VALUE_LENGTH + 1)],
+  ])("refuses %s", (_name, change) => {
+    expect(verifyPending(change(signPending(payload())), NOW)).toBeNull();
   });
 });
 
 describe("GET /auth/confirm", () => {
   it("holds a verified link's session and asks 'Is this you?', signing nothing in", async () => {
-    detached.verifyOtp.mockResolvedValue({
-      data: {
-        user: { id: "u1", email: "mia@example.com" },
-        session: { access_token: "acc", refresh_token: "ref" },
-      },
-      error: null,
-    });
+    verified();
 
     const response = await get("token_hash=abc&type=signup");
 
@@ -141,13 +163,41 @@ describe("GET /auth/confirm", () => {
     });
     expect(signedIn.setSession).not.toHaveBeenCalled();
     expect(sendWelcomeIfFirst).not.toHaveBeenCalled();
-    const held = verifyPending(cookieJar.get(PENDING_COOKIE), Date.now());
-    expect(held).toMatchObject({
+    expect(
+      verifyPending(cookieJar.get(PENDING_COOKIE), Date.now())?.payload,
+    ).toMatchObject({
       accessToken: "acc",
       refreshToken: "ref",
       type: "signup",
       email: "mia@example.com",
     });
+  });
+
+  it("ends a sign-in an earlier link left unanswered before holding the new one", async () => {
+    cookieJar.set(
+      PENDING_COOKIE,
+      signPending(payload({ accessToken: "old", issuedAt: Date.now() })),
+    );
+    verified("eve@example.com", "new");
+
+    await get("token_hash=abc&type=magiclink");
+
+    expect(detached.admin.signOut).toHaveBeenCalledWith("old", "local");
+    expect(
+      verifyPending(cookieJar.get(PENDING_COOKIE), Date.now())?.payload
+        .accessToken,
+    ).toBe("new");
+  });
+
+  it("refuses, visibly, a session too big for a cookie, and ends it", async () => {
+    verified("mia@example.com", "x".repeat(MAX_VALUE_LENGTH));
+    const response = await get("token_hash=abc&type=magiclink");
+    expect(location(response)).toBe("/auth/error?reason=link");
+    expect(cookieJar.has(PENDING_COOKIE)).toBe(false);
+    expect(detached.admin.signOut).toHaveBeenCalledWith(
+      "x".repeat(MAX_VALUE_LENGTH),
+      "local",
+    );
   });
 
   it("sends a used or expired link to S-8 and holds nothing", async () => {
@@ -176,21 +226,24 @@ describe("GET /auth/confirm", () => {
 });
 
 describe("POST /auth/confirm", () => {
-  const hold = (over: Partial<Parameters<typeof signPending>[0]> = {}) =>
-    cookieJar.set(
-      PENDING_COOKIE,
-      signPending(payload({ issuedAt: Date.now(), ...over })),
-    );
-
-  it("'yes' moves the held session into the sign-in cookies and goes on", async () => {
-    hold();
-    cookieJar.set("auth_next", "/plan");
+  /** Holds a sign-in and returns the ID the page would put in its form. */
+  const hold = (over: Partial<Payload> = {}) => {
+    const value = signPending(payload({ issuedAt: Date.now(), ...over }));
+    cookieJar.set(PENDING_COOKIE, value);
+    return idOf(value);
+  };
+  const accepted = () =>
     signedIn.setSession.mockResolvedValue({
       data: { user: { id: "u1" } },
       error: null,
     });
 
-    const response = await post("yes");
+  it("'yes' moves the held session into the sign-in cookies and goes on", async () => {
+    const held = hold();
+    cookieJar.set("auth_next", "/plan");
+    accepted();
+
+    const response = await post({ choice: "yes", held });
 
     expect(signedIn.setSession).toHaveBeenCalledWith({
       access_token: "access.jwt.token",
@@ -203,27 +256,37 @@ describe("POST /auth/confirm", () => {
   });
 
   it("'yes' on a reset link marks the session and goes to S-7", async () => {
-    hold({ type: "recovery" });
-    signedIn.setSession.mockResolvedValue({
-      data: { user: { id: "u1" } },
-      error: null,
-    });
+    const held = hold({ type: "recovery" });
+    accepted();
     signedIn.getClaims.mockResolvedValue({
       data: { claims: { session_id: "s1" } },
     });
 
-    const response = await post("yes");
+    const response = await post({ choice: "yes", held });
 
     expect(setRecoveryMarker).toHaveBeenCalledWith("u1", "s1");
     expect(location(response)).toBe("/reset-password");
   });
 
-  it("'no' signs the held session out on the server and signs nothing in", async () => {
-    hold();
-    cookieJar.set("auth_next", "/plan");
-    detached.admin.signOut.mockResolvedValue({ error: null });
+  it("'yes' never accepts a sign-in a later link put in place of the one the page showed", async () => {
+    // Tab 1 showed the visitor's own sign-in; a second link (another tab) replaced it.
+    const shown = hold({ email: "mia@example.com", accessToken: "mine" });
+    hold({ email: "eve@example.com", accessToken: "theirs" });
+    accepted();
 
-    const response = await post("no");
+    const response = await post({ choice: "yes", held: shown });
+
+    expect(location(response)).toBe("/auth/error?reason=link");
+    expect(signedIn.setSession).not.toHaveBeenCalled();
+    expect(detached.admin.signOut).toHaveBeenCalledWith("theirs", "local");
+    expect(cookieJar.has(PENDING_COOKIE)).toBe(false);
+  });
+
+  it("'no' signs the held session out on the server and signs nothing in", async () => {
+    const held = hold();
+    cookieJar.set("auth_next", "/plan");
+
+    const response = await post({ choice: "no", held });
 
     expect(detached.admin.signOut).toHaveBeenCalledWith(
       "access.jwt.token",
@@ -236,45 +299,73 @@ describe("POST /auth/confirm", () => {
     expect(cookieJar.has("auth_next")).toBe(false);
   });
 
+  it("ends an authentic sign-in answered after its window, and sends it to S-8", async () => {
+    const held = hold({ issuedAt: Date.now() - WINDOW_MS - 1 });
+    const response = await post({ choice: "yes", held });
+    expect(location(response)).toBe("/auth/error?reason=link");
+    expect(signedIn.setSession).not.toHaveBeenCalled();
+    expect(detached.admin.signOut).toHaveBeenCalledWith(
+      "access.jwt.token",
+      "local",
+    );
+  });
+
   it.each([
-    ["no held session", () => {}],
+    ["no held session", () => "A".repeat(43)],
     [
-      "an expired held session",
-      () => hold({ issuedAt: Date.now() - WINDOW_MS - 1 }),
-    ],
-    [
-      "a held session that was altered",
-      () => cookieJar.set(PENDING_COOKIE, `${signPending(payload())}x`),
+      "an altered held session",
+      () => {
+        const held = hold();
+        cookieJar.set(PENDING_COOKIE, `x${cookieJar.get(PENDING_COOKIE)}`);
+        return held;
+      },
     ],
   ])("sends %s to S-8", async (_name, setup) => {
-    setup();
-    const response = await post("yes");
+    const held = setup();
+    const response = await post({ choice: "yes", held });
     expect(location(response)).toBe("/auth/error?reason=link");
     expect(signedIn.setSession).not.toHaveBeenCalled();
   });
 
-  it("refuses an answer that isn't yes or no", async () => {
-    hold();
-    const response = await post("maybe");
+  it.each([
+    ["an answer that isn't yes or no", { choice: "maybe" }],
+    ["no held ID", { choice: "yes", held: "" }],
+  ])("refuses %s", async (_name, fields) => {
+    const held = hold();
+    const response = await post({ held, ...fields });
     expect(location(response)).toBe("/auth/error?reason=link");
     expect(signedIn.setSession).not.toHaveBeenCalled();
   });
 
-  it("sends a 'yes' Supabase refuses to S-8", async () => {
-    hold();
+  it("ignores another site's POST, leaving the held sign-in alone", async () => {
+    const held = hold();
+    cookieJar.set("auth_next", "/plan");
+    const response = await post(
+      { choice: "no", held },
+      { "sec-fetch-site": "cross-site" },
+    );
+    expect(location(response)).toBe("/auth/error?reason=link");
+    expect(cookieJar.has(PENDING_COOKIE)).toBe(true);
+    expect(cookieJar.has("auth_next")).toBe(true);
+    expect(detached.admin.signOut).not.toHaveBeenCalled();
+  });
+
+  it("ends the held session when Supabase refuses a 'yes'", async () => {
+    const held = hold();
     signedIn.setSession.mockResolvedValue({
       data: { user: null },
       error: { message: "invalid" },
     });
-    const response = await post("yes");
+    const response = await post({ choice: "yes", held });
     expect(location(response)).toBe("/auth/error?reason=link");
     expect(sendWelcomeIfFirst).not.toHaveBeenCalled();
+    expect(detached.admin.signOut).toHaveBeenCalledOnce();
   });
 
   it("has its own rate limit key", async () => {
     rateLimit.mockResolvedValue({ ok: false });
-    hold();
-    const response = await post("yes");
+    const held = hold();
+    const response = await post({ choice: "yes", held });
     expect(rateLimit).toHaveBeenCalledWith("authConfirmAnswer");
     expect(location(response)).toBe("/auth/error?reason=rate_limited");
     expect(signedIn.setSession).not.toHaveBeenCalled();

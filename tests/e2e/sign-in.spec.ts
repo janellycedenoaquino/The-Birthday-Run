@@ -152,6 +152,40 @@ test("'Is this you?' → No: nothing signs in, and the page can't be answered ag
   await expect(page).toHaveURL(/\/auth\/error\?reason=link/);
 });
 
+test("'Is this you?' → Yes accepts only the account the page showed, not one a later link held (decision 0026, T-118)", async ({
+  page,
+  context,
+}) => {
+  const requestLink = async (email: string) => {
+    await page.goto("/sign-in");
+    await page.getByRole("tab", { name: "Email link" }).click();
+    await page.getByLabel("Email", { exact: true }).fill(email);
+    await waitForTurnstile(page);
+    await page.getByRole("button", { name: "Email me a link" }).click();
+    await expect(
+      page.getByRole("heading", { name: "Check your email" }),
+    ).toBeVisible();
+    return confirmPath(email);
+  };
+  const mine = await createUser("e2e-mine");
+  const theirs = await createUser("e2e-theirs");
+  const myLink = await requestLink(mine.email);
+  const theirLink = await requestLink(theirs.email);
+
+  // Tab 1 shows my account; a second link opened in another tab replaces what's held.
+  await page.goto(myLink);
+  await expect(page).toHaveURL(/\/auth\/is-this-you$/);
+  const other = await context.newPage();
+  await other.goto(theirLink);
+  await expect(other).toHaveURL(/\/auth\/is-this-you$/);
+
+  // "Yes" on tab 1 must not sign me into their account.
+  await page.getByRole("button", { name: "Yes, that's me" }).click();
+  await expect(page).toHaveURL(/\/auth\/error\?reason=link/);
+  await page.goto("/rewards");
+  await expect(page).toHaveURL(/\/sign-in/);
+});
+
 test("an unknown email gets the same M-2, and no email is sent (FR-4, D11)", async ({
   page,
 }) => {

@@ -441,7 +441,7 @@ flowchart TD
 
 #### S-113 Is this you? (`/auth/is-this-you`) · FR-2, FR-4, FR-7 · decision 0026
 - No sign-in needed; every email link (Template E-1 to E-3) lands here after `/auth/confirm` verifies it, and nothing is signed in yet. Minimal Template C-1, no picture.
-- **Shows:** h1 M-316; M-317 with the account's email masked (first character and domain, in bold); M-318 (small); buttons M-319 (primary) and M-320 (outline), stacked on mobile, both form POSTs. **After M-319:** as Template `/auth/confirm` did (S-9, S-10, S-7 or `next`). **After M-320:** h1 M-321; M-322; button "Sign in" → Template S-4. **States:** no held sign-in (expired after 5 minutes, already answered, opened directly): Template S-8 `link`; rate limited: Template S-8 `rate_limited`.
+- **Shows:** h1 M-316; M-317 with the account's email masked (first character and domain, in bold); M-318 (small); buttons M-319 (primary) and M-320 (outline), stacked on mobile, both form POSTs. **After M-319:** as Template `/auth/confirm` did (S-9, S-10, S-7 or `next`). **After M-320:** h1 M-321; M-322; button "Sign in" → Template S-4. **States:** no held sign-in (expired after 15 minutes, already answered, replaced by a later link, opened directly): Template S-8 `link`; rate limited: Template S-8 `rate_limited`.
 
 ### 3.4 Message catalogue
 Template M-, API-, E- texts apply unchanged. Placeholders in `{braces}` are filled as text. Plurals: one message per form where shown (`{days}` = 1 uses the singular ID). Dates: "Oct 6" style in the user's time zone; times "10:00 AM".
