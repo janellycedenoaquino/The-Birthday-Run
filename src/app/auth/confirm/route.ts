@@ -2,6 +2,7 @@ import { cookies } from "next/headers";
 import { NextResponse, type NextRequest } from "next/server";
 import { z } from "zod";
 import { safeRedirectPath } from "@/lib/security/safe-redirect";
+import { routeFormFields } from "@/lib/validation/form";
 import {
   clearPending,
   heldIdSchema,
@@ -100,16 +101,7 @@ export async function POST(request: NextRequest) {
     return to(request, "/auth/error?reason=rate_limited");
 
   // 3. The form.
-  let form: Record<string, string> = {};
-  try {
-    const fd = await request.formData();
-    form = Object.fromEntries(
-      [...fd.entries()].map(([k, v]) => [k, typeof v === "string" ? v : ""]),
-    );
-  } catch {
-    // Not a form: fails the parse below.
-  }
-  const parsed = answer.safeParse(form);
+  const parsed = answer.safeParse(await routeFormFields(request));
   if (!parsed.success) return to(request, "/auth/error?reason=link");
 
   // 4. The held sign-in: read once and cleared on every path, like `auth_next`.

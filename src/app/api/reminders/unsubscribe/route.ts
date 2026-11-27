@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { routeFormFields } from "@/lib/validation/form";
 import { logError } from "@/server/errors";
 import { verifyUnsubscribeToken } from "@/server/reminders/unsubscribe-token";
 import { rateLimit } from "@/server/security/rate-limit";
@@ -31,16 +32,8 @@ const text = (body: string, status = 200) =>
   });
 
 export async function POST(request: Request) {
-  let form: Record<string, string> = {};
-  try {
-    const fd = await request.formData();
-    form = Object.fromEntries(
-      [...fd.entries()].map(([k, v]) => [k, typeof v === "string" ? v : ""]),
-    );
-  } catch {
-    // Not a form: falls through to the one-click answer below, like any bad input.
-  }
-  const body = bodySchema.safeParse(form);
+  // Not a form → {}: falls through to the one-click answer below, like any bad input.
+  const body = bodySchema.safeParse(await routeFormFields(request));
   const fromPage = body.success && "source" in body.data;
 
   // Per-IP limit for the page form only. One-click POSTs come from mail providers' shared IPs

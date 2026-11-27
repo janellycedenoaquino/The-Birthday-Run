@@ -27,14 +27,8 @@ vi.mock("@/server/email/welcome", () => ({
 vi.mock("@/server/auth/recovery", () => ({
   setRecoveryMarker: (...args: unknown[]) => setRecoveryMarker(...args),
 }));
-vi.mock("next/headers", () => ({
-  cookies: async () => ({
-    get: (name: string) =>
-      cookieJar.has(name) ? { value: cookieJar.get(name) } : undefined,
-    set: (name: string, value: string) => cookieJar.set(name, value),
-    delete: (arg: string | { name: string }) =>
-      cookieJar.delete(typeof arg === "string" ? arg : arg.name),
-  }),
+vi.mock("next/headers", async () => ({
+  cookies: (await import("./mock-helpers")).fakeCookies(cookieJar),
 }));
 vi.mock("@/server/errors", async (importOriginal) => ({
   ...(await importOriginal<typeof import("@/server/errors")>()),
