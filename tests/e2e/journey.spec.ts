@@ -7,6 +7,7 @@ import {
   verifyTwoStep,
   confirmLink,
   newestMail,
+  openEmailLink,
   ownIp,
   passwordSignIn,
   waitForTurnstile,
@@ -59,7 +60,11 @@ test("the account journey (FR-39)", async ({ page, context }) => {
   ).toBeVisible();
 
   // Verify → S-9, then the welcome email (FR-30).
-  await page.goto(await confirmLink(EMAIL, /^Confirm your email$/));
+  await openEmailLink(
+    page,
+    await confirmLink(EMAIL, /^Confirm your email$/),
+    EMAIL,
+  );
   await expect(page).toHaveURL(/\/auth\/set-password/);
   if (!DEPLOYED) {
     const welcome = await newestMail(EMAIL, /^Welcome$/);
@@ -117,7 +122,11 @@ test("the account journey (FR-39)", async ({ page, context }) => {
   await expect(
     page.getByRole("heading", { name: "Check your email" }),
   ).toBeVisible();
-  await page.goto(await confirmLink(EMAIL, /^Reset your password$/));
+  await openEmailLink(
+    page,
+    await confirmLink(EMAIL, /^Reset your password$/),
+    EMAIL,
+  );
   await expect(page).toHaveURL(/\/reset-password$/);
   await page.locator('input[name="password"]').fill(SECOND);
   await page.getByRole("button", { name: "Save new password" }).click();

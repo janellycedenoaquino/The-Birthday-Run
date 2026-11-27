@@ -63,6 +63,7 @@ describe("LIMITS (the §0.4 table)", () => {
     ["setReminders", { user: [30, 3600] }],
     ["reminderUnsubscribe", { ip: [30, 600] }],
     ["authConfirm", { ip: [30, 600] }],
+    ["authConfirmAnswer", { ip: [30, 600] }],
   ] as const)("%s", (action, expected) => {
     expect(LIMITS[action]).toEqual(expected);
   });
@@ -112,6 +113,7 @@ describe("LIMITS (the §0.4 table)", () => {
         "createCheckoutSession",
         "createPortalSession",
         "authConfirm",
+        "authConfirmAnswer",
         "authCallback",
       ].sort(),
     );

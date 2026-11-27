@@ -1,6 +1,6 @@
 import { existsSync } from "node:fs";
 import { expect, test, type Page } from "@playwright/test";
-import { ownIp } from "./support";
+import { openEmailLink, ownIp } from "./support";
 
 // Its own client IP, so sign-ins don't share one per-IP budget (support.ts ownIp).
 test.use(ownIp(19));
@@ -103,26 +103,78 @@ test("a wrong password and an unknown email get the identical M-4 (NFR-12)", asy
   await expect(page.locator("[data-form-alert]")).toHaveText(wrongPassword);
 });
 
-test("magic link: signs in once; the same link again → S-8 (FR-4)", async ({
-  page,
-}) => {
-  const user = await createUser("e2e-link");
+/** S-4's "Email link" tab: asks for a magic link and waits for "Check your email". */
+async function requestMagicLink(page: Page, email: string) {
   await page.goto("/sign-in");
   await page.getByRole("tab", { name: "Email link" }).click();
-  await page.getByLabel("Email", { exact: true }).fill(user.email);
+  await page.getByLabel("Email", { exact: true }).fill(email);
   await waitForTurnstile(page);
   await page.getByRole("button", { name: "Email me a link" }).click();
   await expect(
     page.getByRole("heading", { name: "Check your email" }),
   ).toBeVisible();
+}
+
+test("magic link: signs in once; the same link again → S-8 (FR-4)", async ({
+  page,
+}) => {
+  const user = await createUser("e2e-link");
+  await requestMagicLink(page, user.email);
 
   const link = await confirmPath(user.email);
-  await page.goto(link);
+  await openEmailLink(page, link, user.email);
   await expect(page).toHaveURL(/\/rewards$/);
   await expect(page.getByRole("button", { name: user.email })).toBeVisible();
 
   await page.goto(link);
   await expect(page).toHaveURL(/\/auth\/error\?reason=link/);
+});
+
+test("'Is this you?' → No: nothing signs in, and the page can't be answered again (decision 0026, T-118)", async ({
+  page,
+}) => {
+  const user = await createUser("e2e-not-me");
+  await requestMagicLink(page, user.email);
+
+  await openEmailLink(page, await confirmPath(user.email), user.email, "no");
+  await expect(page).toHaveURL(/\/auth\/is-this-you\?declined=1$/);
+  await expect(
+    page.getByRole("heading", { name: "You're not signed in" }),
+  ).toBeVisible();
+
+  // No session: a protected page sends the visitor to sign in.
+  await page.goto("/rewards");
+  await expect(page).toHaveURL(/\/sign-in/);
+  // The held session is gone: the question isn't shown again.
+  await page.goto("/auth/is-this-you");
+  await expect(page).toHaveURL(/\/auth\/error\?reason=link/);
+});
+
+test("'Is this you?' → Yes accepts only the account the page showed, not one a later link held (decision 0026, T-118)", async ({
+  page,
+  context,
+}) => {
+  const requestLink = async (email: string) => {
+    await requestMagicLink(page, email);
+    return confirmPath(email);
+  };
+  const mine = await createUser("e2e-mine");
+  const theirs = await createUser("e2e-theirs");
+  const myLink = await requestLink(mine.email);
+  const theirLink = await requestLink(theirs.email);
+
+  // Tab 1 shows my account; a second link opened in another tab replaces what's held.
+  await page.goto(myLink);
+  await expect(page).toHaveURL(/\/auth\/is-this-you$/);
+  const other = await context.newPage();
+  await other.goto(theirLink);
+  await expect(other).toHaveURL(/\/auth\/is-this-you$/);
+
+  // "Yes" on tab 1 must not sign me into their account.
+  await page.getByRole("button", { name: "Yes, that's me" }).click();
+  await expect(page).toHaveURL(/\/auth\/error\?reason=link/);
+  await page.goto("/rewards");
+  await expect(page).toHaveURL(/\/sign-in/);
 });
 
 test("an unknown email gets the same M-2, and no email is sent (FR-4, D11)", async ({

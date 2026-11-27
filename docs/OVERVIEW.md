@@ -122,7 +122,7 @@ The home of these lists is ROADMAP.md; this is a copy for convenience.
 | 1. Catalogue + timing | BUILD §0, notes, F-1, F-2 · DESIGN D2–D4, §3 (profiles, retailers) · SPEC §2.2 (Retailers, Profile, Window), S-101, S-108, §3.4 |
 | 2. Core journey | BUILD §0.2–§0.5, F-3, F-4, F-5 · DESIGN D3, D4, D7, §3 (enrollments, pickups) · SPEC S-102–S-105, S-107, C-102, C-103, C-108, C-109, §3.4 |
 | 3. Plan | BUILD §0.2, §0.4, F-6 · DESIGN D6, D13, §3 (groups, items) · SPEC S-106, C-108, §3.4, §3.7 |
-| 4. Premium + v1 launch | BUILD F-7, F-14 · DESIGN D5, §4.3, §4.4 · SPEC S-110, C-104 · LAUNCH-CHECKLIST (v1) |
+| 4. Premium + v1 launch | BUILD F-7, F-14 · DESIGN D5, §4.3, §4.4, T-118 · SPEC S-110, S-113, C-104 · decisions/0026 · LAUNCH-CHECKLIST (v1) |
 | 5. Map | BUILD §0.6, §0.7, F-9, F-10, F-11 · DESIGN D9–D12, §3 (stores, ZIPs), §5.1 · SPEC C-105, C-106, S-105, S-106 · RESEARCH |
 | 6. Reminders, reports, payments | BUILD §0.2, §0.6, F-8, F-12, F-13 · DESIGN D8, D14–D16, §4.2, §5.2, §5.3, §5.6 · SPEC S-109–S-112, C-107, E-101, E-102 |
 | 7. v2 sign-off | SPEC §2.1 · DESIGN §5.7 · LAUNCH-CHECKLIST |

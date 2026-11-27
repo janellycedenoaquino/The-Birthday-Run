@@ -214,3 +214,31 @@ export async function openMore(scope: Page | Locator, label: string) {
   );
   if (!open) await summary.click();
 }
+
+/**
+ * Opens an emailed /auth/confirm link and answers S-113 "Is this you?" (decision 0026): checks
+ * the masked email is the expected account's, then taps the answer. Nothing is signed in before.
+ */
+export async function openEmailLink(
+  page: Page,
+  path: string,
+  email: string,
+  answer: "yes" | "no" = "yes",
+) {
+  await page.goto(path);
+  await expect(page).toHaveURL(/\/auth\/is-this-you$/);
+  await expect(
+    page.getByRole("heading", { name: "Is this you?" }),
+  ).toBeVisible();
+  const at = email.lastIndexOf("@");
+  await expect(
+    page.getByText(`${Array.from(email)[0]}•••${email.slice(at)}`, {
+      exact: true,
+    }),
+  ).toBeVisible();
+  await page
+    .getByRole("button", {
+      name: answer === "yes" ? "Yes, that's me" : "No, it's not me",
+    })
+    .click();
+}

@@ -16,6 +16,7 @@ import {
 } from "@/lib/validation/auth";
 import { parseForm } from "@/lib/validation/form";
 import { requireUser } from "@/server/auth/guards";
+import { dropPending } from "@/server/auth/pending-sign-in";
 import {
   clearRecoveryMarker,
   isRecoverySessionNow,
@@ -228,8 +229,9 @@ export async function signOut(): Promise<never> {
     if (name.startsWith("sb-")) cookieStore.delete(name);
   // A pending destination belongs to this user's sign-in, not the next person's.
   cookieStore.delete({ name: "auth_next", path: "/auth" });
-  // So does an unused reset marker (#15 review).
+  // So does an unused reset marker (#15 review), and a held email-link sign-in (decision 0026).
   await clearRecoveryMarker();
+  await dropPending("signOutPending");
   redirect("/");
 }
 

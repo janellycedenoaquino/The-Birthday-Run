@@ -15,3 +15,18 @@ export async function quietErrors(importOriginal: () => Promise<unknown>) {
 
 /** A limiter that always allows. */
 export const allowAll = { rateLimit: async () => ({ ok: true }) };
+
+/**
+ * A fake `cookies()` store over a Map (name → value), for `next/headers` mocks:
+ *   vi.mock("next/headers", async () => ({ cookies: (await import("./mock-helpers")).fakeCookies(jar) }));
+ */
+export function fakeCookies(jar: Map<string, string>) {
+  return async () => ({
+    getAll: () => [],
+    get: (name: string) =>
+      jar.has(name) ? { value: jar.get(name) } : undefined,
+    set: (name: string, value: string) => jar.set(name, value),
+    delete: (arg: string | { name: string }) =>
+      jar.delete(typeof arg === "string" ? arg : arg.name),
+  });
+}

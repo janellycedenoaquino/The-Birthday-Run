@@ -121,6 +121,7 @@ Extends Template BUILD §0.4's table; same keys, checking and fail-closed rules.
 | `createCheckoutSession`, `createPortalSession` | – | 10 / hour |
 | `saveOnboarding`, `updateBirthday`, `updateTimeZone`, `setReminders` | – | 30 / hour |
 | Plan and pickup writes (`enroll`, `unenroll`, group, item, reorder, pickup actions; a separate key each) | – | 300 / hour |
+| `POST /auth/confirm` (`authConfirmAnswer`), S-113's answer, a key separate from the GET's `authConfirm` (decision 0026) | 30 / 10 min | – |
 | `POST /api/reminders/unsubscribe` (`reminderUnsubscribe`), page form only: one-click POSTs come from mail providers' shared IPs and need a valid token to write (F-12 review) | 30 / 10 min | – |
 
 Unlimited: `POST /api/stripe/webhook` (signature first; dropping Stripe retries would lose events; duplicates are absorbed by D8), the reminders cron route and the two report routes (bearer check). Read-only pages are not limited (Template).

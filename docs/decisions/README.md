@@ -22,3 +22,4 @@ The Template's own decisions are in `docs/template/decisions/`.
 | 0023 | "Mark picked up" is a pastel blue sticky note; "How did it go?" taps go into the note | accepted | 2026-11-25 |
 | 0024 | Reminders reach family accounts only until a postal address is added; the auth audit log stays | accepted | 2026-11-26 |
 | 0025 | Production auth uses www.thebirthdayrun.com only; old *.vercel.app links redirect there | accepted | 2026-11-26 |
+| 0026 | Email links ask "Is this you?" before signing in | accepted | 2026-11-26 |

@@ -1,4 +1,4 @@
-import { completeOnboarding, ownIp } from "./support";
+import { completeOnboarding, openEmailLink, ownIp } from "./support";
 import { expect, test, type Page } from "@playwright/test";
 
 // Its own client IP, so sign-ins don't share one per-IP budget (support.ts ownIp).
@@ -79,7 +79,7 @@ test("sign up → confirm by email → set password → onboarding → dashboard
 
   // The link signs the owner in; the guard sends a password-less account to S-9.
   const link = await confirmPath(email);
-  await page.goto(link);
+  await openEmailLink(page, link, email);
   await expect(page).toHaveURL(/\/auth\/set-password/);
   await expect(
     page.getByRole("heading", { name: "Choose a password" }),

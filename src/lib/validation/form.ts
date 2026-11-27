@@ -39,3 +39,20 @@ export function parseForm<T extends z.ZodType>(
     },
   };
 }
+
+/**
+ * A route handler's form body as plain strings (files become ""), or `{}` when the body isn't a
+ * form, so the route's own Zod schema refuses it.
+ */
+export async function routeFormFields(
+  request: Request,
+): Promise<Record<string, string>> {
+  try {
+    const fd = await request.formData();
+    return Object.fromEntries(
+      [...fd.entries()].map(([k, v]) => [k, typeof v === "string" ? v : ""]),
+    );
+  } catch {
+    return {};
+  }
+}

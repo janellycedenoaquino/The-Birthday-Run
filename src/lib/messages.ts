@@ -419,6 +419,16 @@ export const M = {
   "M-310h": "day until your birthday",
   // C-3 loading, screen readers only (decision 0016).
   "M-315": "Loading",
+  // S-113 "Is this you?" (decision 0026).
+  "M-316": "Is this you?",
+  "M-317": "You're signing in as {email}.",
+  "M-318":
+    "If that isn't your email, don't continue: someone may have sent you a link to their account.",
+  "M-319": "Yes, that's me",
+  "M-320": "No, it's not me",
+  "M-321": "You're not signed in",
+  "M-322":
+    "We didn't sign you in. If someone sent you that link, you can ignore it.",
   "BR-12": "We don't recognise that ZIP code.",
   "BR-13":
     "We couldn't look up stores right now, so these stops have no map pin. Try again later.",

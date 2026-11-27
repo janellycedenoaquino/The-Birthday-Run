@@ -68,6 +68,8 @@ export const LIMITS = {
   // BUILD §0.4: the reminder turn-off POST, per IP (no account: the token is the only key).
   reminderUnsubscribe: { ip: [30, 10 * MIN] },
   authConfirm: { ip: [30, 10 * MIN] },
+  // BUILD §0.4 (app additions): S-113's answer, a separate key (decision 0026).
+  authConfirmAnswer: { ip: [30, 10 * MIN] },
   authCallback: { ip: [30, 10 * MIN] },
 } as const satisfies Record<string, Limit>;
 
