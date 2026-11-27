@@ -42,7 +42,7 @@ Two launches (ROADMAP): **v1** after phase 4 and **v2 sign-off** after phase 7 (
 
 ## v1: Support
 - [ ] Support email set in the config and working
-- [ ] Reports (FR-48) reach GitHub as issues (F-13, if built by then; otherwise the support email)
+- [x] Reports (FR-48) reach GitHub as issues (F-13, if built by then; otherwise the support email) *(2026-11-26: a test report (16 Handles, expired) filed on www.thebirthdayrun.com; `forward-reports.yml` on `main` gave "1 retailers, 1 reports acked" and opened issue #98 from the fixed template, labelled `reward-report`, with no user data; closed as a test)*
 
 ## v2 sign-off (after phase 7)
 - [ ] Metrics 1–5 pass (SPEC §2.1; collected per DESIGN §5.7)
