@@ -14,8 +14,8 @@ Two launches (ROADMAP): **v1** after phase 4 and **v2 sign-off** after phase 7 (
 
 ## v1: Security and privacy
 - [ ] `/pre-push-review` passed on the release; CI green
-- [ ] RLS tests pass, including every app table (metric 5; DESIGN §3)
-- [ ] Metric 2's free-account tests pass (no premium data or action reachable)
+- [x] RLS tests pass, including every app table (metric 5; DESIGN §3) *(2026-11-27: `npm run test:rls` on `main` locally, 274 passed and 4 skipped (`stripe-sync.test.ts`, which needs a Stripe test key; payments are off); CI `integration` on `d30bf76` gave the same counts. `catalog.test.ts` checks that every app table has RLS on and sits in one registry list, and each user-data table has its own other-user and signed-out test file)*
+- [x] Metric 2's free-account tests pass (no premium data or action reachable) *(2026-11-27: CI run 45922250398 on `d30bf76`, the last code commit on `main`, passed. `premium-refusal.test.ts` finds every action that calls `requirePremium()` and gets BR-2 from each one as a free user. The Playwright specs (62 passed) show free accounts no map or route links, no state or length filter, no Smart Grouping, no Duplicate and no reminder switch, and they hit the FR-24/FR-25 limits)*
 - [ ] Threat items marked "before launch" done (DESIGN §4.2)
 - [x] Privacy policy and terms filled in and linked in the footer, including the app's additions: OpenFreeMap and Google Maps links, Stripe as processor, store-data licences (DESIGN §4.3, §4.4)
 - [x] Privacy policy lists the Template's service providers and says deleted data can stay in backups up to the backup retention (Template list)
