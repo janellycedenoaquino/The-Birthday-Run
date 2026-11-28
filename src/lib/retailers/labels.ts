@@ -85,7 +85,7 @@ export function initialsOf(name: string): string {
 
 /**
  * FR-49's join-by line: "Join by {date}" up to that date (N days before the next birthday), then
- * the "may not come this year" text (M-277, M-277b).
+ * the "you'll miss out this year" text (M-277, M-277b).
  */
 export function joinByLine(r: {
   brand: string;
