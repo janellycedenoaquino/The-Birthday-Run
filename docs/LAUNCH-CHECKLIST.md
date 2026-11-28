@@ -41,7 +41,7 @@ Two launches (ROADMAP): **v1** after phase 4 and **v2 sign-off** after phase 7 (
 - [x] Title, description and share image look right when the link is pasted into a chat *(2026-11-27: on www.thebirthdayrun.com the tags give title "The Birthday Run", description "Find free birthday rewards and pick them all up in time." and a 1200×630 PNG share image that loads. The owner pasted the link: WhatsApp shows the title and description, iMessage the title and domain only, which is how iMessage previews work)*
 
 ## v1: Support
-- [ ] Support email set in the config and working
+- [x] Support email set in the config and working *(2026-11-27: `supportEmail` in `src/config/app.ts` is `hello@thebirthdayrun.com`; the owner sent a test message from an unrelated address and it arrived in her inbox)*
 - [x] Reports (FR-48) reach GitHub as issues (F-13, if built by then; otherwise the support email) *(2026-11-26: a test report (16 Handles, expired) filed on www.thebirthdayrun.com; `forward-reports.yml` on `main` gave "1 retailers, 1 reports acked" and opened issue #98 from the fixed template, labelled `reward-report`, with no user data; closed as a test)*
 
 ## v2 sign-off (after phase 7)
