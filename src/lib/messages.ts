@@ -107,7 +107,7 @@ export const M = {
   "M-277": "Join by {date} to get this one.",
   "M-281": "Opens {date}",
   "M-277b":
-    "{brand} needs members to join {days} days before the birthday, so it may not come this year.",
+    "{brand} needs you to join {days} days before your birthday, or you'll miss out this year.",
   "M-101b": "My Rewards",
   "M-101f": "Get started",
   "M-120": "Last day",

@@ -68,9 +68,9 @@ describe("joinByLine (FR-49)", () => {
     );
   });
 
-  it("after it: may not come this year", () => {
+  it("after it: you'll miss out this year", () => {
     expect(joinByLine({ ...base, today: d("2026-06-09") })).toBe(
-      "Starbucks needs members to join 7 days before the birthday, so it may not come this year.",
+      "Starbucks needs you to join 7 days before your birthday, or you'll miss out this year.",
     );
   });
 });
