@@ -537,7 +537,7 @@ Template M-, API-, E- texts apply unchanged. Placeholders in `{braces}` are fill
 **Premium prompt (C-104)**
 - M-130: "{feature} is part of Premium"
 - M-131 Rewards filters: "Filter by your state and reward length" · M-131a (S-103 tag): "Premium: filter by your state and reward length" · M-132: "The map and route" · M-133: "More than {limit} groups" · M-134: "Up to {limit} rewards per group" · M-135: "Smart Grouping" · M-136: "Group routes" · M-137: "Birthday reminder emails" · M-138: "Premium"
-- M-139 (payments off): "Premium is coming soon. Everything else in the app stays free."
+- M-139 (payments off): "Premium is coming soon. Everything else in the app is free."
 - M-140 (payments on): "Upgrade to unlock it. You can cancel any time from Settings."
 - M-141: "Upgrade to Premium" · M-142: "Opening checkout…" · M-143: "Manage subscription"
 
