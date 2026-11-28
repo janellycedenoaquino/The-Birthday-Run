@@ -74,9 +74,15 @@ test("My Rewards: the list, filters, pages, and the other views (FR-12–FR-16, 
     page.getByText("No pickups yet this Birthday Run."),
   ).toBeVisible();
   await expect(page.getByText("0/22")).toBeVisible();
-  await expect(page.getByText("22 still to get this run")).toBeVisible();
-  // The big card says how many end soon (the 1-day reward ends today).
-  await expect(page.getByText("1 ends in the next 3 days")).toBeVisible();
+  await expect(page.getByText("22 left to pick up")).toBeVisible();
+  // The big card says how many end soon: the 1-day reward ends today, and in a month's last 3 days
+  // the 21 birth-month ones end too (today + 3 days falls in the next month).
+  const monthEndsSoon = todayIn(ZONE, 3).month !== todayIn(ZONE).month;
+  await expect(
+    page.getByText(
+      monthEndsSoon ? "22 end in the next 3 days" : "1 ends in the next 3 days",
+    ),
+  ).toBeVisible();
   // The old dashboard address goes here too.
   await page.goto("/dashboard");
   await expect(page).toHaveURL(/\/rewards$/);
@@ -100,7 +106,7 @@ test("My Rewards: the list, filters, pages, and the other views (FR-12–FR-16, 
   await expect(cards.first()).toContainText(oneDay[0]!.name);
   await expect(cards.first()).toContainText("Last day");
   await expect(cards.first()).toContainText("Ends soon");
-  await expect(cards.first()).toContainText("Brands may end it early");
+  await expect(cards.first()).toContainText("some brands end it at midnight");
 
   // "Show more" is a plain link: the next page renders the first two pages (FR-13).
   await page.getByRole("link", { name: "Show more" }).click();

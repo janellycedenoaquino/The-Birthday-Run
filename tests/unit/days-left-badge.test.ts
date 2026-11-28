@@ -35,7 +35,7 @@ describe("C-103 days-left badge", () => {
       expect(html).toContain(text);
       expect(html).toContain(word);
       expect(html).toMatch(/<svg[^>]*aria-hidden="true"/);
-      expect(html.includes("Brands may end it early")).toBe(note);
+      expect(html.includes("some brands end it at midnight")).toBe(note);
     },
   );
 });

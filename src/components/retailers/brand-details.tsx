@@ -208,7 +208,7 @@ export function BrandDetails({
             </p>
           </div>
         ) : signedIn ? (
-          // "Any time before" only signed in; visitors see the join-early card only when the
+          // M-298l "Any time before your birthday" only signed in; visitors see the join-early card only when the
           // brand has a waiting period (owner, 2026-11-25).
           <div className={FACT}>
             <h3 className={FACT_TITLE}>{msg("M-298k")}</h3>
