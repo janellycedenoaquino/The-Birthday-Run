@@ -38,7 +38,7 @@ Two launches (ROADMAP): **v1** after phase 4 and **v2 sign-off** after phase 7 (
 - [ ] This app's own sending domain verified in Resend; `EMAIL_FROM` uses it; sign-up and reset emails arrive
 - [x] Turnstile widget, Google OAuth client and Supabase redirect URLs list thebirthdayrun.com
 - [x] Google Branding home page and privacy policy links point to thebirthdayrun.com, and thebirthdayrun.com is an authorized domain (they use the *.vercel.app address until launch)
-- [ ] Title, description and share image look right when the link is pasted into a chat
+- [x] Title, description and share image look right when the link is pasted into a chat *(2026-11-27: on www.thebirthdayrun.com the tags give title "The Birthday Run", description "Find free birthday rewards and pick them all up in time." and a 1200×630 PNG share image that loads. The owner pasted the link: WhatsApp shows the title and description, iMessage the title and domain only, which is how iMessage previews work)*
 
 ## v1: Support
 - [ ] Support email set in the config and working
