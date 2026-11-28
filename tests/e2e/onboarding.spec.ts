@@ -94,7 +94,9 @@ test("a new user: onboarding, Discover, then Settings (FR-3, FR-6, FR-7, FR-8, F
   await page.getByRole("button", { name: "Search", exact: true }).click();
   await expect(page).toHaveURL(/q=cream/);
   await page.getByRole("link", { name: "Beauty" }).click();
-  await expect(page.getByText("Nothing matches these filters.")).toBeVisible();
+  await expect(
+    page.getByText("Nothing matches. Try fewer filters."),
+  ).toBeVisible();
   await page.getByRole("link", { name: "Clear filters" }).click();
   await expect(page).toHaveURL(/\/discover$/);
   await expect(page.getByText(/^Showing \d+ of \d+$/)).toBeVisible();
