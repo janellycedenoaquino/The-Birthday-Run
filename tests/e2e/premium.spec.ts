@@ -42,7 +42,7 @@ test("free → granted → revoked: prompts, filters and Settings follow (FR-35,
     const card = page.locator("#premium");
     await expect(
       card.getByText(
-        "Premium is coming soon. Everything else in the app stays free.",
+        "Premium is coming soon. Everything else in the app is free.",
       ),
     ).toBeVisible();
     await expect(card.getByRole("heading")).toHaveText(["Premium"]);
@@ -56,7 +56,7 @@ test("free → granted → revoked: prompts, filters and Settings follow (FR-35,
     await page.goto("/billing/return");
     await expect(
       page.getByText(
-        "Premium is coming soon. Everything else in the app stays free.",
+        "Premium is coming soon. Everything else in the app is free.",
       ),
     ).toBeVisible();
     await expect(page.getByRole("link", { name: "Check again" })).toHaveCount(

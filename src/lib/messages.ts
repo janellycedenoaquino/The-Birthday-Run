@@ -216,7 +216,7 @@ export const M = {
   "M-136": "Group routes",
   "M-137": "Birthday reminder emails",
   "M-138": "Premium",
-  "M-139": "Premium is coming soon. Everything else in the app stays free.",
+  "M-139": "Premium is coming soon. Everything else in the app is free.",
   "M-140": "Upgrade to unlock it. You can cancel any time from Settings.",
   "M-261": "You have Premium.",
   "M-262": "Premium renews on {date}.",

@@ -55,7 +55,7 @@ describe("C-104 UpgradePrompt (FR-39)", () => {
     });
     expect(html).toContain("More than 3 groups is part of Premium");
     expect(html).toContain(
-      "Premium is coming soon. Everything else in the app stays free.",
+      "Premium is coming soon. Everything else in the app is free.",
     );
     expect(html).not.toMatch(/<a |<button|<form/);
   });
